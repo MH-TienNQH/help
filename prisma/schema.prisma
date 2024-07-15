@@ -18,15 +18,19 @@ enum Role {
   Admin
 }
 
+enum Status {
+  Sold
+  Selling
+}
+
 model User {
-  userId   Int       @id @unique @default(autoincrement())
-  username String    @unique
-  email    String    @unique
+  userId   Int     @id @unique @default(autoincrement())
+  username String  @unique
+  email    String  @unique
   password String
   name     String
   avatar   String
-  role     Role      @default(User)
-  product  Product[]
+  role     Role    @default(User)
   saved    Saved[]
 }
 
@@ -37,9 +41,7 @@ model Product {
   image       String
   price       Int
   cover       String
-  status      Boolean
-  authorId    Int
-  author      User           @relation(fields: [authorId], references: [userId])
+  status      Status         @default(Selling)
   categoryId  Int
   category    Category       @relation(fields: [categoryId], references: [categoryId])
   saved       ProductSaved[]
