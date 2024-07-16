@@ -1,4 +1,5 @@
 import { prismaClient } from "../routes/index.js";
+import jwt from "jsonwebtoken";
 
 export const getAllProduct = async (req, res) => {
   try {
@@ -25,25 +26,27 @@ export const getProductById = async (req, res) => {
 
 export const addProduct = async (req, res) => {
   const { name, description, image, price, cover, categoryId } = req.body;
-  try {
-    let product = await prismaClient.product.create({
-      data: {
-        name,
-        description,
-        image,
-        price,
-        cover,
-        category: {
-          connect: {
-            categoryId,
-          },
+
+  let product = await prismaClient.product.create({
+    data: {
+      name,
+      description,
+      image,
+      price,
+      cover,
+      category: {
+        connect: {
+          categoryId,
         },
       },
-    });
-    res.status(200).send(product);
-  } catch (error) {
-    res.status(500).send(error);
-  }
+      author: {
+        connect: {
+          userId: req.userId,
+        },
+      },
+    },
+  });
+  res.status(200).send(product);
 };
 
 export const updateProduct = async (req, res) => {

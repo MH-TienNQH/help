@@ -24,14 +24,15 @@ enum Status {
 }
 
 model User {
-  userId   Int     @id @unique @default(autoincrement())
-  username String  @unique
-  email    String  @unique
+  userId   Int       @id @unique @default(autoincrement())
+  username String    @unique
+  email    String    @unique
   password String
   name     String
   avatar   String
-  role     Role    @default(User)
+  role     Role      @default(User)
   saved    Saved[]
+  product  Product[]
 }
 
 model Product {
@@ -45,6 +46,9 @@ model Product {
   categoryId  Int
   category    Category       @relation(fields: [categoryId], references: [categoryId])
   saved       ProductSaved[]
+  userId      Int?
+  author      User?          @relation(fields: [userId], references: [userId])
+  createdAt   DateTime       @default(now())
 }
 
 model Category {

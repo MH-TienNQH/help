@@ -17,7 +17,6 @@ const verifyTokenMiddlewares = async (req, res, next) => {
     }
     req.userId = payload.userId;
     req.userRole = payload.userRole;
-    res.send("authenticated");
     next();
   });
 };
