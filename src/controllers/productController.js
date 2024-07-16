@@ -1,5 +1,8 @@
 import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const getAllProduct = async (req, res) => {
   try {
@@ -11,13 +14,31 @@ export const getAllProduct = async (req, res) => {
 };
 
 export const getProductById = async (req, res) => {
-  const id = req.params.id;
+  const productId = req.params.id;
   try {
     let product = await prismaClient.product.findFirst({
       where: {
-        productId: parseInt(id),
+        productId,
       },
     });
+
+    let userId;
+    const accessToken = req.cookies.accessToken;
+    if (accessToken) {
+      jwt.verify(accessToken, process.env.JWT_KEY, async (err, payload) => {
+        if (!err) {
+          const saved = await prismaClient.productSaved.findUnique({
+            where: {
+              productId_userId: {
+                productId,
+                userId: payload.userId,
+              },
+            },
+          });
+          res.status(200).json({ ...product, isSaved: saved ? true : false });
+        }
+      });
+    }
     res.status(200).send(product);
   } catch (error) {
     res.status(500).send(error);
@@ -40,7 +61,7 @@ export const addProduct = async (req, res) => {
         },
       },
       author: {
-        connect: {
+        create: {
           userId: req.userId,
         },
       },
@@ -50,12 +71,12 @@ export const addProduct = async (req, res) => {
 };
 
 export const updateProduct = async (req, res) => {
-  const id = req.params.id;
+  const productId = req.params.id;
   const { name, description, image, price, cover, categoryId } = req.body;
   try {
     let product = await prismaClient.product.update({
       where: {
-        productId: parseInt(id),
+        productId,
       },
       data: {
         name,
@@ -68,6 +89,11 @@ export const updateProduct = async (req, res) => {
             categoryId,
           },
         },
+        author: {
+          create: {
+            userId: req.userId,
+          },
+        },
       },
     });
     res.status(200).send(product);
@@ -77,11 +103,11 @@ export const updateProduct = async (req, res) => {
 };
 
 export const deleteProduct = async (req, res) => {
-  const id = req.params.id;
+  const productId = req.params.id;
   try {
     await prismaClient.product.delete({
       where: {
-        productId: parseInt(id),
+        productId,
       },
     });
     res.status(200).send("ok");
