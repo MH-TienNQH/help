@@ -119,3 +119,27 @@ export const saveProduct = async (req, res) => {
     throw new Error(error);
   }
 };
+
+export const personalProduct = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const userProduct = await prismaClient.product.findMany({
+      where: {
+        userId,
+      },
+    });
+    const saved = await prismaClient.productSaved.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        product: true,
+      },
+    });
+
+    const savedProducts = saved.map((item) => item.product);
+    res.status(200).send({ userProduct, savedProducts });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};

@@ -4,6 +4,7 @@ import {
   deleteUser,
   getAllUser,
   getUserById,
+  personalProduct,
   saveProduct,
   updateUser,
 } from "../controllers/userControllers.js";
@@ -17,3 +18,4 @@ userRoutes.post("/add-user", verifyTokenMiddlewares, addUser);
 userRoutes.put("/update/:id", verifyTokenMiddlewares, updateUser);
 userRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteUser);
 userRoutes.post("/save-product", verifyTokenMiddlewares, saveProduct);
+userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
