@@ -24,31 +24,31 @@ enum Status {
 }
 
 model User {
-  userId   Int       @id @unique @default(autoincrement())
-  username String    @unique
-  email    String    @unique
-  password String
-  name     String
-  avatar   String
-  role     Role      @default(User)
-  saved    Saved[]
-  product  Product[]
+  userId       Int            @id @unique @default(autoincrement())
+  username     String         @unique
+  email        String         @unique
+  password     String
+  name         String
+  avatar       String
+  role         Role           @default(User)
+  product      Product[]
+  ProductSaved ProductSaved[]
 }
 
 model Product {
-  productId   Int            @id @unique @default(autoincrement())
-  name        String
-  description String
-  image       String
-  price       Int
-  cover       String
-  status      Status         @default(Selling)
-  categoryId  Int
-  category    Category       @relation(fields: [categoryId], references: [categoryId])
-  saved       ProductSaved[]
-  userId      Int?
-  author      User?          @relation(fields: [userId], references: [userId])
-  createdAt   DateTime       @default(now())
+  productId    Int            @id @unique @default(autoincrement())
+  name         String
+  description  String
+  image        String
+  price        Int
+  cover        String
+  status       Status         @default(Selling)
+  categoryId   Int
+  category     Category       @relation(fields: [categoryId], references: [categoryId])
+  userId       Int?
+  author       User?          @relation(fields: [userId], references: [userId])
+  createdAt    DateTime       @default(now())
+  ProductSaved ProductSaved[]
 }
 
 model Category {
@@ -57,18 +57,11 @@ model Category {
   Product      Product[]
 }
 
-model Saved {
-  savedId      Int            @id @unique @default(autoincrement())
-  userId       Int
-  user         User           @relation(fields: [userId], references: [userId])
-  savedProduct ProductSaved[]
-}
-
 model ProductSaved {
   productId Int
   product   Product @relation(fields: [productId], references: [productId])
-  savedId   Int
-  saved     Saved   @relation(fields: [savedId], references: [savedId])
+  userId    Int
+  user      User    @relation(fields: [userId], references: [userId])
 
-  @@id([productId, savedId])
+  @@unique([productId, userId])
 }

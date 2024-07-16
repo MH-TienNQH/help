@@ -82,3 +82,40 @@ export const deleteUser = async (req, res) => {
     res.status(500).send(error);
   }
 };
+
+export const saveProduct = async (req, res) => {
+  const productId = req.body.productId;
+  const tokenUserId = req.userId;
+  try {
+    const savedProduct = await prismaClient.productSaved.findUnique({
+      where: {
+        productId_userId: {
+          userId: tokenUserId,
+          productId,
+        },
+      },
+    });
+
+    if (savedProduct) {
+      await prismaClient.productSaved.delete({
+        where: {
+          productId_userId: {
+            userId: tokenUserId,
+            productId,
+          },
+        },
+      });
+      res.status(200).send("unliked");
+    } else {
+      await prismaClient.productSaved.create({
+        data: {
+          userId: tokenUserId,
+          productId,
+        },
+      });
+      res.status(200).send("liked product");
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
