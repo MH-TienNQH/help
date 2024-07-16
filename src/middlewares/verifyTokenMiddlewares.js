@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { prismaClient } from "../routes/index.js";
-import { error } from "console";
 
 dotenv.config();
 const verifyTokenMiddlewares = async (req, res, next) => {

@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import { userInfo } from "os";
 
 dotenv.config();
+
+const refreshTokens = [];
 export const signUp = async (req, res) => {
   const { username, email, password, name, avatar } = req.body;
 
@@ -47,8 +49,16 @@ export const login = async (req, res) => {
       userRole: user.role,
     },
     process.env.JWT_KEY,
-    { expiresIn: "6h" }
+    { expiresIn: "15m" }
   );
+  const refreshToken = jwt.sign(
+    {
+      userId: user.userId,
+      userRole: user.role,
+    },
+    process.env.JWT_REFRESH_KEY
+  );
+  refreshTokens.push(refreshToken);
 
   const { password: userPassword, ...userInfo } = user;
   res
@@ -56,9 +66,49 @@ export const login = async (req, res) => {
       httpOnly: true,
     })
     .status(200)
-    .send([userInfo, { accessToken: accessToken }]);
+    .send([
+      userInfo,
+      { accessToken: accessToken },
+      { refreshToken: refreshToken },
+    ]);
 };
 
 export const logout = async (req, res) => {
+  const refreshToken = req.body.refreshToken;
   res.clearCookie("accessToken").status(200).send("logout ok");
+};
+
+export const refresh = (req, res) => {
+  const refreshToken = req.body.refreshToken;
+  if (!refreshToken) return res.status(401).json("You are not authenticated!");
+  if (!refreshTokens.includes(refreshToken)) {
+    return res.status(403).json("Refresh token is not valid!");
+  }
+  jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
+    err && console.log(err);
+    refreshTokens == refreshTokens.filter((token) => token !== refreshToken);
+
+    const newAccessToken = jwt.sign(
+      {
+        userId: user.userId,
+        userRole: user.role,
+      },
+      process.env.JWT_KEY,
+      { expiresIn: "15m" }
+    );
+    const newRefreshToken = jwt.sign(
+      {
+        userId: user.userId,
+        userRole: user.role,
+      },
+      process.env.JWT_REFRESH_KEY
+    );
+
+    refreshTokens.push(newRefreshToken);
+
+    res.status(200).json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  });
 };
