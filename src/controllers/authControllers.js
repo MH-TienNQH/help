@@ -2,6 +2,7 @@ import { compareSync, hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { userInfo } from "os";
 
 dotenv.config();
 export const signUp = async (req, res) => {
@@ -45,8 +46,19 @@ export const login = async (req, res) => {
       userId: user.userId,
       userRole: user.role,
     },
-    process.env.JWT_KEY
+    process.env.JWT_KEY,
+    { expiresIn: "6h" }
   );
 
-  res.status(200).send([user, { accessToken: accessToken }]);
+  const { password: userPassword, ...userInfo } = user;
+  res
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+    })
+    .status(200)
+    .send([userInfo, { accessToken: accessToken }]);
+};
+
+export const logout = async (req, res) => {
+  res.clearCookie("accessToken").status(200).send("logout ok");
 };
