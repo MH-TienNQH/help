@@ -28,3 +28,4 @@ app.get("/", (req, res) => {
     "PUT, POST, GET, DELETE, PATCH, OPTIONS"
   );
 });
+app.listen(PORT, () => `running on http://localhost:${PORT}`);
