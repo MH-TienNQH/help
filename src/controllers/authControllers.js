@@ -39,6 +39,10 @@ export const signUp = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
+    let result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).send({ error: result.array() });
+    }
     const { email, password } = req.body;
     let user = await prismaClient.user.findFirst({
       where: {

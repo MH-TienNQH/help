@@ -23,6 +23,10 @@ enum Status {
   Selling
 }
 
+model Widget {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+}
+
 model User {
   userId       Int            @id @unique @default(sequence())
   username     String         @unique
