@@ -10,7 +10,6 @@ const rootRouter = Router();
 export const prismaClient = new PrismaClient({
   log: ["query"],
 });
-
 rootRouter.use("/auth", authRoutes);
 rootRouter.use("/user", userRoutes);
 rootRouter.use("/product", productRoutes);

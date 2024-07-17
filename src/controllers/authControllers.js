@@ -2,75 +2,86 @@ import { compareSync, hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { userInfo } from "os";
+import { validationResult } from "express-validator";
 
 dotenv.config();
 
 const refreshTokens = [];
-export const signUp = async (req, res) => {
-  const { username, email, password, name, avatar } = req.body;
-
-  let user = await prismaClient.user.findFirst({
-    where: {
-      username,
-    },
-  });
-  if (user) {
-    res.status(400).send("user exist");
+export const signUp = async (req, res, next) => {
+  try {
+    let result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).send({ error: result.array() });
+    }
+    const { username, email, password, name, avatar } = req.body;
+    let user = await prismaClient.user.findUnique({
+      where: {
+        username,
+      },
+    });
+    if (user) {
+      return res.status(400).send("user exist");
+    }
+    user = await prismaClient.user.create({
+      data: {
+        name,
+        username,
+        email,
+        password: hashSync(password, 10),
+        avatar,
+      },
+    });
+    return res.status(200).send([user, result]);
+  } catch (error) {
+    return next(error);
   }
-  user = await prismaClient.user.create({
-    data: {
-      name,
-      username,
-      email,
-      password: hashSync(password, 10),
-      avatar,
-    },
-  });
-  res.status(200).send(user);
 };
 
-export const login = async (req, res) => {
-  const { username, password } = req.body;
-  let user = await prismaClient.user.findFirst({
-    where: {
-      username,
-    },
-  });
-  if (!user) {
-    res.status(401).send("username not found");
-  }
-  if (!compareSync(password, user.password)) {
-    res.status(401).send("wrong pw");
-  }
-  const accessToken = jwt.sign(
-    {
-      userId: user.userId,
-      userRole: user.role,
-    },
-    process.env.JWT_KEY,
-    { expiresIn: "15m" }
-  );
-  const refreshToken = jwt.sign(
-    {
-      userId: user.userId,
-      userRole: user.role,
-    },
-    process.env.JWT_REFRESH_KEY
-  );
-  refreshTokens.push(refreshToken);
+export const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    let user = await prismaClient.user.findFirst({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      res.status(401).send("email not found");
+    }
+    if (!compareSync(password, user.password)) {
+      res.status(401).send("wrong pw");
+    }
+    const accessToken = jwt.sign(
+      {
+        userId: user.userId,
+        userRole: user.role,
+      },
+      process.env.JWT_KEY,
+      { expiresIn: "15m" }
+    );
+    const refreshToken = jwt.sign(
+      {
+        userId: user.userId,
+        userRole: user.role,
+      },
+      process.env.JWT_REFRESH_KEY
+    );
+    refreshTokens.push(refreshToken);
 
-  const { password: userPassword, ...userInfo } = user;
-  res
-    .cookie("accessToken", accessToken, {
-      httpOnly: true,
-    })
-    .status(200)
-    .send([
-      userInfo,
-      { accessToken: accessToken },
-      { refreshToken: refreshToken },
-    ]);
+    const { password: userPassword, ...userInfo } = user;
+    res
+      .cookie("accessToken", accessToken, {
+        httpOnly: true,
+      })
+      .status(200)
+      .send([
+        userInfo,
+        { accessToken: accessToken },
+        { refreshToken: refreshToken },
+      ]);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const logout = async (req, res) => {
