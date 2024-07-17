@@ -84,42 +84,51 @@ export const login = async (req, res, next) => {
   }
 };
 
-export const logout = async (req, res) => {
-  const refreshToken = req.body.refreshToken;
-  res.clearCookie("accessToken").status(200).send("logout ok");
+export const logout = async (req, res, next) => {
+  try {
+    const refreshToken = req.body.refreshToken;
+    res.clearCookie("accessToken").status(200).send("logout ok");
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const refresh = (req, res) => {
-  const refreshToken = req.body.refreshToken;
-  if (!refreshToken) return res.status(401).json("You are not authenticated!");
-  if (!refreshTokens.includes(refreshToken)) {
-    return res.status(403).json("Refresh token is not valid!");
-  }
-  jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
-    err && console.log(err);
-    refreshTokens == refreshTokens.filter((token) => token !== refreshToken);
+export const refresh = (req, res, next) => {
+  try {
+    const refreshToken = req.body.refreshToken;
+    if (!refreshToken)
+      return res.status(401).json("You are not authenticated!");
+    if (!refreshTokens.includes(refreshToken)) {
+      return res.status(403).json("Refresh token is not valid!");
+    }
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
+      err && console.log(err);
+      refreshTokens == refreshTokens.filter((token) => token !== refreshToken);
 
-    const newAccessToken = jwt.sign(
-      {
-        userId: user.userId,
-        userRole: user.role,
-      },
-      process.env.JWT_KEY,
-      { expiresIn: "15m" }
-    );
-    const newRefreshToken = jwt.sign(
-      {
-        userId: user.userId,
-        userRole: user.role,
-      },
-      process.env.JWT_REFRESH_KEY
-    );
+      const newAccessToken = jwt.sign(
+        {
+          userId: user.userId,
+          userRole: user.role,
+        },
+        process.env.JWT_KEY,
+        { expiresIn: "15m" }
+      );
+      const newRefreshToken = jwt.sign(
+        {
+          userId: user.userId,
+          userRole: user.role,
+        },
+        process.env.JWT_REFRESH_KEY
+      );
 
-    refreshTokens.push(newRefreshToken);
+      refreshTokens.push(newRefreshToken);
 
-    res.status(200).json({
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
+      res.status(200).json({
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      });
     });
-  });
+  } catch (error) {
+    next(error);
+  }
 };

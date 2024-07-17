@@ -20,5 +20,10 @@ categoryRoutes.post(
   checkSchema(addCategorySchema),
   addCategory
 );
-categoryRoutes.put("/update/:id", verifyTokenMiddlewares, updateCategory);
+categoryRoutes.put(
+  "/update/:id",
+  checkSchema(addCategorySchema),
+  verifyTokenMiddlewares,
+  updateCategory
+);
 categoryRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteCategory);
