@@ -1,3 +1,4 @@
+import { validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
 
 export const getAllCategory = async (req, res) => {
@@ -23,6 +24,10 @@ export const getCategoryById = async (req, res) => {
 };
 
 export const addCategory = async (req, res) => {
+  let result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send({ error: result.array() });
+  }
   let userRole = req.userRole;
   if (userRole == "Admin") {
     const { categoryName } = req.body;
@@ -33,7 +38,7 @@ export const addCategory = async (req, res) => {
         },
       });
       if (category) {
-        res.status(401).send("category exist");
+        return res.status(401).send("category exist");
       }
       category = await prismaClient.category.create({
         data: {
@@ -42,10 +47,10 @@ export const addCategory = async (req, res) => {
       });
       res.status(200).send(category);
     } catch (error) {
-      res.status(500).send(error);
+      return res.status(500).send(error);
     }
   } else {
-    res.status(403).send("not Admin");
+    return res.status(403).send("not Admin");
   }
 };
 export const updateCategory = async (req, res) => {
