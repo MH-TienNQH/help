@@ -19,7 +19,13 @@ app.use(errorHandlerMiddlewares);
 app.use("/api", rootRouter);
 
 app.get("/", (req, res) => {
-  res.send("hey");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Max-Age", "1800");
+  res.setHeader("Access-Control-Allow-Headers", "content-type");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "PUT, POST, GET, DELETE, PATCH, OPTIONS"
+  );
 });
-
 app.listen(PORT, () => `running on http://localhost:${PORT}`);
