@@ -1,6 +1,7 @@
 import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { userInfo } from "os";
 
 dotenv.config();
 
@@ -61,7 +62,7 @@ export const addProduct = async (req, res) => {
         },
       },
       author: {
-        create: {
+        connect: {
           userId: req.userId,
         },
       },

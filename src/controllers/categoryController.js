@@ -23,54 +23,69 @@ export const getCategoryById = async (req, res) => {
 };
 
 export const addCategory = async (req, res) => {
-  const { categoryName } = req.body;
-  try {
-    let category = await prismaClient.category.findFirst({
-      where: {
-        categoryName,
-      },
-    });
-    if (category) {
-      res.status(401).send("category exist");
+  let userRole = req.userRole;
+  if (userRole == "Admin") {
+    const { categoryName } = req.body;
+    try {
+      let category = await prismaClient.category.findFirst({
+        where: {
+          categoryName,
+        },
+      });
+      if (category) {
+        res.status(401).send("category exist");
+      }
+      category = await prismaClient.category.create({
+        data: {
+          categoryName,
+        },
+      });
+      res.status(200).send(category);
+    } catch (error) {
+      res.status(500).send(error);
     }
-    category = await prismaClient.category.create({
-      data: {
-        categoryName,
-      },
-    });
-    res.status(200).send(category);
-  } catch (error) {
-    res.status(500).send(error);
+  } else {
+    res.status(403).send("not Admin");
   }
 };
 export const updateCategory = async (req, res) => {
-  const id = req.params.id;
-  const { categoryName } = req.body;
-  try {
-    let category = await prismaClient.category.update({
-      where: {
-        categoryId: parseInt(id),
-      },
-      data: {
-        categoryName,
-      },
-    });
-    res.status(200).send(category);
-  } catch (error) {
-    res.status(500).send(error);
+  let userRole = req.userRole;
+  if (userRole == "Admin") {
+    const id = req.params.id;
+    const { categoryName } = req.body;
+    try {
+      let category = await prismaClient.category.update({
+        where: {
+          categoryId: parseInt(id),
+        },
+        data: {
+          categoryName,
+        },
+      });
+      res.status(200).send(category);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  } else {
+    res.status(403).send("not Admin");
   }
 };
 
 export const deleteCategory = async (req, res) => {
-  const id = req.params.id;
-  try {
-    await prismaClient.category.delete({
-      where: {
-        categoryId: parseInt(id),
-      },
-    });
-    res.status(200).send("ok");
-  } catch (error) {
-    res.status(500).send(error);
+  let userRole = req.userRole;
+  if (userRole == "Admin") {
+    const id = req.params.id;
+    try {
+      await prismaClient.category.delete({
+        where: {
+          categoryId: parseInt(id),
+        },
+      });
+      res.status(200).send("ok");
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  } else {
+    res.status(403).send("not Admin");
   }
 };

@@ -21,65 +21,77 @@ export const getUserById = async (req, res) => {
 };
 
 export const addUser = async (req, res) => {
-  try {
-    const { username, email, password, name, avatar } = req.body;
+  let userRole = req.userRole;
+  if (userRole == "Admin") {
+    try {
+      const { username, email, password, name, avatar } = req.body;
 
-    let user = await prismaClient.user.findFirst({
-      where: {
-        username: username,
-      },
-    });
-    if (user) {
-      res.status(400).send("user exist");
+      let user = await prismaClient.user.findFirst({
+        where: {
+          username: username,
+        },
+      });
+      if (user) {
+        res.status(400).send("user exist");
+      }
+      user = await prismaClient.user.create({
+        data: {
+          name,
+          username,
+          email,
+          password: hashSync(password, 10),
+          avatar,
+        },
+      });
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send(error);
     }
-    user = await prismaClient.user.create({
-      data: {
-        name,
-        username,
-        email,
-        password: hashSync(password, 10),
-        avatar,
-      },
-    });
-    res.status(200).send(user);
-  } catch (error) {
-    res.status(500).send(error);
   }
+  res.status(403).send("Not admin");
 };
 
 export const updateUser = async (req, res) => {
   const id = req.params.id;
-  try {
-    const { username, email, password, name, avatar } = req.body;
-    let user = await prismaClient.user.update({
-      where: {
-        userId: parseInt(id),
-      },
-      data: {
-        name,
-        username,
-        email,
-        password: hashSync(password, 10),
-        avatar,
-      },
-    });
-    res.status(200).send(user);
-  } catch (error) {
-    res.status(500).send(error);
+  let userRole = req.userRole;
+  if (userRole == "Admin") {
+    try {
+      const { username, email, password, name, avatar } = req.body;
+      let user = await prismaClient.user.update({
+        where: {
+          userId: parseInt(id),
+        },
+        data: {
+          name,
+          username,
+          email,
+          password: hashSync(password, 10),
+          avatar,
+        },
+      });
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  } else {
+    res.status(403).send("Not admin");
   }
 };
 
 export const deleteUser = async (req, res) => {
+  let userRole = req.userRole;
   const id = req.params.id;
-  try {
-    await prismaClient.user.delete({
-      where: {
-        userId: parseInt(id),
-      },
-    });
-    res.status(200).send("ok");
-  } catch (error) {
-    res.status(500).send(error);
+  if (userRole == "Admin") {
+    try {
+      await prismaClient.user.delete({
+        where: {
+          userId: parseInt(id),
+        },
+      });
+      res.status(200).send("ok");
+    } catch (error) {
+      res.status(500).send(error);
+    }
   }
 };
 
