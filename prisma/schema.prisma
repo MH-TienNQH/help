@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "cockroachdb"
   url      = env("DATABASE_URL")
 }
 
@@ -24,7 +24,7 @@ enum Status {
 }
 
 model User {
-  userId       Int            @id @unique @default(autoincrement())
+  userId       Int            @id @unique @default(sequence())
   username     String         @unique
   email        String         @unique
   password     String
@@ -36,7 +36,7 @@ model User {
 }
 
 model Product {
-  productId    Int            @id @unique @default(autoincrement())
+  productId    Int            @id @unique @default(sequence())
   name         String
   description  String
   image        String
@@ -52,7 +52,7 @@ model Product {
 }
 
 model Category {
-  categoryId   Int       @id @unique @default(autoincrement())
+  categoryId   Int       @id @unique @default(sequence())
   categoryName String
   Product      Product[]
 }
