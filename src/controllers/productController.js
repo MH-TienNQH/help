@@ -2,6 +2,8 @@ import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { userInfo } from "os";
+import { validationResult } from "express-validator";
+import { error } from "console";
 
 dotenv.config();
 
@@ -47,6 +49,10 @@ export const getProductById = async (req, res) => {
 };
 
 export const addProduct = async (req, res) => {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send({ error: result.array() });
+  }
   const { name, description, image, price, cover, categoryId } = req.body;
 
   let product = await prismaClient.product.create({
@@ -72,6 +78,10 @@ export const addProduct = async (req, res) => {
 };
 
 export const updateProduct = async (req, res) => {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send({ error: result.array() });
+  }
   const productId = req.params.id;
   const { name, description, image, price, cover, categoryId } = req.body;
   try {

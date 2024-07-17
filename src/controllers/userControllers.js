@@ -56,6 +56,26 @@ export const updateUser = async (req, res) => {
   let userRole = req.userRole;
   if (userRole == "Admin") {
     try {
+      const { username, email, password, name, userRole, avatar } = req.body;
+      let user = await prismaClient.user.update({
+        where: {
+          userId: parseInt(id),
+        },
+        data: {
+          name,
+          username,
+          email,
+          password: hashSync(password, 10),
+          userRole,
+          avatar,
+        },
+      });
+      res.status(200).send(user);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  } else {
+    try {
       const { username, email, password, name, avatar } = req.body;
       let user = await prismaClient.user.update({
         where: {
@@ -73,8 +93,6 @@ export const updateUser = async (req, res) => {
     } catch (error) {
       res.status(500).send(error);
     }
-  } else {
-    res.status(403).send("Not admin");
   }
 };
 
