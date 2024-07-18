@@ -38,13 +38,6 @@ export const signUpSchema = {
     notEmpty: {
       errorMessage: "password can not be empty",
     },
-    isLength: {
-      options: {
-        min: 6,
-        max: 30,
-      },
-      errorMessage: "password must be between 6 to 30 characters",
-    },
     isStrongPassword: {
       errorMessage: "Need to be a strong password",
     },
