@@ -18,6 +18,10 @@ export const getUserById = async (req, res, next) => {
         userId: parseInt(id),
       },
     });
+    if (!userById) {
+      const error = new OperationalException("User not found", 404);
+      next(error);
+    }
     res.status(200).send(userById);
   } catch (error) {
     next(error);
@@ -37,7 +41,8 @@ export const addUser = async (req, res, next) => {
           },
         });
         if (user) {
-          res.status(400).send("user exist");
+          const error = new OperationalException("User already exist", 400);
+          next(error);
         }
         user = await prismaClient.user.create({
           data: {
@@ -50,7 +55,7 @@ export const addUser = async (req, res, next) => {
         });
         res.status(200).send(user);
       } catch (error) {
-        res.status(500).send(error);
+        next(error);
       }
     }
     res.status(403).send("Not admin");
@@ -78,6 +83,10 @@ export const updateUser = async (req, res, next) => {
           avatar,
         },
       });
+      if (!user) {
+        const error = new OperationalException("User already exist", 400);
+        next(error);
+      }
       res.status(200).send(user);
     } catch (error) {
       next(error);

@@ -3,39 +3,38 @@ import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
+import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 
 dotenv.config();
 
 const refreshTokens = [];
-export const signUp = async (req, res, next) => {
-  try {
-    let result = validationResult(req);
-    if (!result.isEmpty()) {
-      return res.status(400).send({ error: result.array() });
-    }
-    const { username, email, password, name, avatar } = req.body;
-    let user = await prismaClient.user.findUnique({
-      where: {
-        username,
-      },
-    });
-    if (user) {
-      return res.status(400).send("user exist");
-    }
-    user = await prismaClient.user.create({
-      data: {
-        name,
-        username,
-        email,
-        password: hashSync(password, 10),
-        avatar,
-      },
-    });
-    return res.status(200).send([user, result]);
-  } catch (error) {
-    return next(error);
+export const signUp = asyncErrorHandler(async (req, res, next) => {
+  let result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send({ error: result.array() });
   }
-};
+  const { username, email, password, name, avatar } = req.body;
+  let user = await prismaClient.user.findUnique({
+    where: {
+      username,
+    },
+  });
+  if (user) {
+    const error = new OperationalException("User already exist", 400);
+    next(error);
+  }
+  user = await prismaClient.user.create({
+    data: {
+      name,
+      username,
+      email,
+      password: hashSync(password, 10),
+      avatar,
+    },
+  });
+  return res.status(200).send([user, result]);
+});
 
 export const login = async (req, res, next) => {
   try {
@@ -50,10 +49,12 @@ export const login = async (req, res, next) => {
       },
     });
     if (!user) {
-      res.status(401).send("email not found");
+      const error = new OperationalException("Email not found", 404);
+      next(error);
     }
     if (!compareSync(password, user.password)) {
-      res.status(401).send("wrong pw");
+      const error = new OperationalException("Incorrect password", 401);
+      next(error);
     }
     const accessToken = jwt.sign(
       {
@@ -100,10 +101,13 @@ export const logout = async (req, res, next) => {
 export const refresh = (req, res, next) => {
   try {
     const refreshToken = req.body.refreshToken;
-    if (!refreshToken)
-      return res.status(401).json("You are not authenticated!");
+    if (!refreshToken) {
+      const error = new OperationalException("You are not authenticated", 401);
+      next(error);
+    }
     if (!refreshTokens.includes(refreshToken)) {
-      return res.status(403).json("Refresh token is not valid!");
+      const error = new OperationalException("Refresh token is not valid", 403);
+      next(error);
     }
     jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
       err && console.log(err);

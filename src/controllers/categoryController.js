@@ -17,6 +17,13 @@ export const getCategoryById = async (req, res, next) => {
         categoryId: parseInt(id),
       },
     });
+    if (!category) {
+      const error = new OperationalException(
+        " this category doesn't exist",
+        404
+      );
+      next(error);
+    }
     res.status(200).send(category);
   } catch (error) {
     next(error);
@@ -39,7 +46,8 @@ export const addCategory = async (req, res, next) => {
           },
         });
         if (category) {
-          return res.status(401).send("category exist");
+          const error = new OperationalException("Category already exist", 400);
+          next(error);
         }
         category = await prismaClient.category.create({
           data: {
@@ -51,13 +59,14 @@ export const addCategory = async (req, res, next) => {
         return res.status(500).send(error);
       }
     } else {
-      return res.status(403).send("not Admin");
+      const error = new OperationalException("Not admin", 403);
+      next(error);
     }
   } catch (error) {
     next(error);
   }
 };
-export const updateCategory = async (req, res) => {
+export const updateCategory = async (req, res, next) => {
   try {
     let result = validationResult(req);
     if (!result.isEmpty()) {
@@ -76,19 +85,24 @@ export const updateCategory = async (req, res) => {
             categoryName,
           },
         });
+        if (!category) {
+          const error = new OperationalException("Category not found", 403);
+          next(error);
+        }
         res.status(200).send(category);
       } catch (error) {
-        res.status(500).send(error);
+        next(error);
       }
     } else {
-      res.status(403).send("not Admin");
+      const error = new OperationalException("Not Admin", 403);
+      next(error);
     }
   } catch (error) {
     next(error);
   }
 };
 
-export const deleteCategory = async (req, res) => {
+export const deleteCategory = async (req, res, next) => {
   try {
     let userRole = req.userRole;
     if (userRole == "Admin") {
@@ -101,7 +115,7 @@ export const deleteCategory = async (req, res) => {
         });
         res.status(200).send("ok");
       } catch (error) {
-        res.status(500).send(error);
+        next(error);
       }
     } else {
       res.status(403).send("not Admin");

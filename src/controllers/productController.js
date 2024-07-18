@@ -1,9 +1,7 @@
 import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { userInfo } from "os";
 import { validationResult } from "express-validator";
-import { error } from "console";
 
 dotenv.config();
 
@@ -24,8 +22,6 @@ export const getProductById = async (req, res, next) => {
         productId,
       },
     });
-
-    let userId;
     const accessToken = req.cookies.accessToken;
     if (accessToken) {
       jwt.verify(accessToken, process.env.JWT_KEY, async (err, payload) => {
@@ -111,6 +107,10 @@ export const updateProduct = async (req, res, next) => {
         },
       },
     });
+    if (!product) {
+      const error = new OperationalException("Product not found", 404);
+      next(error);
+    }
     res.status(200).send(product);
   } catch (error) {
     next(error);

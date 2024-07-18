@@ -3,9 +3,6 @@ export const signUpSchema = {
     notEmpty: {
       errorMessage: "username can not be empty",
     },
-    isString: {
-      errorMessage: "username must be a string",
-    },
     isLength: {
       options: {
         min: 2,
@@ -17,9 +14,6 @@ export const signUpSchema = {
   email: {
     notEmpty: {
       errorMessage: "email can not be empty",
-    },
-    isString: {
-      errorMessage: "email must be a string",
     },
     isEmail: {
       errorMessage: "please enter a validate email",
@@ -42,17 +36,17 @@ export const signUpSchema = {
   },
   password: {
     notEmpty: {
-      errorMessage: "name can not be empty",
-    },
-    isString: {
-      errorMessage: "name must be a string",
+      errorMessage: "password can not be empty",
     },
     isLength: {
       options: {
         min: 6,
         max: 30,
       },
-      errorMessage: "name must be between 6 to 30 characters",
+      errorMessage: "password must be between 6 to 30 characters",
+    },
+    isStrongPassword: {
+      errorMessage: "Need to be a strong password",
     },
   },
 };
@@ -62,19 +56,13 @@ export const loginSchema = {
     notEmpty: {
       errorMessage: "email can not be empty",
     },
-    isString: {
-      errorMessage: "email must be a string",
-    },
     isEmail: {
       errorMessage: "please enter a validate email",
     },
   },
   password: {
     notEmpty: {
-      errorMessage: "name can not be empty",
-    },
-    isString: {
-      errorMessage: "name must be a string",
+      errorMessage: "password can not be empty",
     },
   },
 };

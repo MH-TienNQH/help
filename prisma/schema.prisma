@@ -14,8 +14,8 @@ datasource db {
 }
 
 enum Role {
-  User
-  Admin
+  USER
+  ADMIN
 }
 
 enum Status {
@@ -30,7 +30,7 @@ model User {
   password     String
   name         String
   avatar       String
-  role         Role           @default(User)
+  role         Role           @default(USER)
   product      Product[]
   ProductSaved ProductSaved[]
 }
