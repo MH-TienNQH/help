@@ -1,2 +1,0 @@
--- AlterSequence
-ALTER SEQUENCE "Product_productId_seq" MAXVALUE 9223372036854775807;

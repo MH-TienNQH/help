@@ -105,7 +105,7 @@ export const updateProduct = async (req, res, next) => {
           },
         },
         author: {
-          create: {
+          connect: {
             userId: req.userId,
           },
         },
