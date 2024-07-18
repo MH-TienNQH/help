@@ -1,5 +1,3 @@
-import { optional } from "valibot";
-
 export const signUpSchema = {
   username: {
     notEmpty: {
