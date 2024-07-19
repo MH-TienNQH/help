@@ -1,9 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
-import rootRouter from "./src/routes/index.js";
+import rootRouter from "./routes/index.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewares.js";
+import { errorHandlerMiddlewares } from "./middlewares/errorHandlerMiddlewares.js";
 
 dotenv.config();
 
