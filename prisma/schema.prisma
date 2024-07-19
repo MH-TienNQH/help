@@ -34,6 +34,24 @@ model User {
   role         Role           @default(USER)
   product      Product[]
   ProductSaved ProductSaved[]
+  chats        Chat[]
+}
+
+model Chat {
+  chatId      Int       @id @unique @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  users       User[]
+  message     Message[]
+  lastMessage String?
+}
+
+model Message {
+  messageId Int      @id @unique @default(autoincrement())
+  text      String
+  userId    Int
+  chatId    Int
+  chat      Chat     @relation(fields: [chatId], references: [chatId])
+  createdAt DateTime @default(now())
 }
 
 model Product {
