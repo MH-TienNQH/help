@@ -4,6 +4,7 @@ import {
   logout,
   refresh,
   signUp,
+  verifyEmail,
 } from "../controllers/authControllers.js";
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 import { checkSchema } from "express-validator";
@@ -20,3 +21,4 @@ authRoutes.post(
 );
 authRoutes.post("/logout", logout);
 authRoutes.post("/refresh-token", refresh);
+authRoutes.get("/verify/:email", verifyEmail);

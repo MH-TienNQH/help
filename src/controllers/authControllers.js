@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
+import { sendMailTo } from "../utils/sendMail.js";
 
 dotenv.config();
 
@@ -33,6 +34,19 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
       avatar,
     },
   });
+  if (user.verified == false) {
+    try {
+      sendMailTo(
+        email,
+        "Verify your email",
+        `<p> Verify your email <a href = "${process.env.APP_URL}/api/auth/verify/${email}">here</a></p>`
+      );
+      console.log(`${process.env.APP_URL}/api/auth/verify/${email}"`);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   return res.status(200).send([user, result]);
 });
 
@@ -136,6 +150,22 @@ export const refresh = (req, res, next) => {
         refreshToken: newRefreshToken,
       });
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyEmail = async (req, res, next) => {
+  try {
+    await prismaClient.user.update({
+      where: {
+        email: req.params.email,
+      },
+      data: {
+        verified: true,
+      },
+    });
+    res.send("verified");
   } catch (error) {
     next(error);
   }
