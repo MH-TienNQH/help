@@ -12,7 +12,7 @@ const refreshTokens = [];
 export const signUp = asyncErrorHandler(async (req, res, next) => {
   let result = validationResult(req);
   if (!result.isEmpty()) {
-    return res.status(400).send({ error: result.array() });
+    return res.status(400).send(result.array());
   }
   const { username, email, password, name, avatar } = req.body;
   let user = await prismaClient.user.findUnique({
@@ -40,7 +40,7 @@ export const login = async (req, res, next) => {
   try {
     let result = validationResult(req);
     if (!result.isEmpty()) {
-      return res.status(400).send({ error: result.array() });
+      return res.status(400).send(result.array());
     }
     const { email, password } = req.body;
     let user = await prismaClient.user.findFirst({

@@ -31,6 +31,10 @@ export const getUserById = async (req, res, next) => {
 export const addUser = async (req, res, next) => {
   try {
     let userRole = req.userRole;
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).send(result.array());
+    }
     if (userRole == "Admin") {
       try {
         const { username, email, password, name, avatar } = req.body;
@@ -67,6 +71,10 @@ export const addUser = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   const id = req.params.id;
   let userRole = req.userRole;
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array());
+  }
   if (userRole == "Admin") {
     try {
       const { username, email, password, name, userRole, avatar } = req.body;
