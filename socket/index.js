@@ -9,6 +9,8 @@ const io = new Server({
   },
 });
 
-io.on("connection", (socket) => {
+io.on("", (socket) => {
   console.log(socket);
 });
+
+io.listen("4000");
