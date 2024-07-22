@@ -6,10 +6,11 @@ import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
-
 dotenv.config();
 
 const refreshTokens = [];
+var deleteAfter15;
+
 export const signUp = asyncErrorHandler(async (req, res, next) => {
   let result = validationResult(req);
   if (!result.isEmpty()) {
@@ -34,17 +35,22 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
       avatar,
     },
   });
-  if (user.verified == false) {
-    try {
-      sendMailTo(
-        email,
-        "Verify your email",
-        `<p> Verify your email <a href = "${process.env.APP_URL}/api/auth/verify/${email}">here</a></p>`
-      );
-      console.log(`${process.env.APP_URL}/api/auth/verify/${email}"`);
-    } catch (error) {
-      next(error);
-    }
+  try {
+    sendMailTo(
+      email,
+      "Verify your email",
+      `<p> Verify your email <a href = "${process.env.APP_URL}/api/auth/verify/${email}">here</a></p>`
+    );
+    console.log(`${process.env.APP_URL}/api/auth/verify/${email}"`);
+    deleteAfter15 = setTimeout(async function () {
+      await prismaClient.user.delete({
+        where: {
+          username,
+        },
+      });
+    }, 900000);
+  } catch (error) {
+    next(error);
   }
 
   return res.status(200).send([user, result]);
@@ -157,7 +163,7 @@ export const refresh = (req, res, next) => {
 
 export const verifyEmail = async (req, res, next) => {
   try {
-    await prismaClient.user.update({
+    const user = await prismaClient.user.update({
       where: {
         email: req.params.email,
       },
@@ -165,6 +171,7 @@ export const verifyEmail = async (req, res, next) => {
         verified: true,
       },
     });
+    clearTimeout(deleteAfter15);
     res.send("verified");
   } catch (error) {
     next(error);

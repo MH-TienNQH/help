@@ -1,11 +1,11 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+import express from "express";
 import rootRouter from "./src/routes/index.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewares.js";
-
-dotenv.config();
 
 const PORT = process.env.PORT;
 
