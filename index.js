@@ -33,6 +33,6 @@ app.get("/", (req, res) => {
   );
 });
 
-const deleteJob = schedule.scheduleJob("*/15 * * * *", deleteNotVerified);
+schedule.scheduleJob("*/15 * * * *", deleteNotVerified);
 
 app.listen(PORT, () => `running on http://localhost:${PORT}`);
