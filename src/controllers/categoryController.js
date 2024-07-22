@@ -1,76 +1,126 @@
+import { validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
 
-export const getAllCategory = async (req, res) => {
+export const getAllCategory = async (req, res, next) => {
   try {
     let categories = await prismaClient.category.findMany();
     res.status(200).send(categories);
   } catch (error) {
-    res.status(200).send(error);
+    next(error);
   }
 };
-export const getCategoryById = async (req, res) => {
-  const id = req.params.id;
+export const getCategoryById = async (req, res, next) => {
   try {
+    const id = req.params.id;
     let category = await prismaClient.category.findFirst({
       where: {
         categoryId: parseInt(id),
       },
     });
-    res.status(200).send(category);
-  } catch (error) {
-    res.status(200).send(error);
-  }
-};
-
-export const addCategory = async (req, res) => {
-  const { categoryName } = req.body;
-  try {
-    let category = await prismaClient.category.findFirst({
-      where: {
-        categoryName,
-      },
-    });
-    if (category) {
-      res.status(401).send("category exist");
+    if (!category) {
+      const error = new OperationalException(
+        " this category doesn't exist",
+        404
+      );
+      next(error);
     }
-    category = await prismaClient.category.create({
-      data: {
-        categoryName,
-      },
-    });
     res.status(200).send(category);
   } catch (error) {
-    res.status(500).send(error);
-  }
-};
-export const updateCategory = async (req, res) => {
-  const id = req.params.id;
-  const { categoryName } = req.body;
-  try {
-    let category = await prismaClient.category.update({
-      where: {
-        categoryId: parseInt(id),
-      },
-      data: {
-        categoryName,
-      },
-    });
-    res.status(200).send(category);
-  } catch (error) {
-    res.status(500).send(error);
+    next(error);
   }
 };
 
-export const deleteCategory = async (req, res) => {
-  const id = req.params.id;
+export const addCategory = async (req, res, next) => {
   try {
-    await prismaClient.category.delete({
-      where: {
-        categoryId: parseInt(id),
-      },
-    });
-    res.status(200).send("ok");
+    let result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).send(result.array());
+    }
+    let userRole = req.userRole;
+    if (userRole == "Admin") {
+      const { categoryName } = req.body;
+      try {
+        let category = await prismaClient.category.findFirst({
+          where: {
+            categoryName,
+          },
+        });
+        if (category) {
+          const error = new OperationalException("Category already exist", 400);
+          next(error);
+        }
+        category = await prismaClient.category.create({
+          data: {
+            categoryName,
+          },
+        });
+        res.status(200).send(category);
+      } catch (error) {
+        return res.status(500).send(error);
+      }
+    } else {
+      const error = new OperationalException("Not admin", 403);
+      next(error);
+    }
   } catch (error) {
-    res.status(500).send(error);
+    next(error);
+  }
+};
+export const updateCategory = async (req, res, next) => {
+  try {
+    let result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).send(result.array());
+    }
+    let userRole = req.userRole;
+    if (userRole == "Admin") {
+      const id = req.params.id;
+      const { categoryName } = req.body;
+      try {
+        let category = await prismaClient.category.update({
+          where: {
+            categoryId: parseInt(id),
+          },
+          data: {
+            categoryName,
+          },
+        });
+        if (!category) {
+          const error = new OperationalException("Category not found", 403);
+          next(error);
+        }
+        res.status(200).send(category);
+      } catch (error) {
+        next(error);
+      }
+    } else {
+      const error = new OperationalException("Not Admin", 403);
+      next(error);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteCategory = async (req, res, next) => {
+  try {
+    let userRole = req.userRole;
+    if (userRole == "Admin") {
+      const id = req.params.id;
+      try {
+        await prismaClient.category.delete({
+          where: {
+            categoryId: parseInt(id),
+          },
+        });
+        res.status(200).send("ok");
+      } catch (error) {
+        next(error);
+      }
+    } else {
+      res.status(403).send("not Admin");
+    }
+  } catch (error) {
+    next(error);
   }
 };

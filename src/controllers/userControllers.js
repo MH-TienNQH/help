@@ -1,92 +1,147 @@
 import { prismaClient } from "../routes/index.js";
 import { hashSync } from "bcrypt";
 
-export const getAllUser = async (req, res) => {
+export const getAllUser = async (req, res, next) => {
   try {
     let users = await prismaClient.user.findMany();
     res.status(200).send(users);
   } catch (error) {
-    res.status(500).send(error);
+    next(error);
   }
 };
 
-export const getUserById = async (req, res) => {
-  const id = req.params.id;
-  let userById = await prismaClient.user.findFirst({
-    where: {
-      userId: parseInt(id),
-    },
-  });
-  res.status(200).send(userById);
-};
-
-export const addUser = async (req, res) => {
+export const getUserById = async (req, res, next) => {
   try {
-    const { username, email, password, name, avatar } = req.body;
-
-    let user = await prismaClient.user.findFirst({
+    const id = req.params.id;
+    let userById = await prismaClient.user.findFirst({
       where: {
-        username: username,
+        userId: parseInt(id),
       },
     });
-    if (user) {
-      res.status(400).send("user exist");
+    if (!userById) {
+      const error = new OperationalException("User not found", 404);
+      next(error);
     }
-    user = await prismaClient.user.create({
-      data: {
-        name,
-        username,
-        email,
-        password: hashSync(password, 10),
-        avatar,
-      },
-    });
-    res.status(200).send(user);
+    res.status(200).send(userById);
   } catch (error) {
-    res.status(500).send(error);
+    next(error);
   }
 };
 
-export const updateUser = async (req, res) => {
+export const addUser = async (req, res, next) => {
+  try {
+    let userRole = req.userRole;
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).send(result.array());
+    }
+    if (userRole == "Admin") {
+      try {
+        const { username, email, password, name, avatar } = req.body;
+
+        let user = await prismaClient.user.findFirst({
+          where: {
+            username: username,
+          },
+        });
+        if (user) {
+          const error = new OperationalException("User already exist", 400);
+          next(error);
+        }
+        user = await prismaClient.user.create({
+          data: {
+            name,
+            username,
+            email,
+            password: hashSync(password, 10),
+            avatar,
+          },
+        });
+        res.status(200).send(user);
+      } catch (error) {
+        next(error);
+      }
+    }
+    res.status(403).send("Not admin");
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUser = async (req, res, next) => {
   const id = req.params.id;
-  try {
-    const { username, email, password, name, avatar } = req.body;
-    let user = await prismaClient.user.update({
-      where: {
-        userId: parseInt(id),
-      },
-      data: {
-        name,
-        username,
-        email,
-        password: hashSync(password, 10),
-        avatar,
-      },
-    });
-    res.status(200).send(user);
-  } catch (error) {
-    res.status(500).send(error);
+  let userRole = req.userRole;
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array());
+  }
+  if (userRole == "Admin") {
+    try {
+      const { username, email, password, name, userRole, avatar } = req.body;
+      let user = await prismaClient.user.update({
+        where: {
+          userId: parseInt(id),
+        },
+        data: {
+          name,
+          username,
+          email,
+          password: hashSync(password, 10),
+          userRole,
+          avatar,
+        },
+      });
+      if (!user) {
+        const error = new OperationalException("User already exist", 400);
+        next(error);
+      }
+      res.status(200).send(user);
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    try {
+      const { username, email, password, name, avatar } = req.body;
+      let user = await prismaClient.user.update({
+        where: {
+          userId: parseInt(id),
+        },
+        data: {
+          name,
+          username,
+          email,
+          password: hashSync(password, 10),
+          avatar,
+        },
+      });
+      res.status(200).send(user);
+    } catch (error) {
+      next(error);
+    }
   }
 };
 
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res, next) => {
+  let userRole = req.userRole;
   const id = req.params.id;
-  try {
-    await prismaClient.user.delete({
-      where: {
-        userId: parseInt(id),
-      },
-    });
-    res.status(200).send("ok");
-  } catch (error) {
-    res.status(500).send(error);
+  if (userRole == "Admin") {
+    try {
+      await prismaClient.user.delete({
+        where: {
+          userId: parseInt(id),
+        },
+      });
+      res.status(200).send("ok");
+    } catch (error) {
+      next(error);
+    }
   }
 };
 
-export const saveProduct = async (req, res) => {
-  const productId = req.body.productId;
-  const tokenUserId = req.userId;
+export const saveProduct = async (req, res, next) => {
   try {
+    const productId = req.body.productId;
+    const tokenUserId = req.userId;
     const savedProduct = await prismaClient.productSaved.findUnique({
       where: {
         productId_userId: {
@@ -116,13 +171,13 @@ export const saveProduct = async (req, res) => {
       res.status(200).send("liked product");
     }
   } catch (error) {
-    throw new Error(error);
+    next(error);
   }
 };
 
-export const personalProduct = async (req, res) => {
-  const userId = req.params.userId;
+export const personalProduct = async (req, res, next) => {
   try {
+    const userId = req.params.userId;
     const userProduct = await prismaClient.product.findMany({
       where: {
         userId,
@@ -140,6 +195,6 @@ export const personalProduct = async (req, res) => {
     const savedProducts = saved.map((item) => item.product);
     res.status(200).send({ userProduct, savedProducts });
   } catch (error) {
-    res.status(500).send(error);
+    next(error);
   }
 };
