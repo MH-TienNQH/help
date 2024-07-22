@@ -8,7 +8,6 @@ import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
 dotenv.config();
 
-const refreshTokens = [];
 var deleteAfter15;
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
@@ -66,6 +65,13 @@ export const login = async (req, res, next) => {
     let user = await prismaClient.user.findFirst({
       where: {
         email,
+      },
+    });
+    const createTime = user.createdAt;
+    await prismaClient.user.deleteMany({
+      where: {
+        verified: false,
+        createdAt: createTime < now() - 15,
       },
     });
     if (!user) {
@@ -149,8 +155,6 @@ export const refresh = (req, res, next) => {
         process.env.JWT_REFRESH_KEY
       );
 
-      refreshTokens.push(newRefreshToken);
-
       res.status(200).json({
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
@@ -171,7 +175,6 @@ export const verifyEmail = async (req, res, next) => {
         verified: true,
       },
     });
-    clearTimeout(deleteAfter15);
     res.send("verified");
   } catch (error) {
     next(error);

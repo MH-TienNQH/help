@@ -1,11 +1,15 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+//cron
+import schedule from "node-schedule";
+
 import express from "express";
 import rootRouter from "./src/routes/index.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewares.js";
+import { deleteNotVerified } from "./src/utils/deleteNotVerified.js";
 
 const PORT = process.env.PORT;
 
@@ -28,4 +32,7 @@ app.get("/", (req, res) => {
     "PUT, POST, GET, DELETE, PATCH, OPTIONS"
   );
 });
+
+const deleteJob = schedule.scheduleJob("*/1 * * * *", deleteNotVerified);
+
 app.listen(PORT, () => `running on http://localhost:${PORT}`);
