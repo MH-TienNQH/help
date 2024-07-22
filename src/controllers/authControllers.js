@@ -8,8 +8,6 @@ import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
 dotenv.config();
 
-var deleteAfter15;
-
 export const signUp = asyncErrorHandler(async (req, res, next) => {
   let result = validationResult(req);
   if (!result.isEmpty()) {
@@ -40,14 +38,6 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
       "Verify your email",
       `<p> Verify your email <a href = "${process.env.APP_URL}/api/auth/verify/${email}">here</a></p>`
     );
-    console.log(`${process.env.APP_URL}/api/auth/verify/${email}"`);
-    deleteAfter15 = setTimeout(async function () {
-      await prismaClient.user.delete({
-        where: {
-          username,
-        },
-      });
-    }, 900000);
   } catch (error) {
     next(error);
   }
@@ -65,13 +55,6 @@ export const login = async (req, res, next) => {
     let user = await prismaClient.user.findFirst({
       where: {
         email,
-      },
-    });
-    const createTime = user.createdAt;
-    await prismaClient.user.deleteMany({
-      where: {
-        verified: false,
-        createdAt: createTime < now() - 15,
       },
     });
     if (!user) {
