@@ -6,10 +6,8 @@ import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
-
 dotenv.config();
 
-const refreshTokens = [];
 export const signUp = asyncErrorHandler(async (req, res, next) => {
   let result = validationResult(req);
   if (!result.isEmpty()) {
@@ -34,17 +32,14 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
       avatar,
     },
   });
-  if (user.verified == false) {
-    try {
-      sendMailTo(
-        email,
-        "Verify your email",
-        `<p> Verify your email <a href = "${process.env.APP_URL}/api/auth/verify/${email}">here</a></p>`
-      );
-      console.log(`${process.env.APP_URL}/api/auth/verify/${email}"`);
-    } catch (error) {
-      next(error);
-    }
+  try {
+    sendMailTo(
+      email,
+      "Verify your email",
+      `<p> Verify your email <a href = "${process.env.APP_URL}/api/auth/verify/${email}">here</a></p>`
+    );
+  } catch (error) {
+    next(error);
   }
 
   return res.status(200).send([user, result]);
@@ -143,8 +138,6 @@ export const refresh = (req, res, next) => {
         process.env.JWT_REFRESH_KEY
       );
 
-      refreshTokens.push(newRefreshToken);
-
       res.status(200).json({
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
@@ -157,7 +150,7 @@ export const refresh = (req, res, next) => {
 
 export const verifyEmail = async (req, res, next) => {
   try {
-    await prismaClient.user.update({
+    const user = await prismaClient.user.update({
       where: {
         email: req.params.email,
       },
