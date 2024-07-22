@@ -1,4 +1,6 @@
 import { Router } from "express";
+
+//controllers
 import {
   addProduct,
   deleteProduct,
@@ -6,7 +8,11 @@ import {
   getProductById,
   updateProduct,
 } from "../controllers/productController.js";
+
+//authentication middlewares
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
+
+//validation
 import { checkSchema } from "express-validator";
 import { addProductSchema } from "../schema/productSchema.js";
 

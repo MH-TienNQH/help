@@ -1,12 +1,13 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { refresh } from "../controllers/authControllers.js";
 
 dotenv.config();
 const verifyTokenMiddlewares = async (req, res, next) => {
   const accessToken = req.cookies.accessToken;
 
   if (!accessToken) {
-    return res.status(401).send("not authenticated");
+    refresh();
   }
 
   jwt.verify(accessToken, process.env.JWT_KEY, async (err, payload) => {
