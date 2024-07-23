@@ -11,12 +11,16 @@ const verifyTokenMiddlewares = async (req, res, next) => {
     }
 
     jwt.verify(accessToken, process.env.JWT_KEY, async (error, payload) => {
-      if (error) {
+      try {
+        if (error) {
+          next(error);
+        }
+        req.userId = payload.userId;
+        req.userRole = payload.userRole;
+        next();
+      } catch (error) {
         next(error);
       }
-      req.userId = payload.userId;
-      req.userRole = payload.userRole;
-      next();
     });
   } catch (error) {
     next(error);
