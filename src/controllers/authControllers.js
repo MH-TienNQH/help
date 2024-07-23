@@ -11,7 +11,7 @@ dotenv.config();
 export const signUp = asyncErrorHandler(async (req, res, next) => {
   let result = validationResult(req);
   if (!result.isEmpty()) {
-    return res.status(400).send(result.array());
+    return res.status(400).send(result.array(errors));
   }
   const { username, email, password, name, avatar } = req.body;
   let user = await prismaClient.user.findUnique({
@@ -78,21 +78,13 @@ export const login = async (req, res, next) => {
         userId: user.userId,
         userRole: user.role,
       },
-      process.env.JWT_REFRESH_KEY,
-      {
-        expiresIn: "1y",
-      }
+      process.env.JWT_REFRESH_KEY
     );
 
     const { password: userPassword, ...userInfo } = user;
     res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
-        maxAge: 900000, // 15 mins,
-      })
-      .cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        maxAge: 3.154e10, // 1 year,
       })
       .status(200)
       .send([
@@ -107,11 +99,8 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
   try {
-    res
-      .clearCookie("accessToken")
-      .clearCookie("refreshToken")
-      .status(200)
-      .send("logout ok");
+    const refreshToken = req.body.refreshToken;
+    res.clearCookie("accessToken").status(200).send("logout ok");
   } catch (error) {
     next(error);
   }
@@ -119,25 +108,34 @@ export const logout = async (req, res, next) => {
 
 export const refresh = (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.body.refreshToken;
     if (!refreshToken) {
       const error = new OperationalException("You are not authenticated", 401);
       next(error);
     }
+
     jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (error, user) => {
       error && next(error);
 
       const newAccessToken = jwt.sign(
         {
           userId: user.userId,
-          userRole: user.userRole,
+          userRole: user.role,
         },
         process.env.JWT_KEY,
         { expiresIn: "15m" }
       );
+      const newRefreshToken = jwt.sign(
+        {
+          userId: user.userId,
+          userRole: user.role,
+        },
+        process.env.JWT_REFRESH_KEY
+      );
 
       res.status(200).json({
         accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
       });
     });
   } catch (error) {
