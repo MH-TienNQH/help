@@ -33,7 +33,7 @@ export const addUser = async (req, res, next) => {
     let userRole = req.userRole;
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      return res.status(400).send(result.array());
+      return res.status(400).send(result.array({ onlyFirstError: true }));
     }
     if (userRole == "Admin") {
       try {
@@ -73,7 +73,7 @@ export const updateUser = async (req, res, next) => {
   let userRole = req.userRole;
   const result = validationResult(req);
   if (!result.isEmpty()) {
-    return res.status(400).send(result.array());
+    return res.status(400).send(result.array({ onlyFirstError: true }));
   }
   if (userRole == "Admin") {
     try {

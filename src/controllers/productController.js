@@ -48,7 +48,7 @@ export const addProduct = async (req, res, next) => {
   try {
     const result = validationResult(req);
     if (!result.isEmpty()) {
-      return res.status(400).send(result.array());
+      return res.status(400).send(result.array({ onlyFirstError: true }));
     }
     const { name, description, image, price, cover, categoryId } = req.body;
 
@@ -80,7 +80,7 @@ export const addProduct = async (req, res, next) => {
 export const updateProduct = async (req, res, next) => {
   const result = validationResult(req);
   if (!result.isEmpty()) {
-    return res.status(400).send(result.array());
+    return res.status(400).send(result.array({ onlyFirstError: true }));
   }
   const productId = req.params.id;
   const { name, description, image, price, cover, categoryId } = req.body;
