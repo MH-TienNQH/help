@@ -118,7 +118,7 @@ export const logout = async (req, res, next) => {
 
 export const refresh = (req, res, next) => {
   try {
-    const refreshToken = req.body.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       const error = new OperationalException("You are not authenticated", 401);
       next(error);
