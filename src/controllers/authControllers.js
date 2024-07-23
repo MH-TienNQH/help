@@ -85,6 +85,11 @@ export const login = async (req, res, next) => {
     res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
+        maxAge: 90000,
+      })
+      .cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        maxAge: 3.154e10,
       })
       .status(200)
       .send([
@@ -100,7 +105,11 @@ export const login = async (req, res, next) => {
 export const logout = async (req, res, next) => {
   try {
     const refreshToken = req.body.refreshToken;
-    res.clearCookie("accessToken").status(200).send("logout ok");
+    res
+      .clearCookie("accessToken")
+      .clearCookie("refreshToken")
+      .status(200)
+      .send("logout ok");
   } catch (error) {
     next(error);
   }
@@ -130,7 +139,8 @@ export const refresh = (req, res, next) => {
           userId: user.userId,
           userRole: user.role,
         },
-        process.env.JWT_REFRESH_KEY
+        process.env.JWT_REFRESH_KEY,
+        { expiresIn: "1y" }
       );
 
       res.status(200).json({
