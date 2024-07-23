@@ -88,11 +88,11 @@ export const login = async (req, res, next) => {
     res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
-        maxAge: 900000,
+        maxAge: 900000, // 15 mins,
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        maxAge: 3.154e10,
+        maxAge: 3.154e10, // 1 year,
       })
       .status(200)
       .send([

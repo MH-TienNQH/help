@@ -5,7 +5,8 @@ const verifyTokenMiddlewares = async (req, res, next) => {
   const accessToken = req.cookies.accessToken;
 
   if (!accessToken) {
-    return res.status(403).send("not authenticated");
+    const error = new OperationalException("You are not authenticated", 401);
+    next(error);
   }
 
   jwt.verify(accessToken, process.env.JWT_KEY, async (error, payload) => {
