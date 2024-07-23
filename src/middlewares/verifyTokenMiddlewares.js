@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 const verifyTokenMiddlewares = async (req, res, next) => {
   const accessToken = req.cookies.accessToken;
