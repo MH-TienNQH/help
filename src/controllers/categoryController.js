@@ -34,7 +34,7 @@ export const addCategory = async (req, res, next) => {
   try {
     let result = validationResult(req);
     if (!result.isEmpty()) {
-      return res.status(400).send(result.array());
+      return res.status(400).send(result.array({ onlyFirstError: true }));
     }
     let userRole = req.userRole;
     if (userRole == "Admin") {
@@ -70,7 +70,7 @@ export const updateCategory = async (req, res, next) => {
   try {
     let result = validationResult(req);
     if (!result.isEmpty()) {
-      return res.status(400).send(result.array());
+      return res.status(400).send(result.array({ onlyFirstError: true }));
     }
     let userRole = req.userRole;
     if (userRole == "Admin") {
