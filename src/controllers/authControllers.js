@@ -78,7 +78,8 @@ export const login = async (req, res, next) => {
         userId: user.userId,
         userRole: user.role,
       },
-      process.env.JWT_REFRESH_KEY
+      process.env.JWT_REFRESH_KEY,
+      { expiresIn: "1y" }
     );
 
     const { password: userPassword, ...userInfo } = user;
@@ -104,7 +105,7 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
   try {
-    const refreshToken = req.body.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     res
       .clearCookie("accessToken")
       .clearCookie("refreshToken")
@@ -117,7 +118,7 @@ export const logout = async (req, res, next) => {
 
 export const refresh = (req, res, next) => {
   try {
-    const refreshToken = req.body.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       const error = new OperationalException("You are not authenticated", 401);
       next(error);
