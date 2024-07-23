@@ -78,13 +78,18 @@ export const login = async (req, res, next) => {
         userId: user.userId,
         userRole: user.role,
       },
-      process.env.JWT_REFRESH_KEY
+      process.env.JWT_REFRESH_KEY,
+      {
+        expiresIn: "1y",
+      }
     );
-    refreshTokens.push(refreshToken);
 
     const { password: userPassword, ...userInfo } = user;
     res
       .cookie("accessToken", accessToken, {
+        httpOnly: true,
+      })
+      .cookie("refreshToken", refreshToken, {
         httpOnly: true,
       })
       .status(200)
@@ -100,8 +105,11 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
   try {
-    const refreshToken = req.body.refreshToken;
-    res.clearCookie("accessToken").status(200).send("logout ok");
+    res
+      .clearCookie("accessToken")
+      .clearCookie("refreshToken")
+      .status(200)
+      .send("logout ok");
   } catch (error) {
     next(error);
   }
@@ -109,38 +117,25 @@ export const logout = async (req, res, next) => {
 
 export const refresh = (req, res, next) => {
   try {
-    const refreshToken = req.body.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       const error = new OperationalException("You are not authenticated", 401);
       next(error);
     }
-    if (!refreshTokens.includes(refreshToken)) {
-      const error = new OperationalException("Refresh token is not valid", 403);
-      next(error);
-    }
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
-      err && console.log(err);
-      refreshTokens == refreshTokens.filter((token) => token !== refreshToken);
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (error, user) => {
+      error && next(error);
 
       const newAccessToken = jwt.sign(
         {
           userId: user.userId,
-          userRole: user.role,
+          userRole: user.userRole,
         },
         process.env.JWT_KEY,
         { expiresIn: "15m" }
       );
-      const newRefreshToken = jwt.sign(
-        {
-          userId: user.userId,
-          userRole: user.role,
-        },
-        process.env.JWT_REFRESH_KEY
-      );
 
       res.status(200).json({
         accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
       });
     });
   } catch (error) {
