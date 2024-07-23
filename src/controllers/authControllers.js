@@ -105,7 +105,7 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
   try {
-    const refreshToken = req.body.refreshToken;
+    const refreshToken = req.cookies.refreshToken;
     res
       .clearCookie("accessToken")
       .clearCookie("refreshToken")
