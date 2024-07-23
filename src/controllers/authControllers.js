@@ -78,7 +78,8 @@ export const login = async (req, res, next) => {
         userId: user.userId,
         userRole: user.role,
       },
-      process.env.JWT_REFRESH_KEY
+      process.env.JWT_REFRESH_KEY,
+      { expiresIn: "1y" }
     );
 
     const { password: userPassword, ...userInfo } = user;
