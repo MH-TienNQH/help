@@ -1,18 +1,17 @@
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { refresh } from "../controllers/authControllers.js";
 
-dotenv.config();
 const verifyTokenMiddlewares = async (req, res, next) => {
   const accessToken = req.cookies.accessToken;
 
   if (!accessToken) {
-    refresh();
+    const error = new OperationalException("You are not authenticated", 401);
+    next(error);
   }
 
-  jwt.verify(accessToken, process.env.JWT_KEY, async (err, payload) => {
-    if (err) {
-      return res.status(403).send("access token not valid");
+  jwt.verify(accessToken, process.env.JWT_KEY, async (error, payload) => {
+    if (error) {
+      next(error);
     }
     req.userId = payload.userId;
     req.userRole = payload.userRole;
