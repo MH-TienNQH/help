@@ -20,5 +20,5 @@ authRoutes.post(
   verifyTokenMiddlewares
 );
 authRoutes.post("/logout", logout);
-authRoutes.post("/refresh-token", refresh);
+authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);

@@ -11,7 +11,7 @@ dotenv.config();
 export const signUp = asyncErrorHandler(async (req, res, next) => {
   let result = validationResult(req);
   if (!result.isEmpty()) {
-    return res.status(400).send(result.array());
+    return res.status(400).send(result.array({ onlyFirstError: true }));
   }
   const { username, email, password, name, avatar } = req.body;
   let user = await prismaClient.user.findUnique({
@@ -49,7 +49,7 @@ export const login = async (req, res, next) => {
   try {
     let result = validationResult(req);
     if (!result.isEmpty()) {
-      return res.status(400).send(result.array());
+      return res.status(400).send(result.array({ onlyFirstError: true }));
     }
     const { email, password } = req.body;
     let user = await prismaClient.user.findFirst({
@@ -80,7 +80,6 @@ export const login = async (req, res, next) => {
       },
       process.env.JWT_REFRESH_KEY
     );
-    refreshTokens.push(refreshToken);
 
     const { password: userPassword, ...userInfo } = user;
     res
@@ -114,13 +113,9 @@ export const refresh = (req, res, next) => {
       const error = new OperationalException("You are not authenticated", 401);
       next(error);
     }
-    if (!refreshTokens.includes(refreshToken)) {
-      const error = new OperationalException("Refresh token is not valid", 403);
-      next(error);
-    }
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
-      err && console.log(err);
-      refreshTokens == refreshTokens.filter((token) => token !== refreshToken);
+
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (error, user) => {
+      error && next(error);
 
       const newAccessToken = jwt.sign(
         {
