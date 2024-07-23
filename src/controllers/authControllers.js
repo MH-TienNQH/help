@@ -88,9 +88,11 @@ export const login = async (req, res, next) => {
     res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
+        maxAge: 900000,
       })
       .cookie("refreshToken", refreshToken, {
         httpOnly: true,
+        maxAge: 3.154e10,
       })
       .status(200)
       .send([
