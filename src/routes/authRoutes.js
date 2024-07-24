@@ -15,5 +15,5 @@ export const authRoutes = Router();
 authRoutes.post("/signup", checkSchema(signUpSchema), signUp);
 authRoutes.post("/login", checkSchema(loginSchema), login);
 authRoutes.post("/logout", logout);
-authRoutes.get("/refresh", verifyTokenMiddlewares, refresh);
+authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
