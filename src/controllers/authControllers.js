@@ -169,3 +169,57 @@ export const verifyEmail = async (req, res, next) => {
     next(error);
   }
 };
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    let user = await prismaClient.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      const error = new OperationalException("Email doesn't exist", 401);
+      next(error);
+    }
+    const token = jwt.sign({ userId: user.userId }, process.env.JWT_KEY, {
+      expiresIn: "15m",
+    });
+    try {
+      sendMailTo(
+        email,
+        "Change your lost password",
+        `<p> Have you forgotten your password, if so click <a href = "${process.env.APP_URL}/api/auth/reset-password/${user.userId}/${token}">here</a></p>`
+      );
+    } catch (error) {
+      next(error);
+    }
+    res.status(200).send(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  const { userId, token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const verify = jwt.verify(token, process.env.JWT_KEY);
+    if (!verify) {
+      const error = new Error("invalid token", 403);
+    }
+
+    await prismaClient.user.update({
+      where: {
+        userId: parseInt(userId),
+      },
+      data: {
+        password: hashSync(newPassword, 10),
+      },
+    });
+    res.status(200).send("ok");
+  } catch (error) {
+    next(error);
+  }
+};

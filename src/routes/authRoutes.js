@@ -1,8 +1,10 @@
 import { Router } from "express";
 import {
+  forgotPassword,
   login,
   logout,
   refresh,
+  resetPassword,
   signUp,
   verifyEmail,
 } from "../controllers/authControllers.js";
@@ -17,3 +19,5 @@ authRoutes.post("/login", checkSchema(loginSchema), login);
 authRoutes.post("/logout", logout);
 authRoutes.get("/refresh", verifyTokenMiddlewares, refresh);
 authRoutes.get("/verify/:email", verifyEmail);
+authRoutes.get("/forgot-password", forgotPassword);
+authRoutes.get("/reset-password/:userId/:token", resetPassword);
