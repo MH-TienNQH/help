@@ -32,6 +32,7 @@ categoryRoutes.put(
   "/update/:id",
   checkSchema(addCategorySchema),
   verifyTokenMiddlewares,
+  adminMiddlewares,
   updateCategory
 );
 categoryRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteCategory);
