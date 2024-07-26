@@ -87,7 +87,7 @@ export const updateProduct = async (req, res, next) => {
   try {
     let product = await prismaClient.product.update({
       where: {
-        productId,
+        productId: parseInt(productId),
       },
       data: {
         name,
