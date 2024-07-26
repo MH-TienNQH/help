@@ -147,7 +147,7 @@ export const getSellingProduct = async (req, res, next) => {
 export const getNewestProduct = async (req, res, next) => {
   try {
     let products = await prismaClient.product.findMany({
-      where: {
+      orderBy: {
         createdAt: "desc",
       },
     });
