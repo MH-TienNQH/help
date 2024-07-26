@@ -4,6 +4,7 @@ import { Router } from "express";
 import {
   addProduct,
   deleteProduct,
+  get3TrendingProduct,
   getAllProduct,
   getProductById,
   updateProduct,
@@ -20,6 +21,7 @@ export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
 productRoutes.get("/get-by-id/:id", getProductById);
+productRoutes.get("/get-trending-products", get3TrendingProduct);
 productRoutes.post(
   "/add-product",
   checkSchema(addProductSchema),
