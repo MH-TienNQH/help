@@ -6,6 +6,7 @@ import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
+import { error } from "console";
 dotenv.config();
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
@@ -170,8 +171,12 @@ export const verifyEmail = async (req, res, next) => {
   }
 };
 
-export const forgotPassword = async (req, res, next) => {
+export const forgotPassword = async (forgetPasswordUrl, req, res, next) => {
   try {
+    let result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.status(400).send(result.array({ onlyFirstError: true }));
+    }
     const { email } = req.body;
     let user = await prismaClient.user.findUnique({
       where: {
@@ -189,7 +194,7 @@ export const forgotPassword = async (req, res, next) => {
       sendMailTo(
         email,
         "Change your lost password",
-        `<p> Have you forgotten your password, if so click <a href = "${process.env.APP_URL}/api/auth/reset-password/${user.userId}/${token}">here</a></p>`
+        `<p> Have you forgotten your password, if so click <a href = "${forgetPasswordUrl}/${token}">here</a></p>`
       );
     } catch (error) {
       next(error);
@@ -201,24 +206,31 @@ export const forgotPassword = async (req, res, next) => {
 };
 
 export const resetPassword = async (req, res, next) => {
-  const { userId, token } = req.params;
+  let result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array({ onlyFirstError: true }));
+  }
+  const { token } = req.params;
   const { newPassword } = req.body;
-
   try {
-    const verify = jwt.verify(token, process.env.JWT_KEY);
-    if (!verify) {
-      const error = new Error("invalid token", 403);
-    }
-
-    await prismaClient.user.update({
-      where: {
-        userId: parseInt(userId),
-      },
-      data: {
-        password: hashSync(newPassword, 10),
-      },
+    jwt.verify(token, process.env.JWT_KEY, async (error, payload) => {
+      try {
+        if (error) {
+          next(error);
+        }
+        await prismaClient.user.update({
+          where: {
+            userId: payload.userId,
+          },
+          data: {
+            password: hashSync(newPassword, 10),
+          },
+        });
+        res.status(200).send("ok");
+      } catch (error) {
+        next(error);
+      }
     });
-    res.status(200).send("ok");
   } catch (error) {
     next(error);
   }

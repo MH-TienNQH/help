@@ -10,7 +10,12 @@ import {
 } from "../controllers/authControllers.js";
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 import { checkSchema } from "express-validator";
-import { loginSchema, signUpSchema } from "../schema/userSchema.js";
+import {
+  emailSchema,
+  loginSchema,
+  passwordSchema,
+  signUpSchema,
+} from "../schema/userSchema.js";
 
 export const authRoutes = Router();
 
@@ -19,5 +24,9 @@ authRoutes.post("/login", checkSchema(loginSchema), login);
 authRoutes.post("/logout", logout);
 authRoutes.get("/refresh", verifyTokenMiddlewares, refresh);
 authRoutes.get("/verify/:email", verifyEmail);
-authRoutes.get("/forgot-password", forgotPassword);
-authRoutes.get("/reset-password/:userId/:token", resetPassword);
+authRoutes.get("/forgot-password", checkSchema(emailSchema), forgotPassword);
+authRoutes.get(
+  "/reset-password/:userId/:token",
+  checkSchema(passwordSchema),
+  resetPassword
+);
