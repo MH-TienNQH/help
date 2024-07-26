@@ -130,3 +130,42 @@ export const deleteProduct = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getSellingProduct = async (req, res, next) => {
+  try {
+    let products = await prismaClient.product.findMany({
+      where: {
+        status: "Selling",
+      },
+    });
+    res.status(200).send(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getNewestProduct = async (req, res, next) => {
+  try {
+    let products = await prismaClient.product.findMany({
+      where: {
+        createdAt: "desc",
+      },
+    });
+    res.status(200).send(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSoldProduct = async (req, res, next) => {
+  try {
+    let products = await prismaClient.product.findMany({
+      where: {
+        status: "Sold",
+      },
+    });
+    res.status(200).send(products);
+  } catch (error) {
+    next(error);
+  }
+};
