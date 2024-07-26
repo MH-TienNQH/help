@@ -5,7 +5,10 @@ import {
   addProduct,
   deleteProduct,
   getAllProduct,
+  getNewestProduct,
   getProductById,
+  getSellingProduct,
+  getSoldProduct,
   getThreeTrendingProduct,
   updateProduct,
 } from "../controllers/productController.js";
@@ -22,6 +25,9 @@ export const productRoutes = Router();
 productRoutes.get("/get-all", getAllProduct);
 productRoutes.get("/get-by-id/:id", getProductById);
 productRoutes.get("/get-trending-products", getThreeTrendingProduct);
+productRoutes.get("/selling-products", getSellingProduct);
+productRoutes.get("/sold-products", getSoldProduct);
+productRoutes.get("/newest", getNewestProduct);
 productRoutes.post(
   "/add-product",
   checkSchema(addProductSchema),
