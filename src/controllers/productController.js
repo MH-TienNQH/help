@@ -2,13 +2,14 @@ import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
+import { responseFormat } from "../utils/responseFormat.js";
 
 dotenv.config();
 
 export const getAllProduct = async (req, res, next) => {
   try {
-    let products = await prismaClient.product.findMany();
-    res.status(200).send(products);
+    let products = await prismaClient.product.findMany({});
+    res.send(new responseFormat(200, true, products));
   } catch (error) {
     next(error);
   }
@@ -41,7 +42,11 @@ export const getProductById = async (req, res, next) => {
             },
           },
         });
-        res.status(200).json({ ...product, isSaved: saved ? true : false });
+        res.send(
+          new responseFormat(200, true, [
+            { ...product, isSaved: saved ? true : false },
+          ])
+        );
       });
     }
   } catch (error) {
@@ -76,7 +81,7 @@ export const addProduct = async (req, res, next) => {
         },
       },
     });
-    res.status(200).send(product);
+    res.send(new responseFormat(200, true, [product.name, "product created"]));
   } catch (error) {
     next(error);
   }
@@ -116,7 +121,7 @@ export const updateProduct = async (req, res, next) => {
       const error = new OperationalException("Product not found", 404);
       next(error);
     }
-    res.status(200).send(product);
+    res.send(new responseFormat(200, true, [product.name, "product updated"]));
   } catch (error) {
     next(error);
   }
@@ -130,7 +135,7 @@ export const deleteProduct = async (req, res, next) => {
         productId,
       },
     });
-    res.status(200).send("ok");
+    res.send(new responseFormat(200, true, ["product deleted"]));
   } catch (error) {
     next(error);
   }
@@ -152,7 +157,7 @@ export const getThreeTrendingProduct = async (req, res, next) => {
       },
       take: 3,
     });
-    res.status(200).send(products);
+    res.send(new responseFormat(200, true, products));
   } catch (error) {
     next(error);
   }
@@ -164,7 +169,7 @@ export const getSellingProduct = async (req, res, next) => {
         status: "Selling",
       },
     });
-    res.status(200).send(products);
+    res.send(new responseFormat(200, true, products));
   } catch (error) {
     next(error);
   }
@@ -177,7 +182,7 @@ export const getNewestProduct = async (req, res, next) => {
         createdAt: "desc",
       },
     });
-    res.status(200).send(products);
+    res.send(new responseFormat(200, true, products));
   } catch (error) {
     next(error);
   }
@@ -190,7 +195,7 @@ export const getSoldProduct = async (req, res, next) => {
         status: "Sold",
       },
     });
-    res.status(200).send(products);
+    res.send(new responseFormat(200, true, products));
   } catch (error) {
     next(error);
   }

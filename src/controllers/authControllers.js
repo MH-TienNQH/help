@@ -6,6 +6,7 @@ import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
+import { responseFormat } from "../utils/responseFormat.js";
 dotenv.config();
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
@@ -42,7 +43,7 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
     next(error);
   }
 
-  return res.status(200).send([user, result]);
+  return res.send(new responseFormat(200, true, user));
 });
 
 export const login = async (req, res, next) => {
@@ -92,11 +93,12 @@ export const login = async (req, res, next) => {
         httpOnly: true,
         maxAge: 3.154e10,
       })
-      .status(200)
       .send([
-        userInfo,
-        { accessToken: accessToken },
-        { refreshToken: refreshToken },
+        new responseFormat(200, true, [
+          userInfo,
+          { accessToken: accessToken },
+          { refreshToken: refreshToken },
+        ]),
       ]);
   } catch (error) {
     next(error);
@@ -109,8 +111,7 @@ export const logout = async (req, res, next) => {
     res
       .clearCookie("accessToken")
       .clearCookie("refreshToken")
-      .status(200)
-      .send("logout ok");
+      .send(new responseFormat(200, true, "logged out"));
   } catch (error) {
     next(error);
   }
@@ -144,10 +145,14 @@ export const refresh = (req, res, next) => {
         { expiresIn: "1y" }
       );
 
-      res.status(200).json({
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      });
+      res.send(
+        new responseFormat(200, true, [
+          {
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+          },
+        ])
+      );
     });
   } catch (error) {
     next(error);

@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { responseFormat } from "../utils/responseFormat.js";
 
 export const getAllCategory = async (req, res, next) => {
   try {
@@ -84,7 +85,7 @@ export const updateCategory = async (req, res, next) => {
         const error = new OperationalException("Category not found", 403);
         next(error);
       }
-      res.status(200).send(category);
+      res.send(new responseFormat(200, true, category));
     } catch (error) {
       next(error);
     }
@@ -104,7 +105,7 @@ export const deleteCategory = async (req, res, next) => {
             categoryId: parseInt(id),
           },
         });
-        res.status(200).send("ok");
+        res.send(new responseFormat(200, true, "category deleted"));
       } catch (error) {
         next(error);
       }
