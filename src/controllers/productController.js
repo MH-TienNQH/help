@@ -19,26 +19,23 @@ export const getProductById = async (req, res, next) => {
     const productId = req.params.id;
     let product = await prismaClient.product.findFirst({
       where: {
-        productId,
-      },
-    });
+        productId: parseInt(productId),
+      }
     const accessToken = req.cookies.accessToken;
     if (accessToken) {
-      jwt.verify(accessToken, process.env.JWT_KEY, async (err, payload) => {
-        if (!err) {
-          const saved = await prismaClient.productSaved.findUnique({
-            where: {
-              productId_userId: {
-                productId,
-                userId: payload.userId,
-              },
+      jwt.verify(accessToken, process.env.JWT_KEY, async (error, payload) => {
+        if (error) next(error);
+        const saved = await prismaClient.productSaved.findUnique({
+          where: {
+            productId_userId: {
+              productId: parseInt(productId),
+              userId: payload.userId,
             },
-          });
-          res.status(200).json({ ...product, isSaved: saved ? true : false });
-        }
+          },
+        });
+        res.status(200).json({ ...product, isSaved: saved ? true : false });
       });
     }
-    res.status(200).send(product);
   } catch (error) {
     next(error);
   }
@@ -126,45 +123,6 @@ export const deleteProduct = async (req, res, next) => {
       },
     });
     res.status(200).send("ok");
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getSellingProduct = async (req, res, next) => {
-  try {
-    let products = await prismaClient.product.findMany({
-      where: {
-        status: "Selling",
-      },
-    });
-    res.status(200).send(products);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getNewestProduct = async (req, res, next) => {
-  try {
-    let products = await prismaClient.product.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    res.status(200).send(products);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getSoldProduct = async (req, res, next) => {
-  try {
-    let products = await prismaClient.product.findMany({
-      where: {
-        status: "Sold",
-      },
-    });
-    res.status(200).send(products);
   } catch (error) {
     next(error);
   }
