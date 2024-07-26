@@ -36,6 +36,7 @@ model User {
   ProductSaved ProductSaved[]
   chats        Chat[]
   createdAt    DateTime       @default(now())
+  ProductLiked ProductLiked[]
 }
 
 model Chat {
@@ -68,7 +69,9 @@ model Product {
   userId       Int?
   author       User?          @relation(fields: [userId], references: [userId])
   createdAt    DateTime       @default(now())
+  soldAt       DateTime?
   ProductSaved ProductSaved[]
+  likeNumber   ProductLiked[]
 }
 
 model Category {
@@ -78,6 +81,15 @@ model Category {
 }
 
 model ProductSaved {
+  productId Int
+  product   Product @relation(fields: [productId], references: [productId])
+  userId    Int
+  user      User    @relation(fields: [userId], references: [userId])
+
+  @@unique([productId, userId])
+}
+
+model ProductLiked {
   productId Int
   product   Product @relation(fields: [productId], references: [productId])
   userId    Int

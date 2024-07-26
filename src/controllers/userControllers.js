@@ -199,3 +199,39 @@ export const personalProduct = async (req, res, next) => {
     next(error);
   }
 };
+export const likeProduct = async (req, res, next) => {
+  try {
+    const productId = req.body.productId;
+    const tokenUserId = req.userId;
+    const likedProduct = await prismaClient.productLiked.findUnique({
+      where: {
+        productId_userId: {
+          userId: tokenUserId,
+          productId,
+        },
+      },
+    });
+
+    if (likedProduct) {
+      await prismaClient.productLiked.delete({
+        where: {
+          productId_userId: {
+            userId: tokenUserId,
+            productId,
+          },
+        },
+      });
+      res.status(200).send("unliked");
+    } else {
+      await prismaClient.productLiked.create({
+        data: {
+          userId: tokenUserId,
+          productId,
+        },
+      });
+      res.status(200).send("liked product");
+    }
+  } catch (error) {
+    next(error);
+  }
+};

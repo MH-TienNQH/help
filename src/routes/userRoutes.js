@@ -6,6 +6,7 @@ import {
   deleteUser,
   getAllUser,
   getUserById,
+  likeProduct,
   personalProduct,
   saveProduct,
   updateUser,
@@ -44,3 +45,4 @@ userRoutes.delete(
 );
 userRoutes.post("/save-product", verifyTokenMiddlewares, saveProduct);
 userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
+userRoutes.post("/like-product", verifyTokenMiddlewares, likeProduct);
