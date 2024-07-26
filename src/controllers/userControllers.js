@@ -1,3 +1,4 @@
+import { validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
 import { hashSync } from "bcrypt";
 
