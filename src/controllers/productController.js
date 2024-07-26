@@ -20,8 +20,7 @@ export const getProductById = async (req, res, next) => {
     let product = await prismaClient.product.findFirst({
       where: {
         productId: parseInt(productId),
-      },
-    });
+      }
     const accessToken = req.cookies.accessToken;
     if (accessToken) {
       jwt.verify(accessToken, process.env.JWT_KEY, async (error, payload) => {
@@ -124,6 +123,28 @@ export const deleteProduct = async (req, res, next) => {
       },
     });
     res.status(200).send("ok");
+  } catch (error) {
+    next(error);
+  }
+};
+export const getThreeTrendingProduct = async (req, res, next) => {
+  try {
+    let products = await prismaClient.product.findMany({
+      include: {
+        _count: {
+          select: {
+            likeNumber: true,
+          },
+        },
+      },
+      orderBy: {
+        likeNumber: {
+          _count: "desc",
+        },
+      },
+      take: 3,
+    });
+    res.status(200).send(products);
   } catch (error) {
     next(error);
   }
