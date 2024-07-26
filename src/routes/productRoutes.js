@@ -5,8 +5,8 @@ import {
   addProduct,
   deleteProduct,
   getAllProduct,
+  getNewestProduct,
   getProductById,
-  getThreeTrendingProduct,
   updateProduct,
 } from "../controllers/productController.js";
 
@@ -21,7 +21,6 @@ export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
 productRoutes.get("/get-by-id/:id", getProductById);
-productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.post(
   "/add-product",
   checkSchema(addProductSchema),
