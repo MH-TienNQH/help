@@ -1,11 +1,13 @@
 import { validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
 import { hashSync } from "bcrypt";
+import { responseFormat } from "../utils/responseFormat.js";
+import { userInfo } from "os";
 
 export const getAllUser = async (req, res, next) => {
   try {
     let users = await prismaClient.user.findMany();
-    res.status(200).send(users);
+    res.send(new responseFormat(200, true, users));
   } catch (error) {
     next(error);
   }
@@ -23,7 +25,7 @@ export const getUserById = async (req, res, next) => {
       const error = new OperationalException("User not found", 404);
       next(error);
     }
-    res.status(200).send(userById);
+    res.send(new responseFormat(200, true, userById.email));
   } catch (error) {
     next(error);
   }
@@ -58,7 +60,7 @@ export const addUser = async (req, res, next) => {
             avatar,
           },
         });
-        res.status(200).send(user);
+        res.send(new responseFormat(200, true, [user.email, "user created"]));
       } catch (error) {
         next(error);
       }
@@ -96,7 +98,7 @@ export const updateUser = async (req, res, next) => {
         const error = new OperationalException("User already exist", 400);
         next(error);
       }
-      res.status(200).send(user);
+      res.send(new responseFormat(200, true, [user.email, "user updated"]));
     } catch (error) {
       next(error);
     }
@@ -115,7 +117,7 @@ export const updateUser = async (req, res, next) => {
           avatar,
         },
       });
-      res.status(200).send(user);
+      res.send(new responseFormat(200, true, [user.email, "user updated"]));
     } catch (error) {
       next(error);
     }
@@ -132,7 +134,7 @@ export const deleteUser = async (req, res, next) => {
           userId: parseInt(id),
         },
       });
-      res.status(200).send("ok");
+      res.send(new responseFormat(200, true, "user deleted"));
     } catch (error) {
       next(error);
     }
@@ -161,7 +163,7 @@ export const saveProduct = async (req, res, next) => {
           },
         },
       });
-      res.status(200).send("unliked");
+      res.send(new responseFormat(200, true, "saved product"));
     } else {
       await prismaClient.productSaved.create({
         data: {
@@ -169,7 +171,7 @@ export const saveProduct = async (req, res, next) => {
           productId,
         },
       });
-      res.status(200).send("liked product");
+      res.send(new responseFormat(200, true, "unsaved product"));
     }
   } catch (error) {
     next(error);
@@ -194,7 +196,11 @@ export const personalProduct = async (req, res, next) => {
     });
 
     const savedProducts = saved.map((item) => item.product);
-    res.status(200).send({ userProduct, savedProducts });
+    res.send(
+      new responseFormat(200, true, [
+        { userProduct: userProduct, savedProducts: savedProducts },
+      ])
+    );
   } catch (error) {
     next(error);
   }
@@ -221,7 +227,7 @@ export const likeProduct = async (req, res, next) => {
           },
         },
       });
-      res.status(200).send("unliked");
+      res.send(new responseFormat(200, true, "unliked product"));
     } else {
       await prismaClient.productLiked.create({
         data: {
@@ -229,7 +235,7 @@ export const likeProduct = async (req, res, next) => {
           productId,
         },
       });
-      res.status(200).send("liked product");
+      res.send(new responseFormat(200, true, "liked product"));
     }
   } catch (error) {
     next(error);
