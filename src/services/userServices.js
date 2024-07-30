@@ -80,3 +80,32 @@ export const saveProduct = async (userId, productId) => {
     });
   }
 };
+
+export const likeProduct = async (userId, productId) => {
+  const likedProduct = await prismaClient.productLiked.findUnique({
+    where: {
+      productId_userId: {
+        userId,
+        productId,
+      },
+    },
+  });
+
+  if (likedProduct) {
+    await prismaClient.productLiked.delete({
+      where: {
+        productId_userId: {
+          userId,
+          productId,
+        },
+      },
+    });
+  } else {
+    await prismaClient.productLiked.create({
+      data: {
+        userId,
+        productId,
+      },
+    });
+  }
+};

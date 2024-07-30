@@ -7,6 +7,8 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
 import { responseFormat } from "../utils/responseFormat.js";
+import * as authServices from "../services/authServices.js";
+
 dotenv.config();
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
@@ -14,35 +16,26 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
   if (!result.isEmpty()) {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
-  const { username, email, password, name, avatar } = req.body;
-  let user = await prismaClient.user.findUnique({
+  const data = req.body;
+  let user = await prismaClient.user.findFirst({
     where: {
-      username,
+      username: data.username,
     },
   });
   if (user) {
     const error = new OperationalException("User already exist", 400);
     next(error);
   }
-  user = await prismaClient.user.create({
-    data: {
-      name,
-      username,
-      email,
-      password: hashSync(password, 10),
-      avatar,
-    },
-  });
+  user = await userServices.addUser(data);
   try {
     sendMailTo(
-      email,
+      data.email,
       "Verify your email",
-      `<p> Verify your email <a href = "${process.env.APP_URL}/api/auth/verify/${email}">here</a></p>`
+      `<p> Verify your email <a href = "${process.env.APP_URL}/api/auth/verify/${data.email}">here</a></p>`
     );
   } catch (error) {
     next(error);
   }
-
   return res.send(new responseFormat(200, true, user));
 });
 
@@ -108,7 +101,6 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
     res
       .clearCookie("accessToken")
       .clearCookie("refreshToken")
@@ -162,14 +154,8 @@ export const refresh = (req, res, next) => {
 
 export const verifyEmail = async (req, res, next) => {
   try {
-    const user = await prismaClient.user.update({
-      where: {
-        email: req.params.email,
-      },
-      data: {
-        verified: true,
-      },
-    });
+    let email = req.params.email;
+    await authServices.verifyEmail(email);
     res.send("verified");
   } catch (error) {
     next(error);

@@ -106,7 +106,7 @@ export const saveProduct = async (req, res, next) => {
 
 export const personalProduct = async (req, res, next) => {
   try {
-    const userId = req.params.userId;
+    const userId = parseInt(req.params.id);
     const userProduct = await prismaClient.product.findMany({
       where: {
         userId,
@@ -133,36 +133,13 @@ export const personalProduct = async (req, res, next) => {
 };
 export const likeProduct = async (req, res, next) => {
   try {
-    const productId = req.params.productId;
-    const tokenUserId = req.userId;
-    const likedProduct = await prismaClient.productLiked.findUnique({
-      where: {
-        productId_userId: {
-          userId: tokenUserId,
-          productId,
-        },
-      },
-    });
-
-    if (likedProduct) {
-      await prismaClient.productLiked.delete({
-        where: {
-          productId_userId: {
-            userId: tokenUserId,
-            productId,
-          },
-        },
-      });
-      res.send(new responseFormat(200, true, "unliked product"));
-    } else {
-      await prismaClient.productLiked.create({
-        data: {
-          userId: tokenUserId,
-          productId,
-        },
-      });
+    const productId = parseInt(req.params.id);
+    const userId = req.userId;
+    const liked = await userServices.likeProduct(userId, productId);
+    if (save) {
       res.send(new responseFormat(200, true, "liked product"));
     }
+    res.send(new responseFormat(200, true, "unliked product"));
   } catch (error) {
     next(error);
   }
