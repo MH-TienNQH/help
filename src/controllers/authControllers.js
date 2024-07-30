@@ -6,7 +6,6 @@ import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
-import { error } from "console";
 dotenv.config();
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
@@ -43,7 +42,7 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
     next(error);
   }
 
-  return res.status(200).send([user, result]);
+  return res.send(new responseFormat(200, true, user));
 });
 
 export const login = async (req, res, next) => {
@@ -84,6 +83,7 @@ export const login = async (req, res, next) => {
     );
 
     const { password: userPassword, ...userInfo } = user;
+
     res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
@@ -93,11 +93,12 @@ export const login = async (req, res, next) => {
         httpOnly: true,
         maxAge: 3.154e10,
       })
-      .status(200)
       .send([
-        userInfo,
-        { accessToken: accessToken },
-        { refreshToken: refreshToken },
+        new responseFormat(200, true, [
+          userInfo,
+          { accessToken: accessToken },
+          { refreshToken: refreshToken },
+        ]),
       ]);
   } catch (error) {
     next(error);
@@ -110,8 +111,7 @@ export const logout = async (req, res, next) => {
     res
       .clearCookie("accessToken")
       .clearCookie("refreshToken")
-      .status(200)
-      .send("logout ok");
+      .send(new responseFormat(200, true, "logged out"));
   } catch (error) {
     next(error);
   }
@@ -145,10 +145,14 @@ export const refresh = (req, res, next) => {
         { expiresIn: "1y" }
       );
 
-      res.status(200).json({
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      });
+      res.send(
+        new responseFormat(200, true, [
+          {
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+          },
+        ])
+      );
     });
   } catch (error) {
     next(error);
@@ -166,71 +170,6 @@ export const verifyEmail = async (req, res, next) => {
       },
     });
     res.send("verified");
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const forgotPassword = async (forgetPasswordUrl, req, res, next) => {
-  try {
-    let result = validationResult(req);
-    if (!result.isEmpty()) {
-      return res.status(400).send(result.array({ onlyFirstError: true }));
-    }
-    const { email } = req.body;
-    let user = await prismaClient.user.findUnique({
-      where: {
-        email,
-      },
-    });
-    if (!user) {
-      const error = new OperationalException("Email doesn't exist", 401);
-      next(error);
-    }
-    const token = jwt.sign({ userId: user.userId }, process.env.JWT_KEY, {
-      expiresIn: "15m",
-    });
-    try {
-      sendMailTo(
-        email,
-        "Change your lost password",
-        `<p> Have you forgotten your password, if so click <a href = "${forgetPasswordUrl}/${token}">here</a></p>`
-      );
-    } catch (error) {
-      next(error);
-    }
-    res.status(200).send(user);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const resetPassword = async (req, res, next) => {
-  let result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
-  }
-  const { token } = req.params;
-  const { newPassword } = req.body;
-  try {
-    jwt.verify(token, process.env.JWT_KEY, async (error, payload) => {
-      try {
-        if (error) {
-          next(error);
-        }
-        await prismaClient.user.update({
-          where: {
-            userId: payload.userId,
-          },
-          data: {
-            password: hashSync(newPassword, 10),
-          },
-        });
-        res.status(200).send("ok");
-      } catch (error) {
-        next(error);
-      }
-    });
   } catch (error) {
     next(error);
   }

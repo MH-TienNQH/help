@@ -3,6 +3,7 @@ import {
   forgotPassword,
   login,
   logout,
+  logToken,
   refresh,
   resetPassword,
   signUp,
@@ -22,7 +23,7 @@ export const authRoutes = Router();
 authRoutes.post("/signup", checkSchema(signUpSchema), signUp);
 authRoutes.post("/login", checkSchema(loginSchema), login);
 authRoutes.post("/logout", logout);
-authRoutes.get("/refresh", verifyTokenMiddlewares, refresh);
+authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
 authRoutes.get("/forgot-password", checkSchema(emailSchema), forgotPassword);
 authRoutes.get(
