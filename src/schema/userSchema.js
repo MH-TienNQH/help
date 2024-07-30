@@ -59,3 +59,24 @@ export const loginSchema = {
     },
   },
 };
+
+export const emailSchema = {
+  email: {
+    notEmpty: {
+      errorMessage: "email can not be empty",
+    },
+    isEmail: {
+      errorMessage: "please enter a validate email",
+    },
+  },
+};
+export const passwordSchema = {
+  password: {
+    notEmpty: {
+      errorMessage: "password can not be empty",
+    },
+    isStrongPassword: {
+      errorMessage: "Need to be a strong password",
+    },
+  },
+};
