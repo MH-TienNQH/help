@@ -3,7 +3,6 @@ import {
   forgotPassword,
   login,
   logout,
-  logToken,
   refresh,
   resetPassword,
   signUp,
@@ -27,7 +26,7 @@ authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
 authRoutes.get("/forgot-password", checkSchema(emailSchema), forgotPassword);
 authRoutes.get(
-  "/reset-password/:userId/:token",
+  "/reset-password/:token",
   checkSchema(passwordSchema),
   resetPassword
 );

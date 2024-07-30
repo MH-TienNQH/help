@@ -6,6 +6,7 @@ import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
+import { responseFormat } from "../utils/responseFormat.js";
 dotenv.config();
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
@@ -170,6 +171,95 @@ export const verifyEmail = async (req, res, next) => {
       },
     });
     res.send("verified");
+  } catch (error) {
+    next(error);
+  }
+};
+export const forgotPassword = async (req, res, next) => {
+  try {
+    let result = validationResult(req);
+
+    if (!result.isEmpty()) {
+      return res.status(400).send(result.array({ onlyFirstError: true }));
+    }
+    const { email } = req.body;
+    let user = await prismaClient.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      const error = new OperationalException("Email doesn't exist", 401);
+      next(error);
+    }
+    const token = jwt.sign({ userId: user.userId }, process.env.JWT_KEY, {
+      expiresIn: "15m",
+    });
+    try {
+      let otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+      sendMailTo(
+        email,
+        "OTP for forgot password",
+        `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword/${token}>here</a></p>`
+      );
+      await prismaClient.oTP.create({
+        data: {
+          otp,
+          user: {
+            connect: {
+              userId: user.userId,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+    res.status(200).send(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    let result = validationResult(req);
+    const { token } = req.params;
+    const { otp, newPassword } = req.body;
+
+    jwt.verify(token, process.env.JWT_KEY, async (error, payload) => {
+      try {
+        if (error) {
+          next(error);
+        }
+        let otpCode = await prismaClient.oTP.findUnique({
+          where: {
+            otp,
+          },
+        });
+        if (!otpCode) {
+          const error = new OperationalException("Wrong otp", 403);
+          next(error);
+        }
+
+        await prismaClient.user.update({
+          where: {
+            userId: payload.userId,
+          },
+          data: {
+            password: hashSync(newPassword, 10),
+          },
+        });
+        await prismaClient.oTP.delete({
+          where: {
+            otp,
+          },
+        });
+        res.status(200).send("ok");
+      } catch (error) {
+        next(error);
+      }
+    });
   } catch (error) {
     next(error);
   }

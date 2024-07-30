@@ -10,6 +10,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewares.js";
 import { deleteNotVerified } from "./src/utils/deleteNotVerified.js";
+import { deleteOTP } from "./src/utils/deleteOTP.js";
 
 const PORT = process.env.PORT;
 
@@ -34,5 +35,6 @@ app.get("/", (req, res) => {
 });
 
 schedule.scheduleJob("*/15 * * * *", deleteNotVerified);
+schedule.scheduleJob("*/15 * * * *", deleteOTP);
 
 app.listen(PORT, () => `running on http://localhost:${PORT}`);

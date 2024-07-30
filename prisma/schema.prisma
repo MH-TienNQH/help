@@ -23,6 +23,14 @@ enum Status {
   Selling
 }
 
+model OTP {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  otp       String   @unique
+  user      User     @relation(fields: [userId], references: [userId])
+  createdAt DateTime @default(now())
+}
+
 model User {
   userId       Int            @id @unique @default(autoincrement())
   username     String         @unique
@@ -37,6 +45,7 @@ model User {
   chats        Chat[]
   createdAt    DateTime       @default(now())
   ProductLiked ProductLiked[]
+  OTP          OTP[]
 }
 
 model Chat {
