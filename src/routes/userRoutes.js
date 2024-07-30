@@ -43,10 +43,10 @@ userRoutes.delete(
   adminMiddlewares,
   deleteUser
 );
-userRoutes.post("/save-product", verifyTokenMiddlewares, saveProduct);
+userRoutes.post("/save-product/:id", verifyTokenMiddlewares, saveProduct);
 userRoutes.get(
   "/personal-product/:id",
   verifyTokenMiddlewares,
   personalProduct
 );
-userRoutes.post("/like-product", verifyTokenMiddlewares, likeProduct);
+userRoutes.post("/like-product/:id", verifyTokenMiddlewares, likeProduct);

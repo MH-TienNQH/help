@@ -84,6 +84,7 @@ export const login = async (req, res, next) => {
     );
 
     const { password: userPassword, ...userInfo } = user;
+
     res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
@@ -170,6 +171,13 @@ export const verifyEmail = async (req, res, next) => {
       },
     });
     res.send("verified");
+  } catch (error) {
+    next(error);
+  }
+};
+export const logToken = async (req, res, next) => {
+  try {
+    return req.headers.authorization.split(" ")[1];
   } catch (error) {
     next(error);
   }
