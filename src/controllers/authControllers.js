@@ -84,6 +84,7 @@ export const login = async (req, res, next) => {
     );
 
     const { password: userPassword, ...userInfo } = user;
+
     res
       .cookie("accessToken", accessToken, {
         httpOnly: true,
