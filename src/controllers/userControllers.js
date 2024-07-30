@@ -38,34 +38,32 @@ export const addUser = async (req, res, next) => {
     if (!result.isEmpty()) {
       return res.status(400).send(result.array({ onlyFirstError: true }));
     }
-    if (userRole == "Admin") {
-      try {
-        const { username, email, password, name, avatar } = req.body;
+    try {
+      const { username, email, password, name, userRole, avatar } = req.body;
 
-        let user = await prismaClient.user.findFirst({
-          where: {
-            username: username,
-          },
-        });
-        if (user) {
-          const error = new OperationalException("User already exist", 400);
-          next(error);
-        }
-        user = await prismaClient.user.create({
-          data: {
-            name,
-            username,
-            email,
-            password: hashSync(password, 10),
-            avatar,
-          },
-        });
-        res.send(new responseFormat(200, true, [user.email, "user created"]));
-      } catch (error) {
+      let user = await prismaClient.user.findFirst({
+        where: {
+          username: username,
+        },
+      });
+      if (user) {
+        const error = new OperationalException("User already exist", 400);
         next(error);
       }
+      user = await prismaClient.user.create({
+        data: {
+          name,
+          username,
+          email,
+          password: hashSync(password, 10),
+          userRole,
+          avatar,
+        },
+      });
+      res.send(new responseFormat(200, true, [user.email, "user created"]));
+    } catch (error) {
+      next(error);
     }
-    res.status(403).send("Not admin");
   } catch (error) {
     next(error);
   }
@@ -143,7 +141,7 @@ export const deleteUser = async (req, res, next) => {
 
 export const saveProduct = async (req, res, next) => {
   try {
-    const productId = req.body.productId;
+    const productId = req.params.productId;
     const tokenUserId = req.userId;
     const savedProduct = await prismaClient.productSaved.findUnique({
       where: {
@@ -207,7 +205,7 @@ export const personalProduct = async (req, res, next) => {
 };
 export const likeProduct = async (req, res, next) => {
   try {
-    const productId = req.body.productId;
+    const productId = req.params.productId;
     const tokenUserId = req.userId;
     const likedProduct = await prismaClient.productLiked.findUnique({
       where: {

@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   login,
   logout,
+  logToken,
   refresh,
   signUp,
   verifyEmail,
