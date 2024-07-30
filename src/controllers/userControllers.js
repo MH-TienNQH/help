@@ -1,12 +1,13 @@
-import { validationResult } from "express-validator";
+import { body, validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
 import { hashSync } from "bcrypt";
 import { responseFormat } from "../utils/responseFormat.js";
-import { userInfo } from "os";
+import * as userServices from "../services/userServices.js";
+import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllUser = async (req, res, next) => {
   try {
-    let users = await prismaClient.user.findMany();
+    let users = await userServices.getAllUser();
     res.send(new responseFormat(200, true, users));
   } catch (error) {
     next(error);
@@ -15,12 +16,8 @@ export const getAllUser = async (req, res, next) => {
 
 export const getUserById = async (req, res, next) => {
   try {
-    const id = req.params.id;
-    let userById = await prismaClient.user.findFirst({
-      where: {
-        userId: parseInt(id),
-      },
-    });
+    const id = parseInt(req.params.id);
+    let userById = await userServices.findById(id);
     if (!userById) {
       const error = new OperationalException("User not found", 404);
       next(error);
@@ -33,33 +30,22 @@ export const getUserById = async (req, res, next) => {
 
 export const addUser = async (req, res, next) => {
   try {
-    let userRole = req.userRole;
     const result = validationResult(req);
     if (!result.isEmpty()) {
       return res.status(400).send(result.array({ onlyFirstError: true }));
     }
     try {
-      const { username, email, password, name, userRole, avatar } = req.body;
-
+      const data = req.body;
       let user = await prismaClient.user.findFirst({
         where: {
-          username: username,
+          username: data.username,
         },
       });
       if (user) {
         const error = new OperationalException("User already exist", 400);
         next(error);
       }
-      user = await prismaClient.user.create({
-        data: {
-          name,
-          username,
-          email,
-          password: hashSync(password, 10),
-          userRole,
-          avatar,
-        },
-      });
+      user = await userServices.addUser(data);
       res.send(new responseFormat(200, true, [user.email, "user created"]));
     } catch (error) {
       next(error);
@@ -70,107 +56,49 @@ export const addUser = async (req, res, next) => {
 };
 
 export const updateUser = async (req, res, next) => {
-  const id = req.params.id;
-  let userRole = req.userRole;
+  const id = parseInt(req.params.id);
+
   const result = validationResult(req);
   if (!result.isEmpty()) {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
-  if (userRole == "Admin") {
-    try {
-      const { username, email, password, name, userRole, avatar } = req.body;
-      let user = await prismaClient.user.update({
-        where: {
-          userId: parseInt(id),
-        },
-        data: {
-          name,
-          username,
-          email,
-          password: hashSync(password, 10),
-          userRole,
-          avatar,
-        },
-      });
-      if (!user) {
-        const error = new OperationalException("User already exist", 400);
-        next(error);
-      }
-      res.send(new responseFormat(200, true, [user.email, "user updated"]));
-    } catch (error) {
+  try {
+    const data = req.body;
+    let user = await prismaClient.user.findFirst({
+      where: {
+        username: data.username,
+      },
+    });
+    if (user) {
+      const error = new OperationalException("User already exist", 400);
       next(error);
     }
-  } else {
-    try {
-      const { username, email, password, name, avatar } = req.body;
-      let user = await prismaClient.user.update({
-        where: {
-          userId: parseInt(id),
-        },
-        data: {
-          name,
-          username,
-          email,
-          password: hashSync(password, 10),
-          avatar,
-        },
-      });
-      res.send(new responseFormat(200, true, [user.email, "user updated"]));
-    } catch (error) {
-      next(error);
-    }
+    user = await userServices.updateUser(id, data);
+    res.send(new responseFormat(200, true, [user.email, "user updated"]));
+  } catch (error) {
+    next(error);
   }
 };
 
 export const deleteUser = async (req, res, next) => {
-  let userRole = req.userRole;
-  const id = req.params.id;
-  if (userRole == "Admin") {
-    try {
-      await prismaClient.user.delete({
-        where: {
-          userId: parseInt(id),
-        },
-      });
-      res.send(new responseFormat(200, true, "user deleted"));
-    } catch (error) {
-      next(error);
-    }
+  const id = parseInt(req.params.id);
+  try {
+    await userServices.deleteUser(id);
+    res.send(new responseFormat(200, true, "user deleted"));
+  } catch (error) {
+    next(error);
   }
 };
 
 export const saveProduct = async (req, res, next) => {
   try {
-    const productId = req.params.productId;
-    const tokenUserId = req.userId;
-    const savedProduct = await prismaClient.productSaved.findUnique({
-      where: {
-        productId_userId: {
-          userId: tokenUserId,
-          productId,
-        },
-      },
-    });
-
-    if (savedProduct) {
-      await prismaClient.productSaved.delete({
-        where: {
-          productId_userId: {
-            userId: tokenUserId,
-            productId,
-          },
-        },
-      });
+    const productId = parseInt(req.params.id);
+    const userId = req.userId;
+    const save = await userServices.saveProduct(userId, productId);
+    if (save) {
       res.send(new responseFormat(200, true, "saved product"));
-    } else {
-      await prismaClient.productSaved.create({
-        data: {
-          userId: tokenUserId,
-          productId,
-        },
-      });
-      res.send(new responseFormat(200, true, "unsaved product"));
     }
+    res.send(new responseFormat(200, true, "unsave product"));
   } catch (error) {
     next(error);
   }

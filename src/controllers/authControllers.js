@@ -6,6 +6,7 @@ import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { sendMailTo } from "../utils/sendMail.js";
+import { responseFormat } from "../utils/responseFormat.js";
 dotenv.config();
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
