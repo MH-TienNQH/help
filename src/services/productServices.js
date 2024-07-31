@@ -1,10 +1,11 @@
 import { prismaClient } from "../routes/index.js";
+import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllProduct = async () => {
   await prismaClient.product.findMany({});
 };
 export const findById = async (id) => {
-  return await prismaClient.product.findFirst({
+  const product = await prismaClient.product.findUnique({
     where: {
       productId: id,
     },
@@ -16,9 +17,13 @@ export const findById = async (id) => {
       },
     },
   });
+  if (!product) {
+    throw new OperationalException("No product found", 404);
+  }
+  return product;
 };
-export const addProduct = async (data) => {
-  await prismaClient.product.create({
+export const addProduct = async (data, userId) => {
+  const product = await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,
@@ -32,11 +37,12 @@ export const addProduct = async (data) => {
       },
       author: {
         connect: {
-          userId: req.userId,
+          userId: userId,
         },
       },
     },
   });
+  return product;
 };
 
 export const updateProduct = async (id, data) => {

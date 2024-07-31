@@ -81,7 +81,6 @@ model Product {
   soldAt       DateTime?
   ProductSaved ProductSaved[]
   likeNumber   ProductLiked[]
-  token        String
 }
 
 model Category {

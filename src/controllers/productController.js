@@ -39,7 +39,8 @@ export const addProduct = asyncErrorHandler(async (req, res) => {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
   const data = req.body;
-  let product = await productServices.addProduct(data);
+  const userId = req.userId;
+  let product = await productServices.addProduct(data, userId);
 
   res.send(new responseFormat(200, true, [product.name, "product created"]));
 });

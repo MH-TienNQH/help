@@ -11,15 +11,16 @@ export const findById = async (id) => {
   });
 };
 export const addCategory = async (data) => {
-  await prismaClient.category.create({
+  const category = await prismaClient.category.create({
     data: {
       categoryName: data.categoryName,
     },
   });
+  return category;
 };
 
 export const updateCategory = async (id, data) => {
-  await prismaClient.category.update({
+  const category = await prismaClient.category.update({
     where: {
       categoryId: parseInt(id),
     },
@@ -27,6 +28,7 @@ export const updateCategory = async (id, data) => {
       categoryName: data.categoryName,
     },
   });
+  return category;
 };
 
 export const deleteCategory = async (id) => {

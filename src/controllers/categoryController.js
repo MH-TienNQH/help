@@ -35,8 +35,8 @@ export const addCategory = asyncErrorHandler(async (req, res, next) => {
       const error = new OperationalException("Category already exist", 400);
       next(error);
     }
-    category = await categoryServices.addCategory(data);
-    res.status(200).send(category);
+    const response = await categoryServices.addCategory(data);
+    res.send(new responseFormat(200, true, response));
   } catch (error) {
     return res.status(500).send(error);
   }
@@ -49,12 +49,12 @@ export const updateCategory = asyncErrorHandler(async (req, res, next) => {
   const id = req.params.id;
   const data = req.body;
   try {
-    let category = await categoryServices.updateCategory(id, data);
-    if (!category) {
+    const response = await categoryServices.updateCategory(id, data);
+    if (!response) {
       const error = new OperationalException("Category not found", 403);
       next(error);
     }
-    res.send(new responseFormat(200, true, category));
+    res.send(new responseFormat(200, true, response));
   } catch (error) {
     next(error);
   }
