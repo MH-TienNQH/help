@@ -2,117 +2,67 @@ import { validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { responseFormat } from "../utils/responseFormat.js";
+import * as categoryServices from "../services/categoryServices.js";
+import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 
-export const getAllCategory = async (req, res, next) => {
-  try {
-    let categories = await prismaClient.category.findMany();
-    res.status(200).send(categories);
-  } catch (error) {
+export const getAllCategory = asyncErrorHandler(async (req, res) => {
+  let categories = categoryServices.getAllCategories();
+  await res.status(200).send(categories);
+});
+export const getCategoryById = asyncErrorHandler(async (req, res) => {
+  const id = req.params.id;
+  let category = await categoryServices.findById(id);
+  if (!category) {
+    const error = new OperationalException(" this category doesn't exist", 404);
     next(error);
   }
-};
-export const getCategoryById = async (req, res, next) => {
+  res.status(200).send(category);
+});
+
+export const addCategory = asyncErrorHandler(async (req, res, next) => {
+  let result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array({ onlyFirstError: true }));
+  }
+  const data = req.body;
   try {
-    const id = req.params.id;
     let category = await prismaClient.category.findFirst({
       where: {
-        categoryId: parseInt(id),
+        categoryName: data.categoryName,
       },
     });
-    if (!category) {
-      const error = new OperationalException(
-        " this category doesn't exist",
-        404
-      );
+    if (category) {
+      const error = new OperationalException("Category already exist", 400);
       next(error);
     }
+    category = await categoryServices.addCategory(data);
     res.status(200).send(category);
   } catch (error) {
-    next(error);
+    return res.status(500).send(error);
   }
-};
-
-export const addCategory = async (req, res, next) => {
-  try {
-    let result = validationResult(req);
-    if (!result.isEmpty()) {
-      return res.status(400).send(result.array({ onlyFirstError: true }));
-    }
-    let userRole = req.userRole;
-    const { categoryName } = req.body;
-    try {
-      let category = await prismaClient.category.findFirst({
-        where: {
-          categoryName,
-        },
-      });
-      if (category) {
-        const error = new OperationalException("Category already exist", 400);
-        next(error);
-      }
-      category = await prismaClient.category.create({
-        data: {
-          categoryName,
-        },
-      });
-      res.status(200).send(category);
-    } catch (error) {
-      return res.status(500).send(error);
-    }
-  } catch (error) {
-    next(error);
+});
+export const updateCategory = asyncErrorHandler(async (req, res, next) => {
+  let result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array({ onlyFirstError: true }));
   }
-};
-export const updateCategory = async (req, res, next) => {
+  const id = req.params.id;
+  const data = req.body;
   try {
-    let result = validationResult(req);
-    if (!result.isEmpty()) {
-      return res.status(400).send(result.array({ onlyFirstError: true }));
-    }
-    let userRole = req.userRole;
-    const id = req.params.id;
-    const { categoryName } = req.body;
-    try {
-      let category = await prismaClient.category.update({
-        where: {
-          categoryId: parseInt(id),
-        },
-        data: {
-          categoryName,
-        },
-      });
-      if (!category) {
-        const error = new OperationalException("Category not found", 403);
-        next(error);
-      }
-      res.send(new responseFormat(200, true, category));
-    } catch (error) {
+    let category = await categoryServices.updateCategory(id, data);
+    if (!category) {
+      const error = new OperationalException("Category not found", 403);
       next(error);
     }
+    res.send(new responseFormat(200, true, category));
   } catch (error) {
     next(error);
   }
-};
+});
 
-export const deleteCategory = async (req, res, next) => {
-  try {
-    let userRole = req.userRole;
-    if (userRole == "Admin") {
-      const id = req.params.id;
-      try {
-        await prismaClient.category.delete({
-          where: {
-            categoryId: parseInt(id),
-          },
-        });
-        res.send(new responseFormat(200, true, "category deleted"));
-      } catch (error) {
-        next(error);
-      }
-    } else {
-      res.status(403).send("not Admin");
-    }
-  } catch (error) {
-    next(error);
-  }
-};
+export const deleteCategory = asyncErrorHandler(async (req, res) => {
+  const id = req.params.id;
+
+  await categoryServices.deleteCategory(id);
+  res.send(new responseFormat(200, true, "category deleted"));
+});

@@ -39,27 +39,80 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
   return res.send(new responseFormat(200, true, user));
 });
 
-export const login = async (req, res, next) => {
-  try {
-    let result = validationResult(req);
-    if (!result.isEmpty()) {
-      return res.status(400).send(result.array({ onlyFirstError: true }));
-    }
-    const { email, password } = req.body;
-    let user = await prismaClient.user.findFirst({
-      where: {
-        email,
-      },
-    });
-    if (!user) {
-      const error = new OperationalException("Email not found", 404);
-      next(error);
-    }
-    if (!compareSync(password, user.password)) {
-      const error = new OperationalException("Incorrect password", 401);
-      next(error);
-    }
-    const accessToken = jwt.sign(
+export const login = asyncErrorHandler(async (req, res) => {
+  let result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array({ onlyFirstError: true }));
+  }
+  const { email, password } = req.body;
+  let user = await prismaClient.user.findFirst({
+    where: {
+      email,
+    },
+  });
+  if (!user) {
+    const error = new OperationalException("Email not found", 404);
+    next(error);
+  }
+  if (!compareSync(password, user.password)) {
+    const error = new OperationalException("Incorrect password", 401);
+    next(error);
+  }
+  const accessToken = jwt.sign(
+    {
+      userId: user.userId,
+      userRole: user.role,
+    },
+    process.env.JWT_KEY,
+    { expiresIn: "15m" }
+  );
+  const refreshToken = jwt.sign(
+    {
+      userId: user.userId,
+      userRole: user.role,
+    },
+    process.env.JWT_REFRESH_KEY,
+    { expiresIn: "1y" }
+  );
+
+  const { password: userPassword, ...userInfo } = user;
+
+  res
+    .cookie("accessToken", accessToken, {
+      httpOnly: true,
+      maxAge: 900000,
+    })
+    .cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 3.154e10,
+    })
+    .send([
+      new responseFormat(200, true, [
+        userInfo,
+        { accessToken: accessToken },
+        { refreshToken: refreshToken },
+      ]),
+    ]);
+});
+
+export const logout = asyncErrorHandler(async (req, res) => {
+  res
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .send(new responseFormat(200, true, "logged out"));
+});
+
+export const refresh = asyncErrorHandler((req, res, next) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) {
+    const error = new OperationalException("You are not authenticated", 401);
+    next(error);
+  }
+
+  jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (error, user) => {
+    error && next(error);
+
+    const newAccessToken = jwt.sign(
       {
         userId: user.userId,
         userRole: user.role,
@@ -67,7 +120,7 @@ export const login = async (req, res, next) => {
       process.env.JWT_KEY,
       { expiresIn: "15m" }
     );
-    const refreshToken = jwt.sign(
+    const newRefreshToken = jwt.sign(
       {
         userId: user.userId,
         userRole: user.role,
@@ -76,88 +129,19 @@ export const login = async (req, res, next) => {
       { expiresIn: "1y" }
     );
 
-    const { password: userPassword, ...userInfo } = user;
-
-    res
-      .cookie("accessToken", accessToken, {
-        httpOnly: true,
-        maxAge: 900000,
-      })
-      .cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        maxAge: 3.154e10,
-      })
-      .send([
-        new responseFormat(200, true, [
-          userInfo,
-          { accessToken: accessToken },
-          { refreshToken: refreshToken },
-        ]),
-      ]);
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const logout = async (req, res, next) => {
-  try {
-    res
-      .clearCookie("accessToken")
-      .clearCookie("refreshToken")
-      .send(new responseFormat(200, true, "logged out"));
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const refresh = (req, res, next) => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      const error = new OperationalException("You are not authenticated", 401);
-      next(error);
-    }
-
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (error, user) => {
-      error && next(error);
-
-      const newAccessToken = jwt.sign(
+    res.send(
+      new responseFormat(200, true, [
         {
-          userId: user.userId,
-          userRole: user.role,
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
         },
-        process.env.JWT_KEY,
-        { expiresIn: "15m" }
-      );
-      const newRefreshToken = jwt.sign(
-        {
-          userId: user.userId,
-          userRole: user.role,
-        },
-        process.env.JWT_REFRESH_KEY,
-        { expiresIn: "1y" }
-      );
+      ])
+    );
+  });
+});
 
-      res.send(
-        new responseFormat(200, true, [
-          {
-            accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
-          },
-        ])
-      );
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const verifyEmail = async (req, res, next) => {
-  try {
-    let email = req.params.email;
-    await authServices.verifyEmail(email);
-    res.send("verified");
-  } catch (error) {
-    next(error);
-  }
-};
+export const verifyEmail = asyncErrorHandler(async (req, res) => {
+  let email = req.params.email;
+  await authServices.verifyEmail(email);
+  res.send("verified");
+});
