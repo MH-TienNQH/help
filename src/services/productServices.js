@@ -45,7 +45,7 @@ export const addProduct = async (data, userId) => {
   return product;
 };
 
-export const updateProduct = async (id, data) => {
+export const updateProduct = async (id, data, userId) => {
   await prismaClient.product.update({
     where: {
       productId: parseInt(id),
@@ -63,7 +63,7 @@ export const updateProduct = async (id, data) => {
       },
       author: {
         connect: {
-          userId: req.userId,
+          userId,
         },
       },
     },

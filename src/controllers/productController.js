@@ -52,8 +52,9 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   }
   const productId = req.params.id;
   const data = req.body;
+  const userId = req.userId;
 
-  let product = await productServices.updateProduct(productId, data);
+  let product = await productServices.updateProduct(productId, data, userId);
   if (!product) {
     const error = new OperationalException("Product not found", 404);
     next(error);
