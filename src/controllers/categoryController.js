@@ -6,8 +6,8 @@ import * as categoryServices from "../services/categoryServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 
 export const getAllCategory = asyncErrorHandler(async (req, res) => {
-  let categories = categoryServices.getAllCategories();
-  await res.status(200).send(categories);
+  let categories = await categoryServices.getAllCategories();
+  res.status(200).send(categories);
 });
 export const getCategoryById = asyncErrorHandler(async (req, res) => {
   const id = req.params.id;

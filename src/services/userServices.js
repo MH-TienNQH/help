@@ -1,6 +1,5 @@
 import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
-import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllUser = async () => {
   return await prismaClient.user.findMany();
@@ -10,6 +9,14 @@ export const findById = async (id) => {
   return await prismaClient.user.findUnique({
     where: {
       userId: id,
+    },
+  });
+};
+
+export const findUserByEmail = async (email) => {
+  return await prismaClient.user.findUnique({
+    where: {
+      email,
     },
   });
 };
