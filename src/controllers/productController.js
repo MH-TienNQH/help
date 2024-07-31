@@ -60,18 +60,18 @@ export const addProduct = async (req, res, next) => {
     if (!result.isEmpty()) {
       return res.status(400).send(result.array({ onlyFirstError: true }));
     }
-    const { name, description, image, price, cover, categoryId } = req.body;
+    const data = req.body;
 
     let product = await prismaClient.product.create({
       data: {
-        name,
-        description,
-        image,
-        price,
-        cover,
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        price: parseInt(data.price),
+        cover: req.file.filename,
         category: {
           connect: {
-            categoryId,
+            categoryId: parseInt(data.categoryId),
           },
         },
         author: {

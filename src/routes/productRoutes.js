@@ -13,6 +13,9 @@ import {
   updateProduct,
 } from "../controllers/productController.js";
 
+//upload file
+import { upload } from "../utils/uploadFile.js";
+
 //authentication middlewares
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 
@@ -29,7 +32,7 @@ productRoutes.get("/sold-products", getSoldProduct);
 productRoutes.get("/newest", getNewestProduct);
 productRoutes.post(
   "/add-product",
-  checkSchema(addProductSchema),
+  upload.single("cover"),
   verifyTokenMiddlewares,
   addProduct
 );
