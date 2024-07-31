@@ -14,9 +14,4 @@ export const addProductSchema = {
       errorMessage: "Product price can not be empty",
     },
   },
-  cover: {
-    notEmpty: {
-      errorMessage: "Product cover image can not be empty",
-    },
-  },
 };
