@@ -3,200 +3,85 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
 import { responseFormat } from "../utils/responseFormat.js";
+import * as productServices from "../services/productServices.js";
+import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 
 dotenv.config();
 
-export const getAllProduct = async (req, res, next) => {
-  try {
-    let products = await prismaClient.product.findMany({});
-    res.send(new responseFormat(200, true, products));
-  } catch (error) {
-    next(error);
-  }
-};
+export const getAllProduct = asyncErrorHandler(async (req, res) => {
+  let products = await productServices.getAllProduct();
+  res.send(new responseFormat(200, true, products));
+});
 
-export const getProductById = async (req, res, next) => {
-  try {
-    const productId = req.params.id;
-    let product = await prismaClient.product.findFirst({
-      where: {
-        productId: parseInt(productId),
+export const getProductById = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const userId = req.userId;
+  let product = await productServices.findById(productId);
+
+  const saved = await prismaClient.productSaved.findUnique({
+    where: {
+      productId_userId: {
+        productId,
+        userId,
       },
-      include: {
-        _count: {
-          select: {
-            likeNumber: true,
-          },
-        },
-      },
-    });
-    const accessToken = req.cookies.accessToken;
-    if (accessToken) {
-      jwt.verify(accessToken, process.env.JWT_KEY, async (error, payload) => {
-        if (error) next(error);
-        const saved = await prismaClient.productSaved.findUnique({
-          where: {
-            productId_userId: {
-              productId: parseInt(productId),
-              userId: payload.userId,
-            },
-          },
-        });
-        res.send(
-          new responseFormat(200, true, [
-            { ...product, isSaved: saved ? true : false },
-          ])
-        );
-      });
-    }
-  } catch (error) {
-    next(error);
+    },
+  });
+  res.send(
+    new responseFormat(200, true, [
+      { ...product, isSaved: saved ? true : false },
+    ])
+  );
+});
+
+export const addProduct = asyncErrorHandler(async (req, res) => {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array({ onlyFirstError: true }));
   }
-};
+  const data = req.body;
+  const userId = req.userId;
+  let product = await productServices.addProduct(data, userId);
 
-export const addProduct = async (req, res, next) => {
-  try {
-    const result = validationResult(req);
-    if (!result.isEmpty()) {
-      return res.status(400).send(result.array({ onlyFirstError: true }));
-    }
-    const { name, description, image, price, cover, categoryId } = req.body;
+  res.send(new responseFormat(200, true, [product.name, "product created"]));
+});
 
-    let product = await prismaClient.product.create({
-      data: {
-        name,
-        description,
-        image,
-        price,
-        cover,
-        category: {
-          connect: {
-            categoryId,
-          },
-        },
-        author: {
-          connect: {
-            userId: req.userId,
-          },
-        },
-      },
-    });
-    res.send(new responseFormat(200, true, [product.name, "product created"]));
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateProduct = async (req, res, next) => {
+export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const result = validationResult(req);
   if (!result.isEmpty()) {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
   const productId = req.params.id;
-  const { name, description, image, price, cover, categoryId } = req.body;
-  try {
-    let product = await prismaClient.product.update({
-      where: {
-        productId: parseInt(productId),
-      },
-      data: {
-        name,
-        description,
-        image,
-        price,
-        cover,
-        category: {
-          connect: {
-            categoryId,
-          },
-        },
-        author: {
-          connect: {
-            userId: req.userId,
-          },
-        },
-      },
-    });
-    if (!product) {
-      const error = new OperationalException("Product not found", 404);
-      next(error);
-    }
-    res.send(new responseFormat(200, true, [product.name, "product updated"]));
-  } catch (error) {
-    next(error);
-  }
-};
+  const data = req.body;
+  const userId = req.userId;
 
-export const deleteProduct = async (req, res, next) => {
-  try {
-    const productId = req.params.id;
-    await prismaClient.product.delete({
-      where: {
-        productId,
-      },
-    });
-    res.send(new responseFormat(200, true, ["product deleted"]));
-  } catch (error) {
+  let product = await productServices.updateProduct(productId, data, userId);
+  if (!product) {
+    const error = new OperationalException("Product not found", 404);
     next(error);
   }
-};
-export const getThreeTrendingProduct = async (req, res, next) => {
-  try {
-    let products = await prismaClient.product.findMany({
-      include: {
-        _count: {
-          select: {
-            likeNumber: true,
-          },
-        },
-      },
-      orderBy: {
-        likeNumber: {
-          _count: "desc",
-        },
-      },
-      take: 3,
-    });
-    res.send(new responseFormat(200, true, products));
-  } catch (error) {
-    next(error);
-  }
-};
-export const getSellingProduct = async (req, res, next) => {
-  try {
-    let products = await prismaClient.product.findMany({
-      where: {
-        status: "Selling",
-      },
-    });
-    res.send(new responseFormat(200, true, products));
-  } catch (error) {
-    next(error);
-  }
-};
+  res.send(new responseFormat(200, true, [product.name, "product updated"]));
+});
 
-export const getNewestProduct = async (req, res, next) => {
-  try {
-    let products = await prismaClient.product.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    res.send(new responseFormat(200, true, products));
-  } catch (error) {
-    next(error);
-  }
-};
+export const deleteProduct = asyncErrorHandler(async (req, res) => {
+  const productId = req.params.id;
+  await productServices.deleteProduct(productId);
+  res.send(new responseFormat(200, true, ["product deleted"]));
+});
+export const getThreeTrendingProduct = asyncErrorHandler(async (req, res) => {
+  let products = await productServices.getThreeTrendingProduct();
+  res.send(new responseFormat(200, true, products));
+});
+export const getSellingProduct = asyncErrorHandler(async (req, res) => {
+  let products = await productServices.getSellingProduct();
+  res.send(new responseFormat(200, true, products));
+});
 
-export const getSoldProduct = async (req, res, next) => {
-  try {
-    let products = await prismaClient.product.findMany({
-      where: {
-        status: "Sold",
-      },
-    });
-    res.send(new responseFormat(200, true, products));
-  } catch (error) {
-    next(error);
-  }
-};
+export const getNewestProduct = asyncErrorHandler(async (req, res) => {
+  let products = await productServices.getNewestProduct();
+  res.send(new responseFormat(200, true, products));
+});
+
+export const getSoldProduct = asyncErrorHandler(async (req, res) => {
+  let products = await productServices.getSoldProduct();
+  res.send(new responseFormat(200, true, products));
+});

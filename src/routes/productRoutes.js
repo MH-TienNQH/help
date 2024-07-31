@@ -23,7 +23,7 @@ import { addProductSchema } from "../schema/productSchema.js";
 export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
-productRoutes.get("/get-by-id/:id", getProductById);
+productRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getProductById);
 productRoutes.get("/selling-products", getSellingProduct);
 productRoutes.get("/sold-products", getSoldProduct);
 productRoutes.get("/newest", getNewestProduct);

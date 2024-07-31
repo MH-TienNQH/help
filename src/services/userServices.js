@@ -1,6 +1,5 @@
 import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
-import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllUser = async () => {
   return await prismaClient.user.findMany();
@@ -10,6 +9,14 @@ export const findById = async (id) => {
   return await prismaClient.user.findUnique({
     where: {
       userId: id,
+    },
+  });
+};
+
+export const findUserByEmail = async (email) => {
+  return await prismaClient.user.findUnique({
+    where: {
+      email,
     },
   });
 };
@@ -73,6 +80,35 @@ export const saveProduct = async (userId, productId) => {
     });
   } else {
     await prismaClient.productSaved.create({
+      data: {
+        userId,
+        productId,
+      },
+    });
+  }
+};
+
+export const likeProduct = async (userId, productId) => {
+  const likedProduct = await prismaClient.productLiked.findUnique({
+    where: {
+      productId_userId: {
+        userId,
+        productId,
+      },
+    },
+  });
+
+  if (likedProduct) {
+    await prismaClient.productLiked.delete({
+      where: {
+        productId_userId: {
+          userId,
+          productId,
+        },
+      },
+    });
+  } else {
+    await prismaClient.productLiked.create({
       data: {
         userId,
         productId,
