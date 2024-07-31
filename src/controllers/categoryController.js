@@ -26,7 +26,7 @@ export const addCategory = asyncErrorHandler(async (req, res, next) => {
   }
   const data = req.body;
   try {
-    let category = await prismaClient.category.findFirst({
+    let category = await prismaClient.category.findUnique({
       where: {
         categoryName: data.categoryName,
       },

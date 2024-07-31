@@ -23,7 +23,7 @@ export const findById = async (id) => {
   return product;
 };
 export const addProduct = async (data, cover, userId) => {
-  const product = await prismaClient.product.create({
+  product = await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,

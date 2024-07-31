@@ -67,7 +67,7 @@ model Message {
 
 model Product {
   productId    Int            @id @unique @default(autoincrement())
-  name         String
+  name         String         @unique
   description  String
   image        String
   price        Int
