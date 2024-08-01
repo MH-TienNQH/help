@@ -38,6 +38,7 @@ model User {
   createdAt     DateTime       @default(now())
   ProductLiked  ProductLiked[]
   refreshTokens RefreshToken[]
+  otp String?
 }
 
 model RefreshToken {
