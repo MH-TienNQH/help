@@ -28,6 +28,7 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
   }
   try {
     const data = req.body;
+    const avatar = req.file.filename;
     let user = await prismaClient.user.findFirst({
       where: {
         username: data.username,
@@ -37,7 +38,7 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
       const error = new OperationalException("User already exist", 400);
       next(error);
     }
-    user = await userServices.addUser(data);
+    user = await userServices.addUser(data, avatar);
     res.send(new responseFormat(200, true, [user.email, "user created"]));
   } catch (error) {
     next(error);
@@ -53,6 +54,7 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
   }
 
   const data = req.body;
+  const avatar = req.file.filename;
   let user = await prismaClient.user.findFirst({
     where: {
       username: data.username,
@@ -62,7 +64,7 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
     const error = new OperationalException("User already exist", 400);
     next(error);
   }
-  user = await userServices.updateUser(id, data);
+  user = await userServices.updateUser(id, data, avatar);
   res.send(new responseFormat(200, true, [user.email, "user updated"]));
 });
 

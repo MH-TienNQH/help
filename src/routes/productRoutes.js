@@ -34,12 +34,15 @@ productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.post(
   "/add-product",
   upload.single("cover"),
+  upload.array("images", 5),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   addProduct
 );
 productRoutes.put(
   "/update/:id",
+  upload.single("cover"),
+  upload.array("images", 5),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct
