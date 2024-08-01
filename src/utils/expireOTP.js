@@ -11,5 +11,8 @@ export const expireOTP = async () => {
         lt: fifteenMinutesAgo.toISOString(),
       },
     },
+    data: {
+      otp: null,
+    },
   });
 };

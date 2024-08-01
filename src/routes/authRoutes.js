@@ -25,4 +25,4 @@ authRoutes.post("/logout", logout);
 authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
 authRoutes.get("/forgot-password", checkSchema(emailSchema), forgotPassword);
-authRoutes.put("/reset-password", checkSchema(passwordSchema), resetPassword);
+authRoutes.get("/send-otp", send)

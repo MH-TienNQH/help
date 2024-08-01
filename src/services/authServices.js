@@ -109,43 +109,12 @@ export const logout = async (refreshToken) => {
     throw new Error(error);
   }
 };
-export const forgotPassword = async (email) => {
+export const forgotPassword = async (email, otp) => {
   let result = validationResult(req);
 
   if (!result.isEmpty()) {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
-  let user = await prismaClient.user.findUnique({
-    where: {
-      email,
-    },
-  });
-  if (!user) {
-    throw new OperationalException("Email doesn't exist", 401);
-  }
-  let otp = `${Math.floor(1000 + Math.random() * 9000)}`;
-  sendMailTo(
-    email,
-    "OTP for forgot password",
-    `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword>here</a></p>`
-  );
-  user = await prismaClient.user.update({
-    where: {
-      email,
-    },
-    data: {
-      otp,
-    },
-  });
-  return {
-    user: {
-      userEmail: user.email,
-    },
-    message: "otp sent, check your mail",
-  };
-};
-
-export const resetPassword = async (email, otp) => {
   let user = await prismaClient.user.findUnique({
     where: {
       email,
@@ -168,8 +137,26 @@ export const resetPassword = async (email, otp) => {
   });
   return {
     user: {
-      userEmail: user.email,
+      ...user,
+      password: "",
     },
-    message: "password reset successfully",
+    message: "Password changed successfully",
   };
+};
+export const sendOTP = async (email) => {
+  let otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+  sendMailTo(
+    email,
+    "OTP for forgot password",
+    `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword>here</a></p>`
+  );
+  user = await prismaClient.user.update({
+    where: {
+      email,
+    },
+    data: {
+      otp,
+    },
+  });
+  return otp;
 };
