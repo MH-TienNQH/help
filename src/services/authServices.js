@@ -109,7 +109,7 @@ export const logout = async (refreshToken) => {
     throw new Error(error);
   }
 };
-export const forgotPassword = async (email, otp) => {
+export const forgotPassword = async (email, password, otp) => {
   let result = validationResult(req);
 
   if (!result.isEmpty()) {
@@ -131,7 +131,7 @@ export const forgotPassword = async (email, otp) => {
       email,
     },
     data: {
-      password: hashSync(newPassword, 10),
+      password: hashSync(password, 10),
       otp: null,
     },
   });

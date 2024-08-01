@@ -74,8 +74,8 @@ export const verifyEmail = asyncErrorHandler(async (req, res) => {
 });
 
 export const forgotPassword = asyncErrorHandler(async (req, res) => {
-  const { email, otp } = req.body;
-  let response = await authServices.forgotPassword(email, otp);
+  const { email, otp, newPassword } = req.body;
+  let response = await authServices.forgotPassword(email, newPassword, otp);
   res.send(new responseFormat(200, true, response));
 });
 
