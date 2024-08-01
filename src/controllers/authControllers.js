@@ -80,8 +80,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res) => {
 });
 
 export const resetPassword = asyncErrorHandler(async (req, res) => {
-  let email = req.params.email;
-  let { otp } = req.body;
+  let { email, otp } = req.body;
   let response = await authServices.resetPassword(email, otp);
   res.send(new responseFormat(200, true, response));
 });

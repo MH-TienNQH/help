@@ -127,7 +127,7 @@ export const forgotPassword = async (email) => {
   sendMailTo(
     email,
     "OTP for forgot password",
-    `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword/${email}>here</a></p>`
+    `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword>here</a></p>`
   );
   user = await prismaClient.user.update({
     where: {
