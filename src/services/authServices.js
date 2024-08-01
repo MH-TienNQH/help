@@ -163,6 +163,7 @@ export const resetPassword = async (email, otp) => {
     },
     data: {
       password: hashSync(newPassword, 10),
+      otp: null,
     },
   });
   return {
