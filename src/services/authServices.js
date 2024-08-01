@@ -108,12 +108,7 @@ export const logout = async (refreshToken) => {
     throw new Error(error);
   }
 };
-export const forgotPassword = async (email, password, otp) => {
-  let result = validationResult(req);
-
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
-  }
+export const setPassword = async (email, password, otp) => {
   let user = await prismaClient.user.findUnique({
     where: {
       email,
@@ -142,7 +137,7 @@ export const forgotPassword = async (email, password, otp) => {
     message: "Password changed successfully",
   };
 };
-export const sendOTP = async (email) => {
+export const forgotPassword = async (email) => {
   let otp = `${Math.floor(1000 + Math.random() * 9000)}`;
   sendMailTo(
     email,

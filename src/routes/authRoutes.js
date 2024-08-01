@@ -6,7 +6,7 @@ import {
   signUp,
   forgotPassword,
   verifyEmail,
-  sendOTP,
+  setPassword,
 } from "../controllers/authControllers.js";
 import { checkSchema } from "express-validator";
 import {
@@ -15,6 +15,7 @@ import {
   passwordSchema,
   signUpSchema,
 } from "../schema/userSchema.js";
+import { otpSchema } from "../schema/otpSchema.js";
 
 export const authRoutes = Router();
 
@@ -24,9 +25,10 @@ authRoutes.post("/logout", logout);
 authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
 authRoutes.get(
-  "/forgot-password",
+  "/set-password",
   checkSchema(emailSchema),
   checkSchema(passwordSchema),
-  forgotPassword
+  checkSchema(otpSchema),
+  setPassword
 );
-authRoutes.get("/send-otp", sendOTP);
+authRoutes.get("/forgot-password", checkSchema(emailSchema), forgotPassword);
