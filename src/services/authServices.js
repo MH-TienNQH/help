@@ -5,7 +5,6 @@ import { compareSync, hashSync } from "bcrypt";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { validationResult } from "express-validator";
-import { messageRoutes } from "../routes/messageRoutes.js";
 
 export const verifyEmail = async (email) => {
   await prismaClient.user.update({

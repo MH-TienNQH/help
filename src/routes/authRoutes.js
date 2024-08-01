@@ -5,10 +5,9 @@ import {
   refresh,
   signUp,
   forgotPassword,
-  resetPassword,
   verifyEmail,
+  sendOTP,
 } from "../controllers/authControllers.js";
-import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 import { checkSchema } from "express-validator";
 import {
   emailSchema,
@@ -24,5 +23,10 @@ authRoutes.post("/login", checkSchema(loginSchema), login);
 authRoutes.post("/logout", logout);
 authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
-authRoutes.get("/forgot-password", checkSchema(emailSchema), forgotPassword);
-authRoutes.get("/send-otp", send)
+authRoutes.get(
+  "/forgot-password",
+  checkSchema(emailSchema),
+  checkSchema(passwordSchema),
+  forgotPassword
+);
+authRoutes.get("/send-otp", sendOTP);
