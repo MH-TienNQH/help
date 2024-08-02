@@ -2,7 +2,8 @@ import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllProduct = async () => {
-  await prismaClient.product.findMany({});
+  let products = await prismaClient.product.findMany({});
+  return products;
 };
 export const findById = async (id) => {
   const product = await prismaClient.product.findUnique({
@@ -87,7 +88,7 @@ export const deleteProduct = async (id) => {
 };
 
 export const getThreeTrendingProduct = async () => {
-  await prismaClient.product.findMany({
+  const products = await prismaClient.product.findMany({
     include: {
       _count: {
         select: {
@@ -102,30 +103,34 @@ export const getThreeTrendingProduct = async () => {
     },
     take: 3,
   });
+  return products;
 };
 
 export const getSellingProduct = async () => {
-  await prismaClient.product.findMany({
+  const products = await prismaClient.product.findMany({
     where: {
       status: "Selling",
     },
   });
+  return products;
 };
 
 export const getNewestProduct = async () => {
-  await prismaClient.product.findMany({
+  const products = await prismaClient.product.findMany({
     orderBy: {
       createdAt: "desc",
     },
   });
+  return products;
 };
 
 export const getSoldProduct = async () => {
-  await await prismaClient.product.findMany({
+  const products = await await prismaClient.product.findMany({
     where: {
       status: "Sold",
     },
   });
+  return products;
 };
 export const listProduct = async (
   productName,

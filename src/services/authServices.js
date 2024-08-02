@@ -28,10 +28,7 @@ export const login = async (data) => {
   }
   const { accessToken, refreshToken } = await generateToken(user);
   return {
-    user: {
-      ...user,
-      password: "",
-    },
+    user,
     accessToken,
     refreshToken,
   };

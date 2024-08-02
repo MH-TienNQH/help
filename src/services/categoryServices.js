@@ -1,10 +1,11 @@
 import { prismaClient } from "../routes/index.js";
 
 export const getAllCategories = async () => {
-  await prismaClient.category.findMany({});
+  const category = await prismaClient.category.findMany({});
+  return category;
 };
 export const findById = async (id) => {
-  return await prismaClient.product.findFirst({
+  return await prismaClient.category.findFirst({
     where: {
       categoryId: parseInt(id),
     },
