@@ -27,12 +27,6 @@ export const login = async (data) => {
     throw new OperationalException("Incorrect password", 401);
   }
   const { accessToken, refreshToken } = await generateToken(user);
-  await prismaClient.refreshToken.create({
-    data: {
-      userId: user.userId,
-      token: refreshToken,
-    },
-  });
   return {
     user: {
       ...user,
@@ -88,7 +82,7 @@ export const verifyRefreshToken = async (refreshToken) => {
   return payload;
 };
 
-export const logout = async (refreshToken) => {
+export const logout = async (refreshToken, userId) => {
   const authToken = refreshToken.startsWith("Bearer ")
     ? refreshToken.slice(7)
     : refreshToken;
@@ -97,6 +91,7 @@ export const logout = async (refreshToken) => {
     const result = await prismaClient.refreshToken.deleteMany({
       where: {
         token: authToken,
+        userId: userId,
       },
     });
 

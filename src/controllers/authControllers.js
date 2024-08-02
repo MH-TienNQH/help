@@ -42,11 +42,12 @@ export const login = asyncErrorHandler(async (req, res) => {
 
 export const logout = asyncErrorHandler(async (req, res, next) => {
   const refreshToken = req.headers["authorization"];
+  const userId = req.userId;
 
   if (!refreshToken) {
     return res.status(400).json({ error: "Token is missing" });
   }
-  const response = await authServices.logout(refreshToken);
+  const response = await authServices.logout(refreshToken, userId);
 
   res.send(new responseFormat(200, true, response));
 });
