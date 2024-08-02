@@ -1,12 +1,10 @@
 import jwt from "jsonwebtoken";
 import { sendMailTo } from "../utils/sendMail.js";
 import * as userServices from "../services/userServices.js";
-import { compareSync } from "bcrypt";
+import { compareSync, hashSync } from "bcrypt";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
-import { decode } from "punycode";
-import { response } from "express";
 import { prismaClient } from "../routes/index.js";
-import { responseFormat } from "../utils/responseFormat.js";
+import { validationResult } from "express-validator";
 
 export const verifyEmail = async (email) => {
   await prismaClient.user.update({
@@ -109,4 +107,50 @@ export const logout = async (refreshToken) => {
   } catch (error) {
     throw new Error(error);
   }
+};
+export const setPassword = async (email, password, otp) => {
+  let user = await prismaClient.user.findUnique({
+    where: {
+      email,
+    },
+  });
+  if (!user) {
+    throw new OperationalException("Email doesn't exist", 401);
+  }
+  if (user.otp !== otp) {
+    throw new OperationalException("Invalid OTP", 401);
+  }
+  await prismaClient.user.update({
+    where: {
+      email,
+    },
+    data: {
+      password: hashSync(password, 10),
+      otp: null,
+    },
+  });
+  return {
+    user: {
+      ...user,
+      password: "",
+    },
+    message: "Password changed successfully",
+  };
+};
+export const forgotPassword = async (email) => {
+  let otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+  sendMailTo(
+    email,
+    "OTP for forgot password",
+    `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword>here</a></p>`
+  );
+  user = await prismaClient.user.update({
+    where: {
+      email,
+    },
+    data: {
+      otp,
+    },
+  });
+  return otp;
 };

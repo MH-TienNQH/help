@@ -72,3 +72,25 @@ export const verifyEmail = asyncErrorHandler(async (req, res) => {
   await authServices.verifyEmail(email);
   res.send("verified");
 });
+
+export const setPassword = asyncErrorHandler(async (req, res) => {
+  let result = validationResult(req);
+
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array({ onlyFirstError: true }));
+  }
+  const { email, otp, newPassword } = req.body;
+  let response = await authServices.setPassword(email, newPassword, otp);
+  res.send(new responseFormat(200, true, response));
+});
+
+export const forgotPassword = asyncErrorHandler(async (req, res) => {
+  let result = validationResult(req);
+
+  if (!result.isEmpty()) {
+    return res.status(400).send(result.array({ onlyFirstError: true }));
+  }
+  const email = req.body;
+  let response = await authServices.forgotPassword(email);
+  res.send(new responseFormat(200, true, response));
+});
