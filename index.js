@@ -20,6 +20,4 @@ app.use(cookieParser());
 app.use("/api", rootRouter);
 app.use(errorHandlerMiddlewares);
 
-schedule.scheduleJob("*/10 * * * *", deleteNotVerified);
-
 app.listen(PORT, () => `running on http://localhost:${PORT}`);
