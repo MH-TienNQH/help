@@ -6,6 +6,7 @@ import {
   deleteProduct,
   getAllProduct,
   getNewestProduct,
+  getProductByCategory,
   getProductById,
   getSellingProduct,
   getSoldProduct,
@@ -31,10 +32,10 @@ productRoutes.get("/selling-products", getSellingProduct);
 productRoutes.get("/sold-products", getSoldProduct);
 productRoutes.get("/newest", getNewestProduct);
 productRoutes.get("/get-trending-products", getThreeTrendingProduct);
+productRoutes.get("/get-by-category", getProductByCategory);
 productRoutes.post(
   "/add-product",
   upload.single("cover"),
-  upload.array("images", 5),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   addProduct

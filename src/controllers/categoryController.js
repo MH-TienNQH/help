@@ -19,7 +19,7 @@ export const getCategoryById = asyncErrorHandler(async (req, res) => {
   res.status(200).send(category);
 });
 
-export const addCategory = asyncErrorHandler(async (req, res, next) => {
+export const addCategory = async (req, res, next) => {
   let result = validationResult(req);
   if (!result.isEmpty()) {
     return res.status(400).send(result.array({ onlyFirstError: true }));
@@ -40,7 +40,7 @@ export const addCategory = asyncErrorHandler(async (req, res, next) => {
   } catch (error) {
     return res.status(500).send(error);
   }
-});
+};
 export const updateCategory = asyncErrorHandler(async (req, res, next) => {
   let result = validationResult(req);
   if (!result.isEmpty()) {

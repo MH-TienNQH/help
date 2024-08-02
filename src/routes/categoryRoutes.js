@@ -11,7 +11,7 @@ import {
 
 //authentication middlewares
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
-import adminMiddlewares from "../middlewares/adminMiddlewares.js";
+// import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 
 //validation
 import { checkSchema } from "express-validator";
@@ -24,7 +24,6 @@ categoryRoutes.get("/get-by-id/:id", getCategoryById);
 categoryRoutes.post(
   "/add-category",
   verifyTokenMiddlewares,
-  adminMiddlewares,
   checkSchema(addCategorySchema),
   addCategory
 );
@@ -32,7 +31,6 @@ categoryRoutes.put(
   "/update/:id",
   checkSchema(addCategorySchema),
   verifyTokenMiddlewares,
-  adminMiddlewares,
   updateCategory
 );
 categoryRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteCategory);
