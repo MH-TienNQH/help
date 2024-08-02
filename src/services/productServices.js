@@ -22,8 +22,8 @@ export const findById = async (id) => {
   }
   return product;
 };
-export const addProduct = async (data, cover, userId, images) => {
-  const product = await prismaClient.product.findUnique({
+export const addProduct = async (data, cover, userId) => {
+  let product = await prismaClient.product.findUnique({
     where: {
       name: data.name,
     },
@@ -35,7 +35,7 @@ export const addProduct = async (data, cover, userId, images) => {
     data: {
       name: data.name,
       description: data.description,
-      image: images,
+      image: data.image,
       price: parseInt(data.price),
       cover: cover,
       category: {
@@ -127,30 +127,18 @@ export const getSoldProduct = async () => {
     },
   });
 };
-export const sortProduct = async (
+export const listProduct = async (
   productName,
-  categoryName,
+  categoryId,
   order,
   page,
-  limit,
-  skip
+  limit
 ) => {
   if (!["asc", "desc"].includes(order)) {
     return res.status(400).json({ error: "Invalid order value" });
   }
 
-  let categoryId;
-  if (categoryName) {
-    const category = await prismaClient.category.findUnique({
-      where: {
-        categoryName: categoryName,
-      },
-    });
-    if (!category) {
-      throw new OperationalException("Category not found", 404);
-    }
-    categoryId = category.categoryId;
-  }
+  const skip = (page - 1) * limit;
 
   let numberOfProducts = await prismaClient.product.count({
     where: {
@@ -176,12 +164,12 @@ export const sortProduct = async (
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
   return {
-    meta: {
-      priviousPage: previousPage,
-      currentPage: page,
-      nextPage: nextPage,
-      totalPage: totalPages,
-    },
     products,
+    meta: {
+      privious_page: previousPage,
+      current_page: page,
+      next_page: nextPage,
+      total: totalPages,
+    },
   };
 };

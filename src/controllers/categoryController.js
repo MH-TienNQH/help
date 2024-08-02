@@ -38,7 +38,7 @@ export const addCategory = asyncErrorHandler(async (req, res, next) => {
     const response = await categoryServices.addCategory(data);
     res.send(new responseFormat(200, true, response));
   } catch (error) {
-    return res.status(500).send(error);
+    next(error);
   }
 });
 export const updateCategory = asyncErrorHandler(async (req, res, next) => {

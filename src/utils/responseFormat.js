@@ -6,3 +6,13 @@ export class responseFormat extends Response {
     this.data = data;
   }
 }
+
+export class responseFormatWithPagination extends Response {
+  constructor(statusCode, success, data, meta) {
+    super(data);
+    this.statusCode = statusCode;
+    this.success = success;
+    this.data = data;
+    this.meta = meta;
+  }
+}

@@ -10,7 +10,7 @@ import {
   getSellingProduct,
   getSoldProduct,
   getThreeTrendingProduct,
-  sortProduct,
+  listProduct,
   updateProduct,
 } from "../controllers/productController.js";
 
@@ -23,7 +23,6 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { addProductSchema } from "../schema/productSchema.js";
-
 export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
@@ -32,11 +31,10 @@ productRoutes.get("/selling-products", getSellingProduct);
 productRoutes.get("/sold-products", getSoldProduct);
 productRoutes.get("/newest", getNewestProduct);
 productRoutes.get("/get-trending-products", getThreeTrendingProduct);
-productRoutes.get("/sort-product", sortProduct);
+productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
   upload.single("cover"),
-  upload.array("images", 5),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   addProduct
