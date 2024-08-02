@@ -95,3 +95,13 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
   let products = await productServices.getSoldProduct();
   res.send(new responseFormat(200, true, products));
 });
+export const sortProduct = asyncErrorHandler(async (req, res) => {
+  const { productName, categoryName, order } = req.query;
+  let products = await productServices.sortProduct(
+    productName,
+    categoryName,
+    order
+  );
+
+  res.send(new responseFormat(200, true, products));
+});

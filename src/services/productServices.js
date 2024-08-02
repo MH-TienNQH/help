@@ -127,3 +127,30 @@ export const getSoldProduct = async () => {
     },
   });
 };
+export const sortProduct = async (productName, categoryName, order) => {
+  if (!["asc", "desc"].includes(order)) {
+    return res.status(400).json({ error: "Invalid order value" });
+  }
+  let categoryId;
+  if (categoryName) {
+    const category = await prismaClient.category.findUnique({
+      where: {
+        categoryName: categoryName,
+      },
+    });
+    if (!category) {
+      throw new OperationalException("Category not found", 404);
+    }
+    categoryId = category.categoryId;
+  }
+
+  let products = await prismaClient.product.findMany({
+    where: {
+      name: {
+        contains: productName || "", // Search for products where the name contains the specified value
+      },
+      categoryId: categoryId,
+    },
+  });
+  return products;
+};
