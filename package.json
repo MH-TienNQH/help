@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@prisma/client": "^5.16.2",
+    "@prisma/client": "^5.17.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
@@ -10,9 +10,11 @@
     "express": "^4.19.2",
     "express-validator": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
     "node-schedule": "^2.1.1",
+    "node-validator": "^0.1.27",
     "nodemailer": "^6.9.14",
-    "prisma": "^5.17.0",
+    "path": "^0.12.7",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5"
   },
@@ -31,6 +33,7 @@
     "@types/express": "^4.17.21",
     "@types/node": "^20.14.10",
     "nodemon": "^3.1.4",
+    "prisma": "^5.17.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   }

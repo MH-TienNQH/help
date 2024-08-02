@@ -1,6 +1,5 @@
 import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
-import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllUser = async () => {
   return await prismaClient.user.findMany();
@@ -14,7 +13,15 @@ export const findById = async (id) => {
   });
 };
 
-export const addUser = async (data) => {
+export const findUserByEmail = async (email) => {
+  return await prismaClient.user.findUnique({
+    where: {
+      email,
+    },
+  });
+};
+
+export const addUser = async (data, avatar) => {
   data.password = hashSync(data.password, 10);
   return await prismaClient.user.create({
     data: {
@@ -22,13 +29,13 @@ export const addUser = async (data) => {
       username: data.username,
       email: data.email,
       password: data.password,
-      avatar: data.avatar,
+      avatar,
       role: data.role,
     },
   });
 };
 
-export const updateUser = async (id, data) => {
+export const updateUser = async (id, data, avatar) => {
   data.password = hashSync(data.password, 10);
   return await prismaClient.user.update({
     where: {
@@ -39,7 +46,7 @@ export const updateUser = async (id, data) => {
       username: data.username,
       email: data.email,
       password: data.password,
-      avatar: data.avatar,
+      avatar,
       role: data.role,
     },
   });
@@ -73,6 +80,35 @@ export const saveProduct = async (userId, productId) => {
     });
   } else {
     await prismaClient.productSaved.create({
+      data: {
+        userId,
+        productId,
+      },
+    });
+  }
+};
+
+export const likeProduct = async (userId, productId) => {
+  const likedProduct = await prismaClient.productLiked.findUnique({
+    where: {
+      productId_userId: {
+        userId,
+        productId,
+      },
+    },
+  });
+
+  if (likedProduct) {
+    await prismaClient.productLiked.delete({
+      where: {
+        productId_userId: {
+          userId,
+          productId,
+        },
+      },
+    });
+  } else {
+    await prismaClient.productLiked.create({
       data: {
         userId,
         productId,

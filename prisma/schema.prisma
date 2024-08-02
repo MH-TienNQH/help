@@ -24,19 +24,31 @@ enum Status {
 }
 
 model User {
-  userId       Int            @id @unique @default(autoincrement())
-  username     String         @unique
-  email        String         @unique
-  password     String
-  name         String
-  avatar       String
-  verified     Boolean        @default(false)
-  role         Role           @default(USER)
-  product      Product[]
-  ProductSaved ProductSaved[]
-  chats        Chat[]
-  createdAt    DateTime       @default(now())
-  ProductLiked ProductLiked[]
+  userId        Int            @id @unique @default(autoincrement())
+  username      String         @unique
+  email         String         @unique
+  password      String
+  name          String
+  avatar        String
+  verified      Boolean        @default(false)
+  role          Role           @default(USER)
+  product       Product[]
+  ProductSaved  ProductSaved[]
+  chats         Chat[]
+  createdAt     DateTime       @default(now())
+  ProductLiked  ProductLiked[]
+  refreshTokens RefreshToken[]
+  otp           String?
+  otpCreatedAt  DateTime?
+  otpExpireAt   DateTime?
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [userId])
+  token     String   @unique
+  createdAt DateTime @default(now())
 }
 
 model Chat {
@@ -58,7 +70,7 @@ model Message {
 
 model Product {
   productId    Int            @id @unique @default(autoincrement())
-  name         String
+  name         String         @unique
   description  String
   image        String
   price        Int
