@@ -88,7 +88,7 @@ model Product {
 
 model Category {
   categoryId   Int       @id @unique @default(autoincrement())
-  categoryName String
+  categoryName String    @unique
   Product      Product[]
 }
 
