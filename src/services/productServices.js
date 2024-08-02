@@ -145,7 +145,7 @@ export const listProduct = async (
       name: {
         contains: productName || "", // Search for products where the name contains the specified value
       },
-      categoryId: categoryId,
+      ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
     },
   });
 
@@ -154,7 +154,7 @@ export const listProduct = async (
       name: {
         contains: productName || "", // Search for products where the name contains the specified value
       },
-      categoryId: categoryId,
+      ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
     },
     skip,
     take: limit,
