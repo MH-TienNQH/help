@@ -5,6 +5,7 @@ import { compareSync, hashSync } from "bcrypt";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { validationResult } from "express-validator";
+import { userInfo } from "os";
 
 export const verifyEmail = async (email) => {
   await prismaClient.user.update({
@@ -136,11 +137,7 @@ export const setPassword = async (email, password, otp) => {
     },
   });
   return {
-    user: {
-      ...user,
-      password: "",
-    },
-    message: "Password changed successfully",
+    user,
   };
 };
 export const forgotPassword = async (email) => {
