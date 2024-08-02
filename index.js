@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import cors from "cors";
 // //cron
 // import schedule from "node-schedule";
 
@@ -18,6 +19,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(paginationMiddleware);
+app.use(cors({ origin: "*" }));
 
 app.use("/api", rootRouter);
 app.use(errorHandlerMiddlewares);
