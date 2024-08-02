@@ -8,9 +8,11 @@ import express from "express";
 import rootRouter from "./src/routes/index.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+
+//midlleware
 import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewares.js";
+import paginationMiddleware from "./src/middlewares/paginationMiddleware.js";
 import { deleteNotVerified } from "./src/utils/deleteNotVerified.js";
-import { expireOTP } from "./src/utils/expireOTP.js";
 
 const PORT = process.env.PORT;
 
@@ -19,6 +21,7 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(paginationMiddleware);
 
 app.use("/api", rootRouter);
 app.use(errorHandlerMiddlewares);
@@ -35,6 +38,5 @@ app.get("/", (req, res) => {
 });
 
 schedule.scheduleJob("*/10 * * * *", deleteNotVerified);
-schedule.scheduleJob("*/1 * * * *", expireOTP);
 
 app.listen(PORT, () => `running on http://localhost:${PORT}`);

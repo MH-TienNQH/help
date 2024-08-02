@@ -32,7 +32,7 @@ productRoutes.get("/selling-products", getSellingProduct);
 productRoutes.get("/sold-products", getSoldProduct);
 productRoutes.get("/newest", getNewestProduct);
 productRoutes.get("/get-trending-products", getThreeTrendingProduct);
-productRoutes.get("sort-product", sortProduct);
+productRoutes.get("/sort-product", sortProduct);
 productRoutes.post(
   "/add-product",
   upload.single("cover"),
