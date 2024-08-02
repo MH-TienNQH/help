@@ -2,7 +2,10 @@ import { prismaClient } from "../routes/index.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
-import { responseFormat } from "../utils/responseFormat.js";
+import {
+  responseFormat,
+  responseFormatWithPagination,
+} from "../utils/responseFormat.js";
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 
@@ -95,17 +98,22 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
   let products = await productServices.getSoldProduct();
   res.send(new responseFormat(200, true, products));
 });
-export const sortProduct = asyncErrorHandler(async (req, res) => {
-  const { productName, categoryName, order } = req.query;
-  const { page, limit, skip } = req.pagination;
-  let response = await productServices.sortProduct(
+export const listProduct = asyncErrorHandler(async (req, res) => {
+  const { productName, categoryId, order } = req.query;
+  const { page, limit } = req.pagination;
+  let response = await productServices.listProduct(
     productName,
-    categoryName,
+    categoryId,
     order,
     page,
-    limit,
-    skip
+    limit
   );
-
-  res.send(new responseFormat(200, true, response));
+  res.send(
+    new responseFormatWithPagination(
+      200,
+      true,
+      response.products,
+      response.meta
+    )
+  );
 });

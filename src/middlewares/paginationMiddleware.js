@@ -16,7 +16,6 @@ const paginationMiddleware = (req, res, next) => {
   req.pagination = {
     page,
     limit,
-    skip: (page - 1) * limit,
   };
 
   next();
