@@ -27,12 +27,6 @@ export const login = async (data) => {
     throw new OperationalException("Incorrect password", 401);
   }
   const { accessToken, refreshToken } = await generateToken(user);
-  await prismaClient.refreshToken.create({
-    data: {
-      userId: user.userId,
-      token: refreshToken,
-    },
-  });
   return {
     user: {
       ...user,
