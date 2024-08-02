@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import cors from "cors";
-import { crossOriginResourcePolicy } from "helmet";
 // //cron
 // import schedule from "node-schedule";
 
@@ -21,7 +20,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(paginationMiddleware);
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
-app.use(crossOriginResourcePolicy({ policy: "cross-origin" }));
 
 app.use("/api", rootRouter);
 app.use(errorHandlerMiddlewares);
