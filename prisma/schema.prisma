@@ -39,7 +39,7 @@ model User {
   ProductLiked  ProductLiked[]
   refreshTokens RefreshToken[]
   otp           String?
-  otpCreatedAt  DateTime?      @default(now())
+  otpCreatedAt  DateTime?
   otpExpireAt   DateTime?
 }
 

@@ -153,13 +153,13 @@ export const forgotPassword = async (email) => {
     "OTP for forgot password",
     `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword>here</a></p>`
   );
-  user = await prismaClient.user.update({
+  await prismaClient.user.update({
     where: {
       email,
     },
     data: {
       otp,
-      otpCreatedAt: now.getTime(),
+      otpCreatedAt: new Date(now.getTime()),
       otpExpireAt: ftmin,
     },
   });
