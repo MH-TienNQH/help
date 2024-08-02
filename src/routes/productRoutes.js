@@ -35,7 +35,6 @@ productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
   upload.single("cover"),
-  upload.array("images", 5),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   addProduct

@@ -44,8 +44,7 @@ export const addProduct = asyncErrorHandler(async (req, res) => {
   const data = req.body;
   const userId = req.userId;
   const cover = req.file.filename;
-  const images = req.files.map((file) => file.filename);
-  let product = await productServices.addProduct(data, cover, userId, images);
+  let product = await productServices.addProduct(data, cover, userId);
 
   res.send(new responseFormat(200, true, [product.name, "product created"]));
 });
