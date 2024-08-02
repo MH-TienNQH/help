@@ -41,7 +41,8 @@ export const addProduct = asyncErrorHandler(async (req, res) => {
   const data = req.body;
   const userId = req.userId;
   const cover = req.file.filename;
-  let product = await productServices.addProduct(data, cover, userId);
+  const images = req.files.map((file) => file.filename);
+  let product = await productServices.addProduct(data, cover, userId, images);
 
   res.send(new responseFormat(200, true, [product.name, "product created"]));
 });
@@ -54,8 +55,16 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const productId = req.params.id;
   const data = req.body;
   const userId = req.userId;
+  const cover = req.file.filename;
+  const images = req.files.map((file) => file.filename);
 
-  let product = await productServices.updateProduct(productId, data, userId);
+  let product = await productServices.updateProduct(
+    productId,
+    data,
+    userId,
+    cover,
+    images
+  );
   if (!product) {
     const error = new OperationalException("Product not found", 404);
     next(error);
