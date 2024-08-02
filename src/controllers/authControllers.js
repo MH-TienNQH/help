@@ -80,8 +80,8 @@ export const setPassword = asyncErrorHandler(async (req, res) => {
   if (!result.isEmpty()) {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
-  const { email, otp, newPassword } = req.body;
-  let response = await authServices.setPassword(email, newPassword, otp);
+  const { email, otp, password } = req.body;
+  let response = await authServices.setPassword(email, password, otp);
   res.send(new responseFormat(200, true, response));
 });
 

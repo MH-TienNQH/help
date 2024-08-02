@@ -163,5 +163,5 @@ export const forgotPassword = async (email) => {
       otpExpireAt: ftmin,
     },
   });
-  return otp;
+  return { message: "sent otp" };
 };
