@@ -16,15 +16,21 @@ import {
   signUpSchema,
 } from "../schema/userSchema.js";
 import { otpSchema } from "../schema/otpSchema.js";
+import { upload } from "../utils/uploadFile.js";
 
 export const authRoutes = Router();
 
-authRoutes.post("/signup", checkSchema(signUpSchema), signUp);
+authRoutes.post(
+  "/signup",
+  upload.single("avatar"),
+  checkSchema(signUpSchema),
+  signUp
+);
 authRoutes.post("/login", checkSchema(loginSchema), login);
 authRoutes.post("/logout", logout);
 authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
-authRoutes.get(
+authRoutes.put(
   "/set-password",
   checkSchema(emailSchema),
   checkSchema(passwordSchema),

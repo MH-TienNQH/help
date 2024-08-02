@@ -5,6 +5,7 @@ import { compareSync, hashSync } from "bcrypt";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { validationResult } from "express-validator";
+import { userInfo } from "os";
 
 export const verifyEmail = async (email) => {
   await prismaClient.user.update({
@@ -109,6 +110,7 @@ export const logout = async (refreshToken) => {
   }
 };
 export const setPassword = async (email, password, otp) => {
+  const now = new Date();
   let user = await prismaClient.user.findUnique({
     where: {
       email,
@@ -120,6 +122,9 @@ export const setPassword = async (email, password, otp) => {
   if (user.otp !== otp) {
     throw new OperationalException("Invalid OTP", 401);
   }
+  if (now.getTime() > user.otpExpireAt) {
+    throw new OperationalException("OTP expired", 401);
+  }
   await prismaClient.user.update({
     where: {
       email,
@@ -127,30 +132,33 @@ export const setPassword = async (email, password, otp) => {
     data: {
       password: hashSync(password, 10),
       otp: null,
+      otpCreatedAt: null,
+      otpExpireAt: null,
     },
   });
   return {
-    user: {
-      ...user,
-      password: "",
-    },
-    message: "Password changed successfully",
+    user,
   };
 };
 export const forgotPassword = async (email) => {
   let otp = `${Math.floor(1000 + Math.random() * 9000)}`;
+  const now = new Date();
+  const ftmin = new Date(now.getTime() + 15 * 60 * 1000);
+
   sendMailTo(
     email,
     "OTP for forgot password",
     `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword>here</a></p>`
   );
-  user = await prismaClient.user.update({
+  await prismaClient.user.update({
     where: {
       email,
     },
     data: {
       otp,
+      otpCreatedAt: new Date(now.getTime()),
+      otpExpireAt: ftmin,
     },
   });
-  return otp;
+  return { message: "sent otp" };
 };

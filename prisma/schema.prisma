@@ -38,8 +38,9 @@ model User {
   createdAt     DateTime       @default(now())
   ProductLiked  ProductLiked[]
   refreshTokens RefreshToken[]
-  otp String?
-  otpCreatedAt DateTime @default(now())
+  otp           String?
+  otpCreatedAt  DateTime?
+  otpExpireAt   DateTime?
 }
 
 model RefreshToken {
