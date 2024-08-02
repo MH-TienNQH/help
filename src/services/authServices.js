@@ -88,7 +88,7 @@ export const verifyRefreshToken = async (refreshToken) => {
   return payload;
 };
 
-export const logout = async (refreshToken) => {
+export const logout = async (refreshToken, userId) => {
   const authToken = refreshToken.startsWith("Bearer ")
     ? refreshToken.slice(7)
     : refreshToken;
@@ -97,6 +97,7 @@ export const logout = async (refreshToken) => {
     const result = await prismaClient.refreshToken.deleteMany({
       where: {
         token: authToken,
+        userId: userId,
       },
     });
 
