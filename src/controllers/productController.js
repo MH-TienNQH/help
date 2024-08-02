@@ -97,11 +97,15 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
 });
 export const sortProduct = asyncErrorHandler(async (req, res) => {
   const { productName, categoryName, order } = req.query;
-  let products = await productServices.sortProduct(
+  const { page, limit, skip } = req.pagination;
+  let response = await productServices.sortProduct(
     productName,
     categoryName,
-    order
+    order,
+    page,
+    limit,
+    skip
   );
 
-  res.send(new responseFormat(200, true, products));
+  res.send(new responseFormat(200, true, response));
 });

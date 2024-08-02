@@ -127,10 +127,18 @@ export const getSoldProduct = async () => {
     },
   });
 };
-export const sortProduct = async (productName, categoryName, order) => {
+export const sortProduct = async (
+  productName,
+  categoryName,
+  order,
+  page,
+  limit,
+  skip
+) => {
   if (!["asc", "desc"].includes(order)) {
     return res.status(400).json({ error: "Invalid order value" });
   }
+
   let categoryId;
   if (categoryName) {
     const category = await prismaClient.category.findUnique({
@@ -144,7 +152,7 @@ export const sortProduct = async (productName, categoryName, order) => {
     categoryId = category.categoryId;
   }
 
-  let products = await prismaClient.product.findMany({
+  let numberOfProducts = await prismaClient.product.count({
     where: {
       name: {
         contains: productName || "", // Search for products where the name contains the specified value
@@ -152,5 +160,28 @@ export const sortProduct = async (productName, categoryName, order) => {
       categoryId: categoryId,
     },
   });
-  return products;
+
+  let products = await prismaClient.product.findMany({
+    where: {
+      name: {
+        contains: productName || "", // Search for products where the name contains the specified value
+      },
+      categoryId: categoryId,
+    },
+    skip,
+    take: limit,
+  });
+
+  const totalPages = Math.ceil(numberOfProducts / limit);
+  const previousPage = page > 1 ? page - 1 : null;
+  const nextPage = page < totalPages ? page + 1 : null;
+  return {
+    meta: {
+      priviousPage: previousPage,
+      currentPage: page,
+      nextPage: nextPage,
+      totalPage: totalPages,
+    },
+    products,
+  };
 };
