@@ -15,7 +15,7 @@ import {
 } from "../controllers/productController.js";
 
 //upload file
-import { upload } from "../utils/uploadFile.js";
+import { uploadMiddleware } from "../utils/uploadFile.js";
 
 //authentication middlewares
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
@@ -34,15 +34,13 @@ productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
-  upload.single("cover"),
+  uploadMiddleware.single("image"),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   addProduct
 );
 productRoutes.put(
   "/update/:id",
-  upload.single("cover"),
-  upload.array("images", 5),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct

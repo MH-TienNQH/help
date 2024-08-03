@@ -24,7 +24,6 @@ categoryRoutes.get("/get-by-id/:id", getCategoryById);
 categoryRoutes.post(
   "/add-category",
   verifyTokenMiddlewares,
-  adminMiddlewares,
   checkSchema(addCategorySchema),
   addCategory
 );
@@ -32,7 +31,6 @@ categoryRoutes.put(
   "/update/:id",
   checkSchema(addCategorySchema),
   verifyTokenMiddlewares,
-  adminMiddlewares,
   updateCategory
 );
 categoryRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteCategory);
