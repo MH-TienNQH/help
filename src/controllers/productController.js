@@ -7,6 +7,7 @@ import {
 } from "../utils/responseFormat.js";
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
+import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 dotenv.config();
 
@@ -56,18 +57,14 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const productId = req.params.id;
   const data = req.body;
   const userId = req.userId;
-  const cover = req.file.filename;
+  const image = req.file.filename;
 
   let product = await productServices.updateProduct(
     productId,
     data,
     userId,
-    cover
+    image
   );
-  if (!product) {
-    const error = new OperationalException("Product not found", 404);
-    next(error);
-  }
   res.send(new responseFormat(200, true, [product.name, "product updated"]));
 });
 

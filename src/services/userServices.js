@@ -23,7 +23,7 @@ export const findUserByEmail = async (email) => {
 
 export const addUser = async (data, avatar) => {
   data.password = hashSync(data.password, 10);
-  return await prismaClient.user.create({
+  const user = await prismaClient.user.create({
     data: {
       name: data.name,
       username: data.username,
@@ -33,6 +33,7 @@ export const addUser = async (data, avatar) => {
       role: data.role,
     },
   });
+  return user;
 };
 
 export const updateUser = async (id, data, avatar) => {
