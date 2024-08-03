@@ -21,7 +21,7 @@ import { checkSchema } from "express-validator";
 import { signUpSchema } from "../schema/userSchema.js";
 
 //upload file
-import { upload } from "../utils/uploadFile.js";
+
 
 export const userRoutes = Router();
 
@@ -29,7 +29,7 @@ userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.post(
   "/add-user",
-  upload.single("avatar"),
+  
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   adminMiddlewares,
@@ -37,7 +37,7 @@ userRoutes.post(
 );
 userRoutes.put(
   "/update/:id",
-  upload.single("avatar"),
+
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   updateUser

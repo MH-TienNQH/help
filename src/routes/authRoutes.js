@@ -16,13 +16,13 @@ import {
   signUpSchema,
 } from "../schema/userSchema.js";
 import { otpSchema } from "../schema/otpSchema.js";
-import { upload } from "../utils/uploadFile.js";
+import { uploadMiddleware } from "../utils/uploadFile.js";
 
 export const authRoutes = Router();
 
 authRoutes.post(
   "/signup",
-  upload.single("avatar"),
+  uploadMiddleware.single("avatar"),
   checkSchema(signUpSchema),
   signUp
 );

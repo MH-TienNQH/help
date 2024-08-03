@@ -1,5 +1,4 @@
 import { prismaClient } from "../routes/index.js";
-import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
 import {
@@ -36,18 +35,18 @@ export const getProductById = asyncErrorHandler(async (req, res) => {
   );
 });
 
-export const addProduct = asyncErrorHandler(async (req, res) => {
+export const addProduct = async (req, res) => {
   const result = validationResult(req);
   if (!result.isEmpty()) {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
   const data = req.body;
   const userId = req.userId;
-  const cover = req.file.filename;
-  let product = await productServices.addProduct(data, cover, userId);
+  const image = req.file.filename;
+  let product = await productServices.addProduct(data, image, userId);
 
   res.send(new responseFormat(200, true, [product.name, "product created"]));
-});
+};
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const result = validationResult(req);
@@ -58,14 +57,12 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const data = req.body;
   const userId = req.userId;
   const cover = req.file.filename;
-  const images = req.files.map((file) => file.filename);
 
   let product = await productServices.updateProduct(
     productId,
     data,
     userId,
-    cover,
-    images
+    cover
   );
   if (!product) {
     const error = new OperationalException("Product not found", 404);
