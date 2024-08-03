@@ -3,7 +3,7 @@ dotenv.config();
 
 import cors from "cors";
 // //cron
-// import schedule from "node-schedule";
+import schedule from "node-schedule";
 
 import express from "express";
 import rootRouter from "./src/routes/index.js";
@@ -13,6 +13,7 @@ import cookieParser from "cookie-parser";
 import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewares.js";
 import paginationMiddleware from "./src/middlewares/paginationMiddleware.js";
 import bodyParser from "body-parser";
+import { deleteNotVerified } from "./src/utils/deleteNotVerified.js";
 
 const PORT = process.env.PORT;
 
@@ -32,5 +33,7 @@ app.use(
 
 app.use("/api", rootRouter);
 app.use(errorHandlerMiddlewares);
+
+schedule.scheduleJob("*/10 * * * *", deleteNotVerified);
 
 app.listen(PORT, () => `running on http://localhost:${PORT}`);

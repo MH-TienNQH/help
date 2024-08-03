@@ -41,6 +41,7 @@ productRoutes.post(
 );
 productRoutes.put(
   "/update/:id",
+  uploadMiddleware.single("image"),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct

@@ -53,20 +53,35 @@ export const addProduct = async (data, image, userId) => {
   return product;
 };
 
-export const updateProduct = async (id, data, userId, cover) => {
-  await prismaClient.product.update({
+export const updateProduct = async (productId, data, userId, image) => {
+  let product = await prismaClient.product.findUnique({
     where: {
-      productId: parseInt(id),
+      productId: parseInt(productId),
+    },
+  });
+  if (!product) {
+    throw new OperationalException("Product not found", 404);
+  }
+  product = await prismaClient.product.findUnique({
+    where: {
+      name: data.name,
+    },
+  });
+  if (product) {
+    throw new OperationalException("Product exist", 403);
+  }
+  product = await prismaClient.product.update({
+    where: {
+      productId: parseInt(productId),
     },
     data: {
       name: data.name,
       description: data.description,
-      image: data.image,
-      price: data.price,
-      cover: cover,
+      image,
+      price: parseInt(data.price),
       category: {
         connect: {
-          categoryId: data.categoryId,
+          categoryId: parseInt(data.categoryId),
         },
       },
       author: {
@@ -76,6 +91,7 @@ export const updateProduct = async (id, data, userId, cover) => {
       },
     },
   });
+  return product;
 };
 
 export const deleteProduct = async (id) => {
