@@ -151,6 +151,7 @@ export const listProduct = async (
   productName,
   categoryId,
   order,
+  pending,
   page,
   limit
 ) => {
@@ -166,6 +167,7 @@ export const listProduct = async (
         contains: productName || "", // Search for products where the name contains the specified value
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
+      ...(pending ? { pending: true } : {}),
     },
   });
 
@@ -175,6 +177,7 @@ export const listProduct = async (
         contains: productName || "", // Search for products where the name contains the specified value
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
+      ...(pending ? { pending: true } : {}),
     },
     skip,
     take: limit,
@@ -192,4 +195,16 @@ export const listProduct = async (
       total: totalPages,
     },
   };
+};
+
+export const verifyProduct = async (productId) => {
+  const product = await prismaClient.product.update({
+    where: {
+      productId: parseInt(productId),
+    },
+    data: {
+      pending: false,
+    },
+  });
+  return product;
 };

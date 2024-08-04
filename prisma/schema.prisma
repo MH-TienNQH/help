@@ -81,6 +81,7 @@ model Product {
   author       User?          @relation(fields: [userId], references: [userId])
   createdAt    DateTime       @default(now())
   soldAt       DateTime?
+  pending Boolean @default(true)
   ProductSaved ProductSaved[]
   likeNumber   ProductLiked[]
 }
