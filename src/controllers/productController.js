@@ -92,12 +92,13 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
   res.send(new responseFormat(200, true, products));
 });
 export const listProduct = asyncErrorHandler(async (req, res) => {
-  const { productName, categoryId, order } = req.query;
+  const { productName, categoryId, order, pending } = req.query;
   const { page, limit } = req.pagination;
   let response = await productServices.listProduct(
     productName,
     categoryId,
     order,
+    pending,
     page,
     limit
   );
