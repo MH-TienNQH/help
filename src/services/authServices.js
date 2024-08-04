@@ -67,7 +67,25 @@ export const sendVerificationEmail = async (email) => {
 
 export const refresh = async (refreshToken) => {
   const payload = await verifyRefreshToken(refreshToken);
-  const response = generateToken(payload);
+  const user = await prismaClient.user.findUnique({
+    where: {
+      userId: payload.userId,
+    },
+  });
+  if (!user) {
+    throw new OperationalException("User not found", 404);
+  }
+  const response = generateToken(user);
+  await prismaClient.refreshToken.update({
+    where: {
+      userId: user.userId,
+      token: refreshToken,
+    },
+    data: {
+      token: (await response).refreshToken,
+    },
+  });
+  console.log((await response).refreshToken);
   return response;
 };
 
@@ -89,6 +107,15 @@ export const logout = async (refreshToken, userId) => {
   const authToken = refreshToken.startsWith("Bearer ")
     ? refreshToken.slice(7)
     : refreshToken;
+
+  let reftoken = await prismaClient.refreshToken.findUnique({
+    where: {
+      token: authToken,
+    },
+  });
+  if (!reftoken) {
+    throw new OperationalException("Invalid token", 400);
+  }
 
   try {
     const result = await prismaClient.refreshToken.deleteMany({

@@ -1,11 +1,25 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
 // Configure storage for Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Specify the directory to save files
-    cb(null, "public/images");
+    const dir = "public/images";
+    fs.access(dir, fs.constants.F_OK, (err) => {
+      if (err) {
+        // Directory does not exist, so create it
+        fs.mkdir(dir, { recursive: true }, (mkdirErr) => {
+          if (mkdirErr) {
+            return cb(mkdirErr); // Pass error to callback
+          }
+          cb(null, dir); // Directory created successfully
+        });
+      } else {
+        // Directory exists
+        cb(null, dir);
+      }
+    });
   },
   filename: (req, file, cb) => {
     // Specify the filename with a unique identifier
