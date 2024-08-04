@@ -41,7 +41,13 @@ export const login = asyncErrorHandler(async (req, res) => {
 });
 
 export const logout = asyncErrorHandler(async (req, res, next) => {
-  const refreshToken = req.headers["authorization"];
+  let refreshToken = null;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.split(" ")[0] === "Bearer"
+  ) {
+    refreshToken = req.headers.authorization.split(" ")[1];
+  }
   const userId = req.userId;
 
   if (!refreshToken) {

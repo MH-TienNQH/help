@@ -104,13 +104,9 @@ export const verifyRefreshToken = async (refreshToken) => {
 };
 
 export const logout = async (refreshToken, userId) => {
-  const authToken = refreshToken.startsWith("Bearer ")
-    ? refreshToken.slice(7)
-    : refreshToken;
-
   let reftoken = await prismaClient.refreshToken.findUnique({
     where: {
-      token: authToken,
+      token: refreshToken,
     },
   });
   if (!reftoken) {
@@ -120,7 +116,7 @@ export const logout = async (refreshToken, userId) => {
   try {
     const result = await prismaClient.refreshToken.deleteMany({
       where: {
-        token: authToken,
+        token: refreshToken,
         userId: userId,
       },
     });
