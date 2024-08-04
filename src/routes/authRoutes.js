@@ -37,4 +37,4 @@ authRoutes.put(
   checkSchema(otpSchema),
   setPassword
 );
-authRoutes.get("/forgot-password", checkSchema(emailSchema), forgotPassword);
+authRoutes.post("/forgot-password", checkSchema(emailSchema), forgotPassword);
