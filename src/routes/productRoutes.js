@@ -12,6 +12,7 @@ import {
   getThreeTrendingProduct,
   listProduct,
   updateProduct,
+  verifyProduct,
 } from "../controllers/productController.js";
 
 //upload file
@@ -23,6 +24,7 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { addProductSchema } from "../schema/productSchema.js";
+import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
@@ -45,5 +47,11 @@ productRoutes.put(
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct
+);
+productRoutes.put(
+  "/verify-product/:id",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
+  verifyProduct
 );
 productRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteProduct);
