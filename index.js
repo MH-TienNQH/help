@@ -26,7 +26,7 @@ app.use(paginationMiddleware);
 // app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL, "http://127.0.0.1:3030"],
+    origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
