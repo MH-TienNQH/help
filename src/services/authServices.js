@@ -113,22 +113,12 @@ export const logout = async (refreshToken, userId) => {
     throw new OperationalException("Invalid token", 400);
   }
 
-  try {
-    const result = await prismaClient.refreshToken.deleteMany({
-      where: {
-        token: refreshToken,
-        userId: userId,
-      },
-    });
-
-    if (result.count > 0) {
-      return console.log("ok");
-    } else {
-      return new OperationalException("Invalid token", 400);
-    }
-  } catch (error) {
-    throw new Error(error);
-  }
+  const result = await prismaClient.refreshToken.deleteMany({
+    where: {
+      token: refreshToken,
+      userId: userId,
+    },
+  });
 };
 export const setPassword = async (email, password, otp) => {
   const now = new Date();
@@ -162,6 +152,14 @@ export const setPassword = async (email, password, otp) => {
   };
 };
 export const forgotPassword = async (email) => {
+  let user = await prismaClient.user.findUnique({
+    where: {
+      email,
+    },
+  });
+  if (!user) {
+    throw new OperationalException("Email doesn't exist", 404);
+  }
   let otp = `${Math.floor(1000 + Math.random() * 9000)}`;
   const now = new Date();
   const ftmin = new Date(now.getTime() + 15 * 60 * 1000);
@@ -171,7 +169,8 @@ export const forgotPassword = async (email) => {
     "OTP for forgot password",
     `<p> The OTP for your password reset is ${otp}. This code will expire after 15 minutes</p><br/><p>Click <a href = http://localhost:3030/forgotPassword>here</a></p>`
   );
-  await prismaClient.user.update({
+
+  user = await prismaClient.user.update({
     where: {
       email,
     },
