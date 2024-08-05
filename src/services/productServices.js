@@ -23,7 +23,7 @@ export const findById = async (id) => {
   }
   return product;
 };
-export const addProduct = async (data, image, userId) => {
+export const addProduct = async (data, cover, images, userId) => {
   let product = await prismaClient.product.findUnique({
     where: {
       name: data.name,
@@ -36,7 +36,8 @@ export const addProduct = async (data, image, userId) => {
     data: {
       name: data.name,
       description: data.description,
-      image,
+      cover,
+      images,
       price: parseInt(data.price),
       category: {
         connect: {
