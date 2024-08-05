@@ -73,7 +73,8 @@ model Product {
   name         String         @unique
   description  String
   price        Int
-  image       String?
+  cover        String?
+  images       String?
   status       Status         @default(Selling)
   categoryId   Int
   category     Category       @relation(fields: [categoryId], references: [categoryId])
@@ -81,7 +82,7 @@ model Product {
   author       User?          @relation(fields: [userId], references: [userId])
   createdAt    DateTime       @default(now())
   soldAt       DateTime?
-  pending Boolean @default(true)
+  pending      Boolean        @default(true)
   ProductSaved ProductSaved[]
   likeNumber   ProductLiked[]
 }
