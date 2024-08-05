@@ -111,3 +111,9 @@ export const listProduct = asyncErrorHandler(async (req, res) => {
     )
   );
 });
+
+export const verifyProduct = asyncErrorHandler(async (req, res) => {
+  const productId = req.params.id;
+  const product = await productServices.verifyProduct(productId);
+  res.send(new responseFormat(200, true, [product.name, "product approved"]));
+});
