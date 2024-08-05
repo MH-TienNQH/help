@@ -1,5 +1,6 @@
 import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
+import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllUser = async () => {
   return await prismaClient.user.findMany();
@@ -22,8 +23,16 @@ export const findUserByEmail = async (email) => {
 };
 
 export const addUser = async (data, avatar) => {
+  let user = await prismaClient.user.findUnique({
+    where: {
+      username: data.username,
+    },
+  });
+  if (user) {
+    throw new OperationalException("Username already exist", 403);
+  }
   data.password = hashSync(data.password, 10);
-  const user = await prismaClient.user.create({
+  user = await prismaClient.user.create({
     data: {
       name: data.name,
       username: data.username,
