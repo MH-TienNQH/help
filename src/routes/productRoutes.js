@@ -23,6 +23,7 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { addProductSchema } from "../schema/productSchema.js";
+import { addComment, getComments } from "../controllers/commentController.js";
 export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
@@ -32,6 +33,8 @@ productRoutes.get("/sold-products", getSoldProduct);
 productRoutes.get("/newest", getNewestProduct);
 productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
+productRoutes.get("/get-comments", getComments);
+
 productRoutes.post(
   "/add-product",
   uploadMiddleware.single("image"),
@@ -39,6 +42,8 @@ productRoutes.post(
   verifyTokenMiddlewares,
   addProduct
 );
+productRoutes.post("/add-comment/:id", verifyTokenMiddlewares, addComment);
+
 productRoutes.put(
   "/update/:id",
   uploadMiddleware.single("image"),

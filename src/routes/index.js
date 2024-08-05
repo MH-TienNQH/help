@@ -6,6 +6,7 @@ import { productRoutes } from "./productRoutes.js";
 import { categoryRoutes } from "./categoryRoutes.js";
 import { chatRoutes } from "./chatRoutes.js";
 import { messageRoutes } from "./messageRoutes.js";
+import { commentRoutes } from "./commentRoutes.js";
 
 const rootRouter = Router();
 
@@ -18,5 +19,6 @@ rootRouter.use("/product", productRoutes);
 rootRouter.use("/category", categoryRoutes);
 rootRouter.use("/chats", chatRoutes);
 rootRouter.use("/messages", messageRoutes);
+rootRouter.use("/comment", commentRoutes);
 
 export default rootRouter;
