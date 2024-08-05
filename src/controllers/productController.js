@@ -43,8 +43,18 @@ export const addProduct = async (req, res) => {
   }
   const data = req.body;
   const userId = req.userId;
-  const image = req.file.filename;
-  let product = await productServices.addProduct(data, image, userId);
+  const cover = req.files["cover"] ? req.files["cover"][0] : null;
+  const images = req.files["images"];
+
+  const coverFilename = cover ? cover.filename : null;
+  const imageFilenames = images.map((image) => image.filename);
+  console.log(imageFilenames);
+  let product = await productServices.addProduct(
+    data,
+    coverFilename,
+    imageFilenames,
+    userId
+  );
 
   res.send(new responseFormat(200, true, [product.name, "product created"]));
 };
