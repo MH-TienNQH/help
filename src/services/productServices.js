@@ -167,7 +167,16 @@ export const listProduct = async (
         contains: productName || "", // Search for products where the name contains the specified value
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
-      ...(pending ? { pending: true } : {}),
+      ...(pending !== undefined
+        ? {
+            pending:
+              pending === "true"
+                ? true
+                : pending === "false"
+                ? false
+                : undefined,
+          }
+        : {}),
     },
   });
 
@@ -177,7 +186,16 @@ export const listProduct = async (
         contains: productName || "", // Search for products where the name contains the specified value
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
-      ...(pending ? { pending: true } : {}),
+      ...(pending !== undefined
+        ? {
+            pending:
+              pending === "true"
+                ? true
+                : pending === "false"
+                ? false
+                : undefined,
+          }
+        : {}),
     },
     skip,
     take: limit,
