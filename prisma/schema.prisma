@@ -24,7 +24,7 @@ enum Status {
 }
 
 model User {
-  userId        Int            @id @unique @default(autoincrement())
+  userId        Int            @id @default(autoincrement())
   username      String         @unique
   email         String         @unique
   password      String
@@ -38,6 +38,7 @@ model User {
   createdAt     DateTime       @default(now())
   ProductLiked  ProductLiked[]
   refreshTokens RefreshToken[]
+  comments Comment[]
   otp           String?
   otpCreatedAt  DateTime?
   otpExpireAt   DateTime?
@@ -84,6 +85,16 @@ model Product {
   pending Boolean @default(true)
   ProductSaved ProductSaved[]
   likeNumber   ProductLiked[]
+  comments Comment[]
+}
+
+model Comment {
+  commentId Int @id @unique @default(autoincrement())
+  content String
+  productId Int
+  product Product @relation(fields: [productId], references: [productId])
+  userId Int
+  user User @relation(fields: [userId], references: [userId])
 }
 
 model Category {
