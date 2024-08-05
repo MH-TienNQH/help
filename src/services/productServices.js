@@ -193,3 +193,14 @@ export const listProduct = async (
     },
   };
 };
+export const verifyProduct = async (productId) => {
+  const product = await prismaClient.product.update({
+    where: {
+      productId,
+    },
+    data: {
+      pending: false,
+    },
+  });
+  return product;
+};
