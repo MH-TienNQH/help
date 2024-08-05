@@ -33,15 +33,6 @@ app.use(
 
 app.use("/api", rootRouter);
 app.use(errorHandlerMiddlewares);
-app.get("/", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Headers", "content-type");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "PUT, POST, GET, DELETE, PATCH, OPTIONS"
-  );
-});
 
 schedule.scheduleJob("*/10 * * * *", deleteNotVerified);
 
