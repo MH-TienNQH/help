@@ -113,22 +113,12 @@ export const logout = async (refreshToken, userId) => {
     throw new OperationalException("Invalid token", 400);
   }
 
-  try {
-    const result = await prismaClient.refreshToken.deleteMany({
-      where: {
-        token: refreshToken,
-        userId: userId,
-      },
-    });
-
-    if (result.count > 0) {
-      return console.log("ok");
-    } else {
-      return new OperationalException("Invalid token", 400);
-    }
-  } catch (error) {
-    throw new Error(error);
-  }
+  const result = await prismaClient.refreshToken.deleteMany({
+    where: {
+      token: refreshToken,
+      userId: userId,
+    },
+  });
 };
 export const setPassword = async (email, password, otp) => {
   const now = new Date();

@@ -51,7 +51,7 @@ export const logout = asyncErrorHandler(async (req, res, next) => {
   const userId = req.userId;
 
   if (!refreshToken) {
-    return res.status(400).json({ error: "Token is missing" });
+    res.send(new OperationalException("Token is missing", 400));
   }
   const response = await authServices.logout(refreshToken, userId);
 
