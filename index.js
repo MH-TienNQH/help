@@ -34,7 +34,7 @@ app.use(
 app.use("/api", rootRouter);
 app.use(errorHandlerMiddlewares);
 app.get("/", function (req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", process.env.CLIENT_URL);
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, OPTIONS, PUT, PATCH, DELETE"
