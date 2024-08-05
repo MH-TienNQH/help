@@ -43,13 +43,26 @@ export const addProduct = async (req, res) => {
   }
   const data = req.body;
   const userId = req.userId;
-  const cover = req.files["cover"] ? req.files["cover"][0] : null;
-  const images = req.files["images"];
+  let product = await prismaClient.product.findUnique({
+    where: {
+      name: data.name,
+    },
+  });
+  if (product) {
+    res.send(new OperationalException("Product exist", 403));
+  }
 
+  const cover = req.files["cover"] ? req.files["cover"][0] : null;
   const coverFilename = cover ? cover.filename : null;
-  const imageFilenames = images.map((image) => image.filename);
-  console.log(imageFilenames);
-  let product = await productServices.addProduct(
+
+  const images = req.files["images"] || "";
+
+  const imageFilenames = images
+    ? images.map((image) => image.filename)
+    : "empty";
+
+  console.log("Files received:", req.files); // Inspect req.files object
+  product = await productServices.addProduct(
     data,
     coverFilename,
     imageFilenames,

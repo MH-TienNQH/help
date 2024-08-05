@@ -35,8 +35,8 @@ productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
   uploadMiddleware.fields([
-    { name: "cover", maxCount: 1 },
     { name: "images", maxCount: 5 },
+    { name: "cover", maxCount: 1 },
   ]),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
@@ -44,7 +44,6 @@ productRoutes.post(
 );
 productRoutes.put(
   "/update/:id",
-  uploadMiddleware.single("image"),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct

@@ -22,7 +22,13 @@ export const authRoutes = Router();
 
 authRoutes.post(
   "/signup",
-  uploadMiddleware.single("avatar"),
+  uploadMiddleware.fields([
+    { name: "cover", maxCount: 1 },
+    {
+      name: "images",
+      maxCount: 5,
+    },
+  ]),
   checkSchema(signUpSchema),
   signUp
 );
