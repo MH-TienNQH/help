@@ -93,8 +93,6 @@ export const setPassword = asyncErrorHandler(async (req, res) => {
 });
 
 export const forgotPassword = asyncErrorHandler(async (req, res) => {
-  res.header("Access-Control-Allow-Origin", process.env.CLIENT_URL);
-  res.header("Access-Control-Allow-Credentials", "true");
   let result = validationResult(req);
 
   if (!result.isEmpty()) {
