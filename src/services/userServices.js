@@ -117,6 +117,7 @@ export const likeProduct = async (userId, productId) => {
         },
       },
     });
+    return "unliked";
   } else {
     await prismaClient.productLiked.create({
       data: {
@@ -124,5 +125,6 @@ export const likeProduct = async (userId, productId) => {
         productId,
       },
     });
+    return "liked";
   }
 };

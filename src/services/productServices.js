@@ -2,7 +2,15 @@ import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllProduct = async () => {
-  let products = await prismaClient.product.findMany({});
+  let products = await prismaClient.product.findMany({
+    include: {
+      _count: {
+        select: {
+          likeNumber: true,
+        },
+      },
+    },
+  });
   return products;
 };
 export const findById = async (id) => {
@@ -178,6 +186,13 @@ export const listProduct = async (
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
       ...(pending ? { pending: true } : {}),
+    },
+    include: {
+      _count: {
+        select: {
+          likeNumber: true,
+        },
+      },
     },
     skip,
     take: limit,
