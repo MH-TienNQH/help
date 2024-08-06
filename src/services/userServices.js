@@ -3,15 +3,26 @@ import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllUser = async () => {
-  return await prismaClient.user.findMany();
+  const users = await prismaClient.user.findMany();
+  const usersWithImageUrls = users.map((user) => ({
+    ...user,
+    imageUrl: `${process.env.BASE_URL}/${user.avatar}`, // Construct the full image URL
+  }));
+  return usersWithImageUrls;
 };
 
 export const findById = async (id) => {
-  return await prismaClient.user.findUnique({
+  const user = await prismaClient.user.findUnique({
     where: {
       userId: id,
     },
   });
+  if (user) {
+    return {
+      ...user,
+      imageUrl: `${process.env.BASE_URL}/${user.avatar}`, // Construct the full image URL
+    };
+  }
 };
 
 export const findUserByEmail = async (email) => {
