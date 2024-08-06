@@ -47,22 +47,11 @@ export const login = asyncErrorHandler(async (req, res) => {
 });
 
 export const logout = asyncErrorHandler(async (req, res, next) => {
-  let accessToken = null;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.split(" ")[0] === "Bearer"
-  ) {
-    accessToken = req.headers.authorization.split(" ")[1];
-  }
   const userId = req.userId;
   let refreshToken = req.cookies.refreshToken;
-
-  if (!accessToken) {
-    res.send(new OperationalException("Token is missing", 400));
-  }
+  console.log(refreshToken);
 
   const response = await authServices.logout(refreshToken, userId);
-
   res
     .clearCookie("refreshToken")
     .send(new responseFormat(200, true, "logged out"));

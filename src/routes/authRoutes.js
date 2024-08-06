@@ -17,6 +17,7 @@ import {
 } from "../schema/userSchema.js";
 import { otpSchema } from "../schema/otpSchema.js";
 import { uploadMiddleware } from "../utils/uploadFile.js";
+import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 
 export const authRoutes = Router();
 
@@ -27,7 +28,7 @@ authRoutes.post(
   signUp
 );
 authRoutes.post("/login", checkSchema(loginSchema), login);
-authRoutes.post("/logout", logout);
+authRoutes.post("/logout", verifyTokenMiddlewares, logout);
 authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
 authRoutes.put(
