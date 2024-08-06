@@ -19,9 +19,9 @@ import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { signUpSchema } from "../schema/userSchema.js";
+import { uploadMiddleware } from "../utils/uploadFile.js";
 
 //upload file
-
 
 export const userRoutes = Router();
 
@@ -29,7 +29,7 @@ userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.post(
   "/add-user",
-  
+  uploadMiddleware.single("avatar"),
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   adminMiddlewares,
@@ -37,7 +37,7 @@ userRoutes.post(
 );
 userRoutes.put(
   "/update/:id",
-
+  uploadMiddleware.single("avatar"),
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   updateUser

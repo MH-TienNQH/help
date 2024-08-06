@@ -187,6 +187,9 @@ export const listProduct = async (
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
       ...(pending ? { pending: true } : {}),
     },
+    orderBy: {
+      productId: order,
+    },
     skip,
     take: limit,
   });
