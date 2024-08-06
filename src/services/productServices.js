@@ -3,7 +3,12 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllProduct = async () => {
   let products = await prismaClient.product.findMany({});
-  return products;
+  const productsWithImageUrls = products.map((product) => ({
+    ...product,
+    imageUrl: `${process.env.BASE_URL}/${product.image}`, // Construct the full image URL
+  }));
+
+  return productsWithImageUrls;
 };
 export const findById = async (id) => {
   const product = await prismaClient.product.findUnique({
@@ -18,10 +23,13 @@ export const findById = async (id) => {
       },
     },
   });
-  if (!product) {
-    throw new OperationalException("No product found", 404);
+  if (product) {
+    return {
+      ...product,
+      imageUrl: `${process.env.BASE_URL}/${product.image}`, // Construct the full image URL
+    };
   }
-  return product;
+  throw new OperationalException("No product found", 404);
 };
 export const addProduct = async (data, image, userId) => {
   let product = await prismaClient.product.findUnique({
@@ -182,12 +190,16 @@ export const listProduct = async (
     skip,
     take: limit,
   });
+  const productsWithImageUrls = products.map((product) => ({
+    ...product,
+    imageUrl: `${process.env.BASE_URL}/${product.image}`, // Construct the full image URL
+  }));
 
   const totalPages = Math.ceil(numberOfProducts / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
   return {
-    products,
+    productsWithImageUrls,
     meta: {
       privious_page: previousPage,
       current_page: page,
@@ -207,4 +219,11 @@ export const verifyProduct = async (productId) => {
     },
   });
   return product;
+};
+
+export const getImageUrl = async (filename) => {
+  const __dirname = "./public";
+  const filePath = path.resolve(__dirname, "images", filename);
+
+  return filePath;
 };

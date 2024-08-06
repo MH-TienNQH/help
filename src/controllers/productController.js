@@ -106,7 +106,7 @@ export const listProduct = asyncErrorHandler(async (req, res) => {
     new responseFormatWithPagination(
       200,
       true,
-      response.products,
+      response.productsWithImageUrls,
       response.meta
     )
   );
