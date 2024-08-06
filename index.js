@@ -28,16 +28,13 @@ app.use(paginationMiddleware);
 app.use(express.urlencoded({ extended: true }));
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-console.log(__dirname);
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
-app.use("/public", express.static(path.join(__dirname, "/public/images")));
-const psao = path.join(__dirname, "/public/images");
-console.log(psao);
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/api", rootRouter);
 
 app.use(errorHandlerMiddlewares);
