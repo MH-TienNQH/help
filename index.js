@@ -36,7 +36,8 @@ app.use(
   })
 );
 app.use("/public", express.static(path.join(__dirname, "/public/images")));
-console.log(path.join(__dirname, "/public/images"));
+const psao = path.join(__dirname, "/public/images");
+console.log(psao);
 app.use("/api", rootRouter);
 
 app.use(errorHandlerMiddlewares);
