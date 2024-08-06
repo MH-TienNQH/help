@@ -64,7 +64,7 @@ export const logout = asyncErrorHandler(async (req, res, next) => {
   const response = await authServices.logout(refreshToken, userId);
 
   res
-    .clearCookie(refreshToken)
+    .clearCookie("refreshToken")
     .send(new responseFormat(200, true, "logged out"));
 });
 
