@@ -101,19 +101,9 @@ export const verifyRefreshToken = async (refreshToken) => {
   return payload;
 };
 
-export const logout = async (refreshToken, userId) => {
-  let reftoken = await prismaClient.refreshToken.findUnique({
-    where: {
-      token: refreshToken,
-    },
-  });
-  if (!reftoken) {
-    throw new OperationalException("Invalid token", 400);
-  }
-
+export const logout = async (userId) => {
   const result = await prismaClient.refreshToken.deleteMany({
     where: {
-      token: refreshToken,
       userId: userId,
     },
   });

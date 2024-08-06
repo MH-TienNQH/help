@@ -48,10 +48,8 @@ export const login = asyncErrorHandler(async (req, res) => {
 
 export const logout = asyncErrorHandler(async (req, res, next) => {
   const userId = req.userId;
-  let refreshToken = req.cookies.refreshToken;
-  console.log(refreshToken);
 
-  const response = await authServices.logout(refreshToken, userId);
+  const response = await authServices.logout(userId);
   res
     .clearCookie("refreshToken")
     .send(new responseFormat(200, true, "logged out"));
