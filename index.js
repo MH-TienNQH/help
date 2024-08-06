@@ -27,8 +27,7 @@ app.use(cookieParser());
 app.use(paginationMiddleware);
 app.use(express.urlencoded({ extended: true }));
 
-// const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.use(
   cors({
