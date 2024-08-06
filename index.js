@@ -16,6 +16,7 @@ import bodyParser from "body-parser";
 import { deleteNotVerified } from "./src/utils/deleteNotVerified.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import uploadToCloudinary from "./src/utils/uploadToCloudinary.js";
 
 const PORT = process.env.PORT;
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(paginationMiddleware);
 app.use(express.urlencoded({ extended: true }));
+app.use(uploadToCloudinary);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(
