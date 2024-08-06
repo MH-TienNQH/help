@@ -88,7 +88,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
 export const verifyEmail = asyncErrorHandler(async (req, res) => {
   let email = req.params.email;
   await authServices.verifyEmail(email);
-  res.redirect("http://localhost:3030/homeMain");
+  res.send("verified");
 });
 
 export const setPassword = asyncErrorHandler(async (req, res) => {
