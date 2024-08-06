@@ -69,7 +69,12 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
     next(error);
   }
   const response = await authServices.refresh(refreshToken);
-  res.send(new responseFormat(200, true, response));
+  res
+    .cookie("refreshToken", response.refreshToken, {
+      httpOnly: true,
+      maxAge: 3.156e10,
+    })
+    .send(new responseFormat(200, true, response));
 });
 
 export const verifyEmail = asyncErrorHandler(async (req, res) => {

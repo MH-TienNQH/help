@@ -83,7 +83,6 @@ export const refresh = async (refreshToken) => {
       token: (await response).refreshToken,
     },
   });
-  console.log((await response).refreshToken);
   return response;
 };
 
