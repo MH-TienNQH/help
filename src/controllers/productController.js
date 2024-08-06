@@ -43,7 +43,7 @@ export const addProduct = async (req, res) => {
   }
   const data = req.body;
   const userId = req.userId;
-  const image = req.file.filename;
+  const image = req.imageUrls || [];
   let product = await productServices.addProduct(data, image, userId);
 
   res.send(new responseFormat(200, true, [product.name, "product created"]));
@@ -57,7 +57,7 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const productId = req.params.id;
   const data = req.body;
   const userId = req.userId;
-  const image = req.file.filename;
+  const image = req.imageUrls || [];
 
   let product = await productServices.updateProduct(
     productId,

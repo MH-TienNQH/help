@@ -23,6 +23,7 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { addProductSchema } from "../schema/productSchema.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
@@ -34,14 +35,16 @@ productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
-  uploadMiddleware.single("image"),
+  uploadMiddleware.array("image", 1),
+  uploadToCloudinary,
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   addProduct
 );
 productRoutes.put(
   "/update/:id",
-  uploadMiddleware.single("image"),
+  uploadMiddleware.array("image", 1),
+  uploadToCloudinary,
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct
