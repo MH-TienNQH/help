@@ -35,7 +35,13 @@ productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
-  uploadMiddleware.array("image", 1),
+  uploadMiddleware.fields([
+    {
+      name: "cover",
+      maxCount: 1,
+    },
+    { name: "images", maxCount: 5 },
+  ]),
   uploadToCloudinary,
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
@@ -43,7 +49,8 @@ productRoutes.post(
 );
 productRoutes.put(
   "/update/:id",
-  uploadMiddleware.array("image", 1),
+  uploadMiddleware.array("cover", 1),
+  uploadMiddleware.array("images", 5),
   uploadToCloudinary,
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
