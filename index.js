@@ -14,6 +14,8 @@ import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewar
 import paginationMiddleware from "./src/middlewares/paginationMiddleware.js";
 import bodyParser from "body-parser";
 import { deleteNotVerified } from "./src/utils/deleteNotVerified.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const PORT = process.env.PORT;
 
@@ -24,14 +26,19 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(paginationMiddleware);
 app.use(express.urlencoded({ extended: true }));
+
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
-
+app.use("/public", express.static(path.join(__dirname, "public/images")));
 app.use("/api", rootRouter);
+
 app.use(errorHandlerMiddlewares);
 
 schedule.scheduleJob("*/10 * * * *", deleteNotVerified);
