@@ -24,11 +24,14 @@ categoryRoutes.get("/get-by-id/:id", getCategoryById);
 categoryRoutes.post(
   "/add-category",
   verifyTokenMiddlewares,
+  adminMiddlewares,
   checkSchema(addCategorySchema),
   addCategory
 );
 categoryRoutes.put(
   "/update/:id",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
   checkSchema(addCategorySchema),
   verifyTokenMiddlewares,
   updateCategory
