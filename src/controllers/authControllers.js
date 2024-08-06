@@ -14,7 +14,7 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
   const data = req.body;
-  const avatar = req.file;
+  const avatar = req.file.filename;
   let user = await userServices.findUserByEmail(data.email);
   if (user) {
     const error = new OperationalException("User already exist", 400);
