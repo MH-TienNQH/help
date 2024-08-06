@@ -29,7 +29,7 @@ authRoutes.post(
 authRoutes.post("/login", checkSchema(loginSchema), login);
 authRoutes.post("/logout", logout);
 authRoutes.get("/refresh", refresh);
-authRoutes.get("/verify/:email", verifyEmail);
+authRoutes.put("/verify/:email", verifyEmail);
 authRoutes.put(
   "/set-password",
   checkSchema(emailSchema),
