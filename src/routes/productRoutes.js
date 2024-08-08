@@ -15,7 +15,6 @@ import {
 } from "../controllers/productController.js";
 
 //upload file
-import { uploadMiddleware } from "../utils/uploadFile.js";
 
 //authentication middlewares
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
@@ -23,6 +22,9 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { addProductSchema } from "../schema/productSchema.js";
+import { uploadMiddleware } from "../utils/uploadFile.js";
+import { upload } from "../utils/multer.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
@@ -34,14 +36,17 @@ productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
-  uploadMiddleware.single("image"),
+  upload([
+    { name: "cover", maxCount: 1 },
+    { name: "images", maxCount: 5 },
+  ]),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   addProduct
 );
 productRoutes.put(
   "/update/:id",
-  uploadMiddleware.single("image"),
+  uploadMiddleware("cover", "images", 6),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct
