@@ -9,7 +9,6 @@ const uploadToCloudinary = async (req, res, next) => {
         cloudinaryV2.uploader
           .upload_stream(
             {
-              resource_type: "image",
               folder: "images",
             },
             (error, result) => {
@@ -24,15 +23,28 @@ const uploadToCloudinary = async (req, res, next) => {
       });
     };
 
+
     const cloudinaryUrls = {};
 
     for (const [fieldName, files] of Object.entries(req.files || {})) {
-      cloudinaryUrls[fieldName] = await Promise.all(
-        files.map(async (file) => {
-          const result = await uploadFile(file);
-          return result.secure_url; // Collect Cloudinary URLs
-        })
-      );
+      if (Array.isArray(files)) {
+        cloudinaryUrls[fieldName] = await Promise.all(
+          files.map(async (file) => {
+            try {
+              const result = await uploadFile(file);
+              return result.secure_url; // Collect Cloudinary URLs
+            } catch (error) {
+              console.error(
+                `Error uploading file for field ${fieldName}:`,
+                error
+              );
+              throw error;
+            }
+          })
+        );
+      } else {
+        console.warn(`Field ${fieldName} is not an array of files.`);
+      }
     }
 
     req.cloudinaryUrls = Object.values(cloudinaryUrls).flat();
