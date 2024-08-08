@@ -19,20 +19,28 @@ import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { signUpSchema } from "../schema/userSchema.js";
+import { uploadMiddleware } from "../utils/uploadFile.js";
 
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 import { uploadMiddleware } from "../utils/uploadFile.js";
 
-//upload file
+// <<<<<<< develop
+// //upload file
 
+// =======
+// >>>>>>> main
 export const userRoutes = Router();
 
 userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.post(
   "/add-user",
-  uploadMiddleware,
-  uploadToCloudinary,
+// <<<<<<< develop
+//   uploadMiddleware,
+//   uploadToCloudinary,
+// =======
+//   uploadMiddleware.single("avatar"),
+// >>>>>>> main
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   adminMiddlewares,
@@ -40,8 +48,12 @@ userRoutes.post(
 );
 userRoutes.put(
   "/update/:id",
-  uploadMiddleware,
-  uploadToCloudinary,
+// <<<<<<< develop
+//   uploadMiddleware,
+//   uploadToCloudinary,
+// =======
+//   uploadMiddleware.single("avatar"),
+// >>>>>>> main
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   updateUser

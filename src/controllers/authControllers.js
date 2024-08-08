@@ -48,24 +48,11 @@ export const login = asyncErrorHandler(async (req, res) => {
 });
 
 export const logout = asyncErrorHandler(async (req, res, next) => {
-  let accessToken = null;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.split(" ")[0] === "Bearer"
-  ) {
-    accessToken = req.headers.authorization.split(" ")[1];
-  }
   const userId = req.userId;
-  let refreshToken = req.cookies.refreshToken;
 
-  if (!accessToken) {
-    res.send(new OperationalException("Token is missing", 400));
-  }
-
-  const response = await authServices.logout(refreshToken, userId);
-
+  const response = await authServices.logout(userId);
   res
-    .clearCookie(refreshToken)
+    .clearCookie("refreshToken")
     .send(new responseFormat(200, true, "logged out"));
 });
 
@@ -83,7 +70,12 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
     next(error);
   }
   const response = await authServices.refresh(refreshToken);
-  res.send(new responseFormat(200, true, response));
+  res
+    .cookie("refreshToken", response.refreshToken, {
+      httpOnly: true,
+      maxAge: 3.156e10,
+    })
+    .send(new responseFormat(200, true, response));
 });
 
 export const verifyEmail = asyncErrorHandler(async (req, res) => {
