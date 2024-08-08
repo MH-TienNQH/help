@@ -157,7 +157,7 @@ export const listProduct = async (
   limit
 ) => {
   if (!["asc", "desc"].includes(order)) {
-    return res.status(400).json({ error: "Invalid order value" });
+    throw new OperationalException("Invalid order", 400);
   }
 
   const skip = (page - 1) * limit;
@@ -179,6 +179,9 @@ export const listProduct = async (
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
       ...(pending ? { pending: true } : {}),
+    },
+    orderBy: {
+      productId: order,
     },
     skip,
     take: limit,
