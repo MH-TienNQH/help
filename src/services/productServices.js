@@ -2,7 +2,7 @@ import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 export const getAllProduct = async () => {
-  let products = await prismaClient.product.findMany({});
+  let products = await prismaClient.product.findMany();
 
   return products;
 };
@@ -24,12 +24,11 @@ export const findById = async (id) => {
   }
   throw new OperationalException("No product found", 404);
 };
-export const addProduct = async (data, cover, images, userId) => {
+export const addProduct = async (data, images, userId) => {
   const product = await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,
-      cover: JSON.stringify(cover),
       images: JSON.stringify(images),
       price: parseInt(data.price),
       category: {
@@ -47,7 +46,7 @@ export const addProduct = async (data, cover, images, userId) => {
   return product;
 };
 
-export const updateProduct = async (productId, data, userId, image) => {
+export const updateProduct = async (productId, data, userId, images) => {
   let product = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
@@ -71,7 +70,7 @@ export const updateProduct = async (productId, data, userId, image) => {
     data: {
       name: data.name,
       description: data.description,
-      image: JSON.stringify(image),
+      images: JSON.stringify(images),
       price: parseInt(data.price),
       category: {
         connect: {

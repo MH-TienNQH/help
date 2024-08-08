@@ -43,19 +43,19 @@ export const addProduct = async (req, res) => {
   }
   const data = req.body;
   const userId = req.userId;
-  console.log(req.files);
+  const images = req.cloudinaryUrls;
 
-  // let product = await prismaClient.product.findUnique({
-  //   where: {
-  //     name: data.name,
-  //   },
-  // });
-  // if (product) {
-  //   res.send(new OperationalException("Product exist", 403));
-  // }
-  // product = await productServices.addProduct(data, cover, images, userId);
+  let product = await prismaClient.product.findUnique({
+    where: {
+      name: data.name,
+    },
+  });
+  if (product) {
+    res.send(new OperationalException("Product exist", 403));
+  }
+  product = await productServices.addProduct(data, images, userId);
 
-  // res.send(new responseFormat(200, true, [product.name, "product created"]));
+  res.send(new responseFormat(200, true, [product.name, "product created"]));
 };
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {
@@ -66,13 +66,13 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const productId = req.params.id;
   const data = req.body;
   const userId = req.userId;
-  const image = req.imageUrls || [];
+  const images = req.cloudinaryUrls;
 
   let product = await productServices.updateProduct(
     productId,
     data,
     userId,
-    image
+    images
   );
   res.send(new responseFormat(200, true, [product.name, "product updated"]));
 });

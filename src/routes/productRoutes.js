@@ -36,16 +36,15 @@ productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
-  upload.fields([
-    { name: "cover", maxCount: 5 },
-    { name: "images", maxCount: 5 },
-  ]),
+  upload.fields([{ name: "images", maxCount: 6 }]),
+  uploadToCloudinary,
   checkSchema(addProductSchema),
+  verifyTokenMiddlewares,
   addProduct
 );
 productRoutes.put(
   "/update/:id",
-  uploadMiddleware("cover", "images", 6),
+  upload.fields([{ name: "images", maxCount: 6 }]),
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct
