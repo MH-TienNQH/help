@@ -19,8 +19,9 @@ import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { signUpSchema } from "../schema/userSchema.js";
-import { uploadMiddleware } from "../utils/uploadFile.js";
+
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
+import { uploadMiddleware } from "../utils/uploadFile.js";
 
 //upload file
 
@@ -30,7 +31,7 @@ userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.post(
   "/add-user",
-  uploadMiddleware.array("avatar", 1),
+  uploadMiddleware,
   uploadToCloudinary,
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
@@ -39,7 +40,7 @@ userRoutes.post(
 );
 userRoutes.put(
   "/update/:id",
-  uploadMiddleware.array("avatar", 1),
+  uploadMiddleware,
   uploadToCloudinary,
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,

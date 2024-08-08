@@ -43,20 +43,19 @@ export const addProduct = async (req, res) => {
   }
   const data = req.body;
   const userId = req.userId;
-  const { cover, images } = req.imageUrls || [];
+  console.log(req.files);
 
-  console.log(req.imageUrls);
-  let product = await prismaClient.product.findUnique({
-    where: {
-      name: data.name,
-    },
-  });
-  if (product) {
-    res.send(new OperationalException("Product exist", 403));
-  }
-  product = await productServices.addProduct(data, cover, images, userId);
+  // let product = await prismaClient.product.findUnique({
+  //   where: {
+  //     name: data.name,
+  //   },
+  // });
+  // if (product) {
+  //   res.send(new OperationalException("Product exist", 403));
+  // }
+  // product = await productServices.addProduct(data, cover, images, userId);
 
-  res.send(new responseFormat(200, true, [product.name, "product created"]));
+  // res.send(new responseFormat(200, true, [product.name, "product created"]));
 };
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {

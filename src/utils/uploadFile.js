@@ -1,38 +1,21 @@
-import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { upload } from "./multer.js";
+import uploadToCloudinary from "./uploadToCloudinary.js";
 
-// Configure storage for Multer
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     const dir = "public/images";
-//     fs.access(dir, fs.constants.F_OK, (err) => {
-//       if (err) {
-//         // Directory does not exist, so create it
-//         fs.mkdir(dir, { recursive: true }, (mkdirErr) => {
-//           if (mkdirErr) {
-//             return cb(mkdirErr); // Pass error to callback
-//           }
-//           cb(null, dir); // Directory created successfully
-//         });
-//       } else {
-//         // Directory exists
-//         cb(null, dir);
-//       }
-//     });
-//   },
-//   filename: (req, file, cb) => {
-//     // Specify the filename with a unique identifier
-//     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-//     cb(
-//       null,
-//       file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
-//     );
-//   },
-// });
-const storage = multer.memoryStorage();
+export const uploadMiddleware = (fieldsConfig) => {
+  return (req, res, next) => {
+    const uploadFile = uplo.fields(fieldsConfig);
 
-// Function to dynamically create Multer upload middleware
-export const uploadMiddleware = multer({
-  storage: storage,
-});
+    uploadFile(req, res, (err) => {
+      if (err) {
+        console.error("Upload error:", err);
+        return res.status(400).json({ error: `Upload error: ${err.message}` });
+      }
+
+      // Debugging
+      console.log("Single file:", req.files["cover"]);
+      console.log("Multiple files:", req.files["images"]);
+      next();
+    });
+    uploadToCloudinary(req, res, next);
+  };
+};

@@ -14,8 +14,6 @@ import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewar
 import paginationMiddleware from "./src/middlewares/paginationMiddleware.js";
 import bodyParser from "body-parser";
 import { deleteNotVerified } from "./src/utils/deleteNotVerified.js";
-import path from "path";
-import { fileURLToPath } from "url";
 import uploadToCloudinary from "./src/utils/uploadToCloudinary.js";
 
 const PORT = process.env.PORT;
@@ -29,14 +27,12 @@ app.use(paginationMiddleware);
 app.use(express.urlencoded({ extended: true }));
 app.use(uploadToCloudinary);
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
     credentials: true,
   })
 );
-app.use(express.static(path.join(__dirname, "public")));
 app.use("/api", rootRouter);
 
 app.use(errorHandlerMiddlewares);

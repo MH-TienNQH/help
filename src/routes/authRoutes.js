@@ -16,13 +16,15 @@ import {
   signUpSchema,
 } from "../schema/userSchema.js";
 import { otpSchema } from "../schema/otpSchema.js";
-import { uploadMiddleware } from "../utils/uploadFile.js";
+import { upload } from "../utils/multer.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 export const authRoutes = Router();
 
 authRoutes.post(
   "/signup",
-  uploadMiddleware.single("avatar"),
+  upload([{ name: "avatar", maxCount: 1 }]),
+  uploadToCloudinary,
   checkSchema(signUpSchema),
   signUp
 );
