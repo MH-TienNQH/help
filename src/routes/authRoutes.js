@@ -25,7 +25,7 @@ export const authRoutes = Router();
 
 authRoutes.post(
   "/signup",
-  upload([{ name: "avatar", maxCount: 1 }]),
+  upload.fields([{ name: "avatar", maxCount: 1 }]),
   uploadToCloudinary,
   checkSchema(signUpSchema),
   signUp
