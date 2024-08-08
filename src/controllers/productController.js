@@ -103,6 +103,7 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
 export const listProduct = asyncErrorHandler(async (req, res) => {
   const { productName, categoryId, order, pending } = req.query;
   const { page, limit } = req.pagination;
+ 
   let response = await productServices.listProduct(
     productName,
     categoryId,

@@ -148,10 +148,6 @@ export const listProduct = async (
   page,
   limit
 ) => {
-  if (!["asc", "desc"].includes(order)) {
-    throw new OperationalException("Invalid order", 400);
-  }
-
   const skip = (page - 1) * limit;
 
   let numberOfProducts = await prismaClient.product.count({
@@ -163,6 +159,8 @@ export const listProduct = async (
       ...(pending ? { pending: true } : {}),
     },
   });
+  const orderDirection = order === "asc" || order === "desc" ? order : "asc";
+  const orderBy = order ? { productId: orderDirection } : undefined;
 
   let products = await prismaClient.product.findMany({
     where: {
@@ -172,9 +170,7 @@ export const listProduct = async (
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
       ...(pending ? { pending: true } : {}),
     },
-    orderBy: {
-      productId: order,
-    },
+    ...(orderBy ? { orderBy } : {}),
     skip,
     take: limit,
   });
