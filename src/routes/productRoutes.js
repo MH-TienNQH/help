@@ -22,7 +22,6 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { addProductSchema } from "../schema/productSchema.js";
-import { uploadMiddleware } from "../utils/uploadFile.js";
 import { upload } from "../utils/multer.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 export const productRoutes = Router();
