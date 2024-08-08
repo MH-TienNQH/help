@@ -16,13 +16,10 @@ import {
   signUpSchema,
 } from "../schema/userSchema.js";
 import { otpSchema } from "../schema/otpSchema.js";
-// <<<<<<< develop
-// import { upload } from "../utils/multer.js";
-// import uploadToCloudinary from "../utils/uploadToCloudinary.js";
-// =======
-// import { uploadMiddleware } from "../utils/uploadFile.js";
-// import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
-// >>>>>>> main
+
+import { upload } from "../utils/multer.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
+import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 
 export const authRoutes = Router();
 

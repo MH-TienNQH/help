@@ -35,12 +35,8 @@ userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.post(
   "/add-user",
-// <<<<<<< develop
-//   uploadMiddleware,
-//   uploadToCloudinary,
-// =======
-//   uploadMiddleware.single("avatar"),
-// >>>>>>> main
+  uploadMiddleware([{ name: "avatar", maxCount: 1 }]),
+  uploadToCloudinary,
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   adminMiddlewares,
@@ -48,12 +44,8 @@ userRoutes.post(
 );
 userRoutes.put(
   "/update/:id",
-// <<<<<<< develop
-//   uploadMiddleware,
-//   uploadToCloudinary,
-// =======
-//   uploadMiddleware.single("avatar"),
-// >>>>>>> main
+  uploadMiddleware([{ name: "avatar", maxCount: 1 }]),
+  uploadToCloudinary,
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   updateUser
