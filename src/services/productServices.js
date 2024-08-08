@@ -24,20 +24,13 @@ export const findById = async (id) => {
   }
   throw new OperationalException("No product found", 404);
 };
-export const addProduct = async (data, image, userId) => {
-  let product = await prismaClient.product.findUnique({
-    where: {
-      name: data.name,
-    },
-  });
-  if (product) {
-    throw new OperationalException("Product exist", 403);
-  }
-  product = await prismaClient.product.create({
+export const addProduct = async (data, cover, images, userId) => {
+  const product = await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,
-      image: JSON.stringify(image),
+      cover: JSON.stringify(cover),
+      images: JSON.stringify(images),
       price: parseInt(data.price),
       category: {
         connect: {
