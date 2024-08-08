@@ -36,12 +36,11 @@ productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
 productRoutes.post(
   "/add-product",
-  upload([
-    { name: "cover", maxCount: 1 },
+  upload.fields([
+    { name: "cover", maxCount: 5 },
     { name: "images", maxCount: 5 },
   ]),
   checkSchema(addProductSchema),
-  verifyTokenMiddlewares,
   addProduct
 );
 productRoutes.put(
