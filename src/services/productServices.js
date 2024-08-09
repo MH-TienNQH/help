@@ -1,5 +1,6 @@
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { deleteImage } from "../utils/cloudinaryImage.js";
 
 export const getAllProduct = async () => {
   let products = await prismaClient.product.findMany();
@@ -46,7 +47,13 @@ export const addProduct = async (data, images, userId) => {
   return product;
 };
 
-export const updateProduct = async (productId, data, userId, images) => {
+export const updateProduct = async (
+  userRole,
+  productId,
+  data,
+  userId,
+  images
+) => {
   let product = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
@@ -55,44 +62,65 @@ export const updateProduct = async (productId, data, userId, images) => {
   if (!product) {
     throw new OperationalException("Product not found", 404);
   }
-  product = await prismaClient.product.findUnique({
-    where: {
-      name: data.name,
-    },
-  });
-  if (product) {
-    throw new OperationalException("Product exist", 403);
+  if (product.userId == userId || userRole == "ADMIN") {
+    product = await prismaClient.product.findUnique({
+      where: {
+        name: data.name,
+      },
+    });
+    if (product) {
+      throw new OperationalException("Product exist", 403);
+    }
+    product = await prismaClient.product.update({
+      where: {
+        productId: parseInt(productId),
+      },
+      data: {
+        name: data.name,
+        description: data.description,
+        images: JSON.stringify(images),
+        price: parseInt(data.price),
+        category: {
+          connect: {
+            categoryId: parseInt(data.categoryId),
+          },
+        },
+        author: {
+          connect: {
+            userId,
+          },
+        },
+      },
+    });
+    return product;
+  } else {
+    throw new OperationalException(
+      "You are not authorized to update this product",
+      403
+    );
   }
-  product = await prismaClient.product.update({
+};
+
+export const deleteProduct = async (userRole, userId, productId) => {
+  let product = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
     },
-    data: {
-      name: data.name,
-      description: data.description,
-      images: JSON.stringify(images),
-      price: parseInt(data.price),
-      category: {
-        connect: {
-          categoryId: parseInt(data.categoryId),
-        },
-      },
-      author: {
-        connect: {
-          userId,
-        },
-      },
-    },
   });
-  return product;
-};
-
-export const deleteProduct = async (id) => {
-  await prismaClient.product.delete({
-    where: {
-      productId: parseInt(id),
-    },
-  });
+  if (product.userId == userId || userRole == "ADMIN") {
+    const imageUrls = JSON.parse(product.images);
+    await deleteImage(imageUrls);
+    product = await prismaClient.product.delete({
+      where: {
+        productId: parseInt(productId),
+      },
+    });
+  } else {
+    throw new OperationalException(
+      "You are not the owner of this product",
+      403
+    );
+  }
 };
 
 export const getThreeTrendingProduct = async () => {
