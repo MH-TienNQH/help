@@ -159,7 +159,7 @@ export const listProduct = async (
       ...(pending ? { pending: true } : {}),
     },
   });
-  const orderDirection = order === "asc" || order === "desc" ? order : "asc";
+  const orderDirection = order === "asc" || order === "desc" ? order : "desc";
   const orderBy = order ? { productId: orderDirection } : undefined;
 
   let products = await prismaClient.product.findMany({
