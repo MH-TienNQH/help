@@ -66,9 +66,11 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const productId = req.params.id;
   const data = req.body;
   const userId = req.userId;
+  const userRole = req.userRole;
   const images = req.cloudinaryUrls;
 
   let product = await productServices.updateProduct(
+    userRole,
     productId,
     data,
     userId,
@@ -79,7 +81,9 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
 
 export const deleteProduct = asyncErrorHandler(async (req, res) => {
   const productId = req.params.id;
-  await productServices.deleteProduct(productId);
+  const userId = req.userId;
+  const userRole = req.userRole;
+  await productServices.deleteProduct(userRole, userId, productId);
   res.send(new responseFormat(200, true, ["product deleted"]));
 });
 export const getThreeTrendingProduct = asyncErrorHandler(async (req, res) => {
