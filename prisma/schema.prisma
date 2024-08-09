@@ -41,6 +41,7 @@ model User {
   otp           String?
   otpCreatedAt  DateTime?
   otpExpireAt   DateTime?
+  RequestToBuy  RequestToBuy[]
 }
 
 model RefreshToken {
@@ -76,7 +77,7 @@ model Product {
   images       Json
   status       Status         @default(Selling)
   categoryId   Int
-  category     Category       @relation(fields: [categoryId], references: [categoryId])
+  category     Category       @relation(fields: [categoryId], references: [categoryId], onDelete: Cascade)
   userId       Int?
   author       User?          @relation(fields: [userId], references: [userId], onDelete: Cascade)
   createdAt    DateTime       @default(now())
@@ -84,6 +85,16 @@ model Product {
   pending      Boolean        @default(true)
   ProductSaved ProductSaved[]
   likeNumber   ProductLiked[]
+  RequestToBuy RequestToBuy[]
+}
+
+model RequestToBuy {
+  productId Int
+  product   Product @relation(fields: [productId], references: [productId])
+  userId    Int
+  user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([productId, userId])
 }
 
 model Category {
