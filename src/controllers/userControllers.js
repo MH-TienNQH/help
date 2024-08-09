@@ -115,6 +115,12 @@ export const likeProduct = asyncErrorHandler(async (req, res) => {
 export const requestToBuy = asyncErrorHandler(async (req, res) => {
   const productId = parseInt(req.params.id);
   const userId = req.userId;
-  const requested = await userServices.requestToBuyProduct(userId, productId);
+  const { message, offer } = req.body;
+  const requested = await userServices.requestToBuyProduct(
+    userId,
+    productId,
+    message,
+    offer
+  );
   res.send(requested);
 });

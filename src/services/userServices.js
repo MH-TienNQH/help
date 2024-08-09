@@ -143,7 +143,12 @@ export const likeProduct = async (userId, productId) => {
   }
 };
 
-export const requestToBuyProduct = async (userId, productId) => {
+export const requestToBuyProduct = async (
+  userId,
+  productId,
+  message,
+  offer
+) => {
   const requestToBuy = await prismaClient.requestToBuy.findUnique({
     where: {
       productId_userId: {
@@ -167,6 +172,8 @@ export const requestToBuyProduct = async (userId, productId) => {
       data: {
         userId,
         productId,
+        message,
+        offer,
       },
     });
     return new responseFormat(200, true, "requested product");
@@ -190,6 +197,12 @@ export const getListOfRequesterForOneProduct = async (productId) => {
       user: true,
     },
   });
-  const usersRequesting = requests.map((request) => request.user.name);
-  return new responseFormat(200, true, usersRequesting);
+  const buyer = requests.map((item) => ({
+    username: item.user.username,
+    avatar: JSON.parse(item.user.avatar),
+    message: item.message,
+    offer: item.offer,
+  }));
+
+  return new responseFormat(200, true, buyer);
 };

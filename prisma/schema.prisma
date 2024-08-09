@@ -93,6 +93,8 @@ model RequestToBuy {
   product   Product @relation(fields: [productId], references: [productId])
   userId    Int
   user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  message   String
+  offer     Int
 
   @@unique([productId, userId])
 }
