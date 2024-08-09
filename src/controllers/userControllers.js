@@ -79,10 +79,7 @@ export const saveProduct = asyncErrorHandler(async (req, res) => {
   const productId = parseInt(req.params.id);
   const userId = req.userId;
   const save = await userServices.saveProduct(userId, productId);
-  if (save) {
-    res.send(new responseFormat(200, true, "saved product"));
-  }
-  res.send(new responseFormat(200, true, "unsave product"));
+  res.send(save);
 });
 
 export const personalProduct = asyncErrorHandler(async (req, res) => {
@@ -112,8 +109,18 @@ export const likeProduct = asyncErrorHandler(async (req, res) => {
   const productId = parseInt(req.params.id);
   const userId = req.userId;
   const liked = await userServices.likeProduct(userId, productId);
-  if (save) {
-    res.send(new responseFormat(200, true, "liked product"));
-  }
-  res.send(new responseFormat(200, true, "unliked product"));
+  res.send(liked);
+});
+
+export const requestToBuy = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const userId = req.userId;
+  const { message, offer } = req.body;
+  const requested = await userServices.requestToBuyProduct(
+    userId,
+    productId,
+    message,
+    offer
+  );
+  res.send(requested);
 });

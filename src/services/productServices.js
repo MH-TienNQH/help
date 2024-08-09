@@ -1,15 +1,17 @@
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { responseFormat } from "../utils/responseFormat.js";
+import * as userServices from "./userServices.js";
 
 export const getAllProduct = async () => {
   let products = await prismaClient.product.findMany();
 
   return products;
 };
-export const findById = async (id) => {
+export const findById = async (userId, productId) => {
   const product = await prismaClient.product.findUnique({
     where: {
-      productId: id,
+      productId,
     },
     include: {
       _count: {
@@ -20,30 +22,69 @@ export const findById = async (id) => {
     },
   });
   if (product) {
-    return product;
+    const saved = await prismaClient.productSaved.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    const liked = await prismaClient.productLiked.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    const requested = await prismaClient.requestToBuy.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    if (product.userId == userId) {
+      const requests = await userServices.getListOfRequesterForOneProduct(
+        productId
+      );
+      return { product, saved, liked, requested, requests };
+    }
+    return { product, saved, liked, requested };
   }
   throw new OperationalException("No product found", 404);
 };
 export const addProduct = async (data, images, userId) => {
-  const product = await prismaClient.product.create({
-    data: {
-      name: data.name,
-      description: data.description,
-      images: JSON.stringify(images),
-      price: parseInt(data.price),
-      category: {
-        connect: {
-          categoryId: parseInt(data.categoryId),
-        },
-      },
-      author: {
-        connect: {
-          userId: userId,
-        },
-      },
+  const category = await prismaClient.category.findUnique({
+    where: {
+      categoryId: parseInt(data.categoryId),
     },
   });
-  return product;
+  if (category) {
+    const product = await prismaClient.product.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        images: JSON.stringify(images),
+        price: parseInt(data.price),
+        category: {
+          connect: {
+            categoryId: parseInt(data.categoryId),
+          },
+        },
+        author: {
+          connect: {
+            userId: userId,
+          },
+        },
+      },
+    });
+    return new responseFormat(200, true, [product.name, "product created"]);
+  } else {
+    return new responseFormat(404, false, "categoryId not found");
+  }
 };
 
 export const updateProduct = async (productId, data, userId, images) => {

@@ -8,6 +8,7 @@ import {
   getUserById,
   likeProduct,
   personalProduct,
+  requestToBuy,
   saveProduct,
   updateUser,
 } from "../controllers/userControllers.js";
@@ -57,3 +58,4 @@ userRoutes.get(
   personalProduct
 );
 userRoutes.post("/like-product/:id", verifyTokenMiddlewares, likeProduct);
+userRoutes.post("/request-to-buy/:id", verifyTokenMiddlewares, requestToBuy);
