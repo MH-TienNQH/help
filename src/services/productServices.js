@@ -160,7 +160,6 @@ export const listProduct = async (
     },
   });
   const orderDirection = order === "asc" || order === "desc" ? order : "desc";
-  const orderBy = order ? { productId: orderDirection } : undefined;
 
   let products = await prismaClient.product.findMany({
     where: {
@@ -170,13 +169,14 @@ export const listProduct = async (
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
       ...(pending ? { pending: true } : {}),
     },
-    ...(orderBy ? { orderBy } : {}),
+    orderBy: {
+      productId: orderDirection,
+    },
     skip,
     take: limit,
   });
   const productsWithImageUrls = products.map((product) => ({
     ...product,
-    imageUrl: `${process.env.BASE_URL}/${product.image}`, // Construct the full image URL
   }));
 
   const totalPages = Math.ceil(numberOfProducts / limit);
