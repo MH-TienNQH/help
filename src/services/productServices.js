@@ -17,6 +17,7 @@ export const findById = async (id) => {
           likeNumber: true,
         },
       },
+      author: true,
     },
   });
   if (product) {
@@ -174,6 +175,9 @@ export const listProduct = async (
     },
     skip,
     take: limit,
+    include: {
+      author: true,
+    },
   });
   const productsWithImageUrls = products.map((product) => ({
     ...product,
