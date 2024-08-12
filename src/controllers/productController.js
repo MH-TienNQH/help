@@ -111,3 +111,16 @@ export const listProduct = asyncErrorHandler(async (req, res) => {
     )
   );
 });
+
+export const approveProduct = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const response = await productServices.approveProduct(productId);
+  res.send(response);
+});
+
+export const rejectProduct = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const { message } = req.body;
+  const response = await productServices.rejectProduct(productId, message);
+  res.send(response);
+});

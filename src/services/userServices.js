@@ -128,31 +128,3 @@ export const likeProduct = async (userId, productId) => {
     });
   }
 };
-export const verifyProduct = async (productId) => {
-  await prismaClient.product.update({
-    where: {
-      productId: parseInt(productId),
-    },
-    data: {
-      status: "APPROVED",
-      statusMessage: "Your product have been approved",
-    },
-  });
-  return new responseFormat(200, true, "product approved");
-};
-
-export const rejectProduct = async (productId, message) => {
-  if (message == "") {
-    return new responseFormat(404, false, "Please enter reason for rejection");
-  }
-  await prismaClient.product.update({
-    where: {
-      productId,
-    },
-    data: {
-      status: "REJECTED",
-      statusMessage: message,
-    },
-  });
-  return new responseFormat(200, true, "product rejected");
-};

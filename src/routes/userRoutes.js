@@ -8,10 +8,8 @@ import {
   getUserById,
   likeProduct,
   personalProduct,
-  rejectProduct,
   saveProduct,
   updateUser,
-  verifyProduct,
 } from "../controllers/userControllers.js";
 
 //authentication middlewares
@@ -42,20 +40,6 @@ userRoutes.put(
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   updateUser
-);
-
-userRoutes.put(
-  "/verify-product/:id",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
-  verifyProduct
-);
-
-userRoutes.put(
-  "/reject-product/:id",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
-  rejectProduct
 );
 
 userRoutes.delete(

@@ -3,6 +3,7 @@ import { Router } from "express";
 //controllers
 import {
   addProduct,
+  approveProduct,
   deleteProduct,
   getAllProduct,
   getNewestProduct,
@@ -11,6 +12,7 @@ import {
   getSoldProduct,
   getThreeTrendingProduct,
   listProduct,
+  rejectProduct,
   updateProduct,
 } from "../controllers/productController.js";
 
@@ -46,6 +48,19 @@ productRoutes.put(
   checkSchema(addProductSchema),
   verifyTokenMiddlewares,
   updateProduct
+);
+productRoutes.put(
+  "/approve/:id",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
+  approveProduct
+);
+
+productRoutes.put(
+  "/reject/:id",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
+  rejectProduct
 );
 
 productRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteProduct);

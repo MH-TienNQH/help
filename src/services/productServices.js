@@ -1,5 +1,6 @@
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { Status } from "@prisma/client";
 
 export const getAllProduct = async () => {
   let products = await prismaClient.product.findMany({});
@@ -140,17 +141,20 @@ export const getSoldProduct = async () => {
 export const listProduct = async (
   productName,
   categoryId,
-  order,
+  order = "desc",
   status,
   page,
   limit
 ) => {
   const skip = (page - 1) * limit;
-  const validStatus =
-    status === "PENDING" || status === "APPROVED" || status === "REJECTED"
-      ? status
-      : "PENDING";
 
+  const validStatus = Object.values(Status).includes(status.toUpperCase())
+    ? status.toUpperCase()
+    : Status.PENDING;
+
+  const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
+    ? order.toLowerCase()
+    : "desc";
   let numberOfProducts = await prismaClient.product.count({
     where: {
       name: {
@@ -169,6 +173,9 @@ export const listProduct = async (
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
       ...(validStatus ? { status: validStatus } : {}),
     },
+    orderBy: {
+      productId: orderDirection,
+    },
     skip,
     take: limit,
   });
@@ -185,4 +192,33 @@ export const listProduct = async (
       total: totalPages,
     },
   };
+};
+
+export const approveProduct = async (productId) => {
+  await prismaClient.product.update({
+    where: {
+      productId: parseInt(productId),
+    },
+    data: {
+      status: "APPROVED",
+      statusMessage: "Your product have been approved",
+    },
+  });
+  return new responseFormat(200, true, "product approved");
+};
+
+export const rejectProduct = async (productId, message) => {
+  if (message == "") {
+    return new responseFormat(404, false, "Please enter reason for rejection");
+  }
+  await prismaClient.product.update({
+    where: {
+      productId,
+    },
+    data: {
+      status: "REJECTED",
+      statusMessage: message,
+    },
+  });
+  return new responseFormat(200, true, "product rejected");
 };
