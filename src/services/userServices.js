@@ -135,31 +135,24 @@ export const verifyProduct = async (productId) => {
     },
     data: {
       status: "APPROVED",
+      statusMessage: "Your product have been approved",
     },
   });
   return new responseFormat(200, true, "product approved");
 };
 
-export const rejectProduct = async (productId, messsage) => {
+export const rejectProduct = async (productId, message) => {
+  if (message == "") {
+    return new responseFormat(404, false, "Please enter reason for rejection");
+  }
   await prismaClient.product.update({
     where: {
       productId,
     },
     data: {
       status: "REJECTED",
+      statusMessage: message,
     },
   });
-  const product = await prismaClient.product.findUnique({
-    where: {
-      productId,
-    },
-    include: {
-      author: true,
-    },
-  });
-  if (product) {
-    const userEmail = product.author.email;
-    await sendMailTo(userEmail, "Rejection Letter", messsage);
-  }
   return new responseFormat(200, true, "product rejected");
 };
