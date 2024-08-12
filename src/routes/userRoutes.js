@@ -3,6 +3,7 @@ import { Router } from "express";
 //controllers
 import {
   addUser,
+  approveRequest,
   deleteUser,
   getAllUser,
   getUserById,
@@ -45,6 +46,12 @@ userRoutes.put(
   verifyTokenMiddlewares,
   updateUser
 );
+userRoutes.put(
+  "/approve-request/:productId/:userId",
+  verifyTokenMiddlewares,
+  approveRequest
+);
+
 userRoutes.delete(
   "/delete/:id",
   verifyTokenMiddlewares,

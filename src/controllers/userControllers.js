@@ -114,3 +114,16 @@ export const requestToBuy = asyncErrorHandler(async (req, res) => {
   );
   res.send(requested);
 });
+
+export const approveRequest = asyncErrorHandler(async (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const productId = parseInt(req.params.productId);
+  const ownerId = req.userId;
+
+  const response = await userServices.approveRequest(
+    ownerId,
+    productId,
+    userId
+  );
+  res.send(response);
+});

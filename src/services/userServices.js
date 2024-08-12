@@ -233,3 +233,67 @@ export const personalProduct = async (userId) => {
   const savedProducts = saved.map((item) => item.product);
   return { savedProducts, userProduct, requested };
 };
+
+export const approveRequest = async (ownerId, productId, userId) => {
+  let product = await prismaClient.requestToBuy.findFirst({
+    where: {
+      productId,
+    },
+    include: {
+      product: true,
+    },
+  });
+  if (product.product.userId !== ownerId) {
+    return new responseFormat(401, false, "you are not the owner");
+  }
+  await prismaClient.requestToBuy.update({
+    where: {
+      productId_userId: {
+        productId,
+        userId,
+      },
+    },
+    data: {
+      requestStatus: "APPROVE",
+    },
+  });
+  await prismaClient.requestToBuy.updateMany({
+    where: {
+      productId,
+      user: {
+        userId: {
+          not: userId,
+        },
+      },
+    },
+    data: {
+      requestStatus: "REJECT",
+    },
+  });
+  return new responseFormat(200, true, "request approved");
+};
+export const rejectRequest = async (ownerId, productId, userId) => {
+  let product = await prismaClient.requestToBuy.findFirst({
+    where: {
+      productId,
+    },
+    include: {
+      product: true,
+    },
+  });
+  if (product.product.userId !== ownerId) {
+    return new responseFormat(401, false, "you are not the owner");
+  }
+  await prismaClient.requestToBuy.update({
+    where: {
+      productId_userId: {
+        productId,
+        userId,
+      },
+    },
+    data: {
+      requestStatus: "REJECT",
+    },
+  });
+  return new responseFormat(200, true, "request rejected");
+};
