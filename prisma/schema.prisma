@@ -70,14 +70,11 @@ model Message {
 }
 
 model Product {
-
-  
-
   productId     Int            @id @unique @default(autoincrement())
   name          String         @unique
   description   String
   price         Int
-  image         String?
+  images        Json
   status        Status         @default(PENDING)
   statusMessage String         @default("Your product is pending for approval")
   categoryId    Int            @default(1)
@@ -88,7 +85,6 @@ model Product {
   soldAt        DateTime?
   ProductSaved  ProductSaved[]
   likeNumber    ProductLiked[]
-
 }
 
 model Category {

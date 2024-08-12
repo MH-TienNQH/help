@@ -160,7 +160,6 @@ export const listProduct = async (
       ...(validStatus ? { status: validStatus } : {}),
     },
   });
-  const orderDirection = order === "asc" || order === "desc" ? order : "desc";
 
   let products = await prismaClient.product.findMany({
     where: {

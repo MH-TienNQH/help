@@ -19,8 +19,8 @@ import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { signUpSchema } from "../schema/userSchema.js";
-
-
+import { upload } from "../utils/multer.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 export const userRoutes = Router();
 
