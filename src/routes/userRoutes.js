@@ -52,10 +52,6 @@ userRoutes.delete(
   deleteUser
 );
 userRoutes.post("/save-product/:id", verifyTokenMiddlewares, saveProduct);
-userRoutes.get(
-  "/personal-product/:id",
-  verifyTokenMiddlewares,
-  personalProduct
-);
+userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
 userRoutes.post("/like-product/:id", verifyTokenMiddlewares, likeProduct);
 userRoutes.post("/request-to-buy/:id", verifyTokenMiddlewares, requestToBuy);

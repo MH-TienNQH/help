@@ -83,25 +83,15 @@ export const saveProduct = asyncErrorHandler(async (req, res) => {
 });
 
 export const personalProduct = asyncErrorHandler(async (req, res) => {
-  const userId = parseInt(req.params.id);
-  const userProduct = await prismaClient.product.findMany({
-    where: {
-      userId,
-    },
-  });
-  const saved = await prismaClient.productSaved.findMany({
-    where: {
-      userId,
-    },
-    include: {
-      product: true,
-    },
-  });
-
-  const savedProducts = saved.map((item) => item.product);
+  const userId = parseInt(req.userId);
+  const response = await userServices.personalProduct(userId);
   res.send(
     new responseFormat(200, true, [
-      { userProduct: userProduct, savedProducts: savedProducts },
+      {
+        userProduct: response.userProduct,
+        savedProducts: response.savedProducts,
+        requestedProduct: response.requested,
+      },
     ])
   );
 });

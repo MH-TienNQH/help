@@ -206,3 +206,30 @@ export const getListOfRequesterForOneProduct = async (productId) => {
 
   return new responseFormat(200, true, buyer);
 };
+export const personalProduct = async (userId) => {
+  const userProduct = await prismaClient.product.findMany({
+    where: {
+      userId,
+    },
+  });
+  const saved = await prismaClient.productSaved.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      product: true,
+    },
+  });
+
+  const requested = await prismaClient.requestToBuy.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      product: true,
+    },
+  });
+
+  const savedProducts = saved.map((item) => item.product);
+  return { savedProducts, userProduct, requested };
+};
