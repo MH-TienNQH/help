@@ -3,7 +3,8 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { Status } from "@prisma/client";
 
 export const getAllProduct = async () => {
-  let products = await prismaClient.product.findMany({});
+  let products = await prismaClient.product.findMany();
+
   return products;
 };
 export const findById = async (id) => {
@@ -17,27 +18,20 @@ export const findById = async (id) => {
           likeNumber: true,
         },
       },
-    },
-  });
-  if (!product) {
-    throw new OperationalException("No product found", 404);
-  }
-  return product;
-};
-export const addProduct = async (data, image, userId) => {
-  let product = await prismaClient.product.findUnique({
-    where: {
-      name: data.name,
+      author: true,
     },
   });
   if (product) {
-    throw new OperationalException("Product exist", 403);
+    return product;
   }
-  product = await prismaClient.product.create({
+  throw new OperationalException("No product found", 404);
+};
+export const addProduct = async (data, images, userId) => {
+  const product = await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,
-      image,
+      images: JSON.stringify(images),
       price: parseInt(data.price),
       author: {
         connect: {
@@ -49,7 +43,7 @@ export const addProduct = async (data, image, userId) => {
   return product;
 };
 
-export const updateProduct = async (productId, data, userId, image) => {
+export const updateProduct = async (productId, data, userId, images) => {
   let product = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
@@ -73,7 +67,7 @@ export const updateProduct = async (productId, data, userId, image) => {
     data: {
       name: data.name,
       description: data.description,
-      image,
+      images: JSON.stringify(images),
       price: parseInt(data.price),
       author: {
         connect: {
@@ -166,6 +160,7 @@ export const listProduct = async (
       ...(validStatus ? { status: validStatus } : {}),
     },
   });
+  const orderDirection = order === "asc" || order === "desc" ? order : "desc";
 
   let products = await prismaClient.product.findMany({
     where: {
@@ -178,15 +173,24 @@ export const listProduct = async (
     orderBy: {
       productId: orderDirection,
     },
+    orderBy: {
+      productId: orderDirection,
+    },
     skip,
     take: limit,
+    include: {
+      author: true,
+    },
   });
+  const productsWithImageUrls = products.map((product) => ({
+    ...product,
+  }));
 
   const totalPages = Math.ceil(numberOfProducts / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
   return {
-    products,
+    productsWithImageUrls,
     meta: {
       privious_page: previousPage,
       current_page: page,
@@ -223,4 +227,11 @@ export const rejectProduct = async (productId, message) => {
     },
   });
   return new responseFormat(200, true, "product rejected");
+};
+
+export const getImageUrl = async (filename) => {
+  const __dirname = "./public";
+  const filePath = path.resolve(__dirname, "images", filename);
+
+  return filePath;
 };

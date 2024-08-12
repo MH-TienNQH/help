@@ -14,7 +14,8 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
     return res.status(400).send(result.array({ onlyFirstError: true }));
   }
   const data = req.body;
-  const avatar = req.file;
+  const avatar = req.cloudinaryUrls;
+
   let user = await userServices.findUserByEmail(data.email);
   if (user) {
     const error = new OperationalException("User already exist", 400);
@@ -37,25 +38,22 @@ export const login = asyncErrorHandler(async (req, res) => {
   const data = req.body;
 
   const response = await authServices.login(data);
-  res.send(new responseFormat(200, true, response));
+  const { accessToken, refreshToken } = response;
+  res
+    .cookie("refreshToken", refreshToken, {
+      maxAge: 31536000000, // 1 year in milliseconds
+      httpOnly: true,
+    })
+    .send(new responseFormat(200, true, response));
 });
 
 export const logout = asyncErrorHandler(async (req, res, next) => {
-  let refreshToken = null;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.split(" ")[0] === "Bearer"
-  ) {
-    refreshToken = req.headers.authorization.split(" ")[1];
-  }
   const userId = req.userId;
 
-  if (!refreshToken) {
-    res.send(new OperationalException("Token is missing", 400));
-  }
-  const response = await authServices.logout(refreshToken, userId);
-
-  res.send(new responseFormat(200, true, response));
+  const response = await authServices.logout(userId);
+  res
+    .clearCookie("refreshToken")
+    .send(new responseFormat(200, true, "logged out"));
 });
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
@@ -72,7 +70,12 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
     next(error);
   }
   const response = await authServices.refresh(refreshToken);
-  res.send(new responseFormat(200, true, response));
+  res
+    .cookie("refreshToken", response.refreshToken, {
+      httpOnly: true,
+      maxAge: 3.156e10,
+    })
+    .send(new responseFormat(200, true, response));
 });
 
 export const verifyEmail = asyncErrorHandler(async (req, res) => {

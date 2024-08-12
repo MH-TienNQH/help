@@ -16,18 +16,22 @@ import {
   signUpSchema,
 } from "../schema/userSchema.js";
 import { otpSchema } from "../schema/otpSchema.js";
-import { uploadMiddleware } from "../utils/uploadFile.js";
+
+import { upload } from "../utils/multer.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
+import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 
 export const authRoutes = Router();
 
 authRoutes.post(
   "/signup",
-  uploadMiddleware.single("avatar"),
+  upload.fields([{ name: "avatar", maxCount: 1 }]),
+  uploadToCloudinary,
   checkSchema(signUpSchema),
   signUp
 );
 authRoutes.post("/login", checkSchema(loginSchema), login);
-authRoutes.post("/logout", logout);
+authRoutes.post("/logout", verifyTokenMiddlewares, logout);
 authRoutes.get("/refresh", refresh);
 authRoutes.get("/verify/:email", verifyEmail);
 authRoutes.put(

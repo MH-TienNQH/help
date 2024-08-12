@@ -18,7 +18,7 @@ export const getUserById = asyncErrorHandler(async (req, res, next) => {
     const error = new OperationalException("User not found", 404);
     next(error);
   }
-  res.send(new responseFormat(200, true, userById.email));
+  res.send(new responseFormat(200, true, userById));
 });
 
 export const addUser = asyncErrorHandler(async (req, res, next) => {
@@ -28,7 +28,7 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
   }
   try {
     const data = req.body;
-    const avatar = req.file.filename;
+    const avatar = req.cloudinaryUrls;
     let user = await prismaClient.user.findFirst({
       where: {
         username: data.username,
@@ -54,7 +54,7 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
   }
 
   const data = req.body;
-  const avatar = req.file.filename;
+  const avatar = req.cloudinaryUrls;
   let user = await prismaClient.user.findFirst({
     where: {
       username: data.username,

@@ -20,7 +20,7 @@ import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 import { checkSchema } from "express-validator";
 import { signUpSchema } from "../schema/userSchema.js";
 
-//upload file
+
 
 export const userRoutes = Router();
 
@@ -36,7 +36,8 @@ userRoutes.post(
 );
 userRoutes.put(
   "/update/:id",
-
+  upload.fields([{ name: "avatar", maxCount: 1 }]),
+  uploadToCloudinary,
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   updateUser

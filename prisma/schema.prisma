@@ -47,7 +47,7 @@ model User {
 model RefreshToken {
   id        Int      @id @default(autoincrement())
   userId    Int
-  user      User     @relation(fields: [userId], references: [userId])
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
   token     String   @unique
   createdAt DateTime @default(now())
 }
@@ -70,6 +70,9 @@ model Message {
 }
 
 model Product {
+
+  
+
   productId     Int            @id @unique @default(autoincrement())
   name          String         @unique
   description   String
@@ -85,6 +88,7 @@ model Product {
   soldAt        DateTime?
   ProductSaved  ProductSaved[]
   likeNumber    ProductLiked[]
+
 }
 
 model Category {
@@ -97,7 +101,7 @@ model ProductSaved {
   productId Int
   product   Product @relation(fields: [productId], references: [productId])
   userId    Int
-  user      User    @relation(fields: [userId], references: [userId])
+  user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@unique([productId, userId])
 }
@@ -106,7 +110,7 @@ model ProductLiked {
   productId Int
   product   Product @relation(fields: [productId], references: [productId])
   userId    Int
-  user      User    @relation(fields: [userId], references: [userId])
+  user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@unique([productId, userId])
 }

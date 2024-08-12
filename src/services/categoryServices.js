@@ -1,7 +1,11 @@
 import { prismaClient } from "../routes/index.js";
 
 export const getAllCategories = async () => {
-  const category = await prismaClient.category.findMany({});
+  const category = await prismaClient.category.findMany({
+    orderBy: {
+      categoryId: "asc",
+    },
+  });
   return category;
 };
 export const findById = async (id) => {

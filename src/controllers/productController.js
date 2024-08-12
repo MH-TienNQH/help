@@ -43,8 +43,17 @@ export const addProduct = async (req, res) => {
   }
   const data = req.body;
   const userId = req.userId;
-  const image = req.file.filename;
-  let product = await productServices.addProduct(data, image, userId);
+  const images = req.cloudinaryUrls;
+
+  let product = await prismaClient.product.findUnique({
+    where: {
+      name: data.name,
+    },
+  });
+  if (product) {
+    res.send(new OperationalException("Product exist", 403));
+  }
+  product = await productServices.addProduct(data, images, userId);
 
   res.send(new responseFormat(200, true, [product.name, "product created"]));
 };
@@ -57,13 +66,13 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const productId = req.params.id;
   const data = req.body;
   const userId = req.userId;
-  const image = req.file.filename;
+  const images = req.cloudinaryUrls;
 
   let product = await productServices.updateProduct(
     productId,
     data,
     userId,
-    image
+    images
   );
   res.send(new responseFormat(200, true, [product.name, "product updated"]));
 });
@@ -94,6 +103,7 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
 export const listProduct = asyncErrorHandler(async (req, res) => {
   const { productName, categoryId, order, status } = req.query;
   const { page, limit } = req.pagination;
+
   let response = await productServices.listProduct(
     productName,
     categoryId,
@@ -106,7 +116,7 @@ export const listProduct = asyncErrorHandler(async (req, res) => {
     new responseFormatWithPagination(
       200,
       true,
-      response.products,
+      response.productsWithImageUrls,
       response.meta
     )
   );

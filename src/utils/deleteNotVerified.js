@@ -7,7 +7,7 @@ export const deleteNotVerified = async () => {
 
   await prismaClient.user.deleteMany({
     where: {
-      verified: true,
+      verified: false,
       createdAt: {
         lt: fifteenMinutesAgo.toISOString(),
       },
