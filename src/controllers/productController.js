@@ -92,13 +92,13 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
   res.send(new responseFormat(200, true, products));
 });
 export const listProduct = asyncErrorHandler(async (req, res) => {
-  const { productName, categoryId, order, pending } = req.query;
+  const { productName, categoryId, order, status } = req.query;
   const { page, limit } = req.pagination;
   let response = await productServices.listProduct(
     productName,
     categoryId,
     order,
-    pending,
+    status,
     page,
     limit
   );
@@ -110,10 +110,4 @@ export const listProduct = asyncErrorHandler(async (req, res) => {
       response.meta
     )
   );
-});
-
-export const verifyProduct = asyncErrorHandler(async (req, res) => {
-  const productId = req.params.id;
-  const product = await productServices.verifyProduct(productId);
-  res.send(new responseFormat(200, true, [product.name, "product approved"]));
 });

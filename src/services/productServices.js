@@ -38,11 +38,6 @@ export const addProduct = async (data, image, userId) => {
       description: data.description,
       image,
       price: parseInt(data.price),
-      category: {
-        connect: {
-          categoryId: parseInt(data.categoryId),
-        },
-      },
       author: {
         connect: {
           userId: userId,
@@ -79,11 +74,6 @@ export const updateProduct = async (productId, data, userId, image) => {
       description: data.description,
       image,
       price: parseInt(data.price),
-      category: {
-        connect: {
-          categoryId: parseInt(data.categoryId),
-        },
-      },
       author: {
         connect: {
           userId,
@@ -151,15 +141,15 @@ export const listProduct = async (
   productName,
   categoryId,
   order,
-  pending,
+  status,
   page,
   limit
 ) => {
-  if (!["asc", "desc"].includes(order)) {
-    return res.status(400).json({ error: "Invalid order value" });
-  }
-
   const skip = (page - 1) * limit;
+  const validStatus =
+    status === "PENDING" || status === "APPROVED" || status === "REJECTED"
+      ? status
+      : "PENDING";
 
   let numberOfProducts = await prismaClient.product.count({
     where: {
@@ -167,16 +157,7 @@ export const listProduct = async (
         contains: productName || "", // Search for products where the name contains the specified value
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
-      ...(pending !== undefined
-        ? {
-            pending:
-              pending === "true"
-                ? true
-                : pending === "false"
-                ? false
-                : undefined,
-          }
-        : {}),
+      ...(validStatus ? { status: validStatus } : {}),
     },
   });
 
@@ -186,16 +167,7 @@ export const listProduct = async (
         contains: productName || "", // Search for products where the name contains the specified value
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
-      ...(pending !== undefined
-        ? {
-            pending:
-              pending === "true"
-                ? true
-                : pending === "false"
-                ? false
-                : undefined,
-          }
-        : {}),
+      ...(validStatus ? { status: validStatus } : {}),
     },
     skip,
     take: limit,
@@ -213,16 +185,4 @@ export const listProduct = async (
       total: totalPages,
     },
   };
-};
-
-export const verifyProduct = async (productId) => {
-  const product = await prismaClient.product.update({
-    where: {
-      productId: parseInt(productId),
-    },
-    data: {
-      pending: false,
-    },
-  });
-  return product;
 };

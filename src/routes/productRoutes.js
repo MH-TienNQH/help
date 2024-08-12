@@ -12,7 +12,6 @@ import {
   getThreeTrendingProduct,
   listProduct,
   updateProduct,
-  verifyProduct,
 } from "../controllers/productController.js";
 
 //upload file
@@ -49,10 +48,4 @@ productRoutes.put(
   updateProduct
 );
 
-productRoutes.put(
-  "/verify-product/:id",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
-  verifyProduct
-);
 productRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteProduct);

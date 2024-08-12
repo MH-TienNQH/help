@@ -1,6 +1,8 @@
 import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { responseFormat } from "../utils/responseFormat.js";
+import { sendMailTo } from "../utils/sendMail.js";
 
 export const getAllUser = async () => {
   return await prismaClient.user.findMany();
@@ -125,4 +127,39 @@ export const likeProduct = async (userId, productId) => {
       },
     });
   }
+};
+export const verifyProduct = async (productId) => {
+  await prismaClient.product.update({
+    where: {
+      productId: parseInt(productId),
+    },
+    data: {
+      status: "APPROVED",
+    },
+  });
+  return new responseFormat(200, true, "product approved");
+};
+
+export const rejectProduct = async (productId, messsage) => {
+  await prismaClient.product.update({
+    where: {
+      productId,
+    },
+    data: {
+      status: "REJECTED",
+    },
+  });
+  const product = await prismaClient.product.findUnique({
+    where: {
+      productId,
+    },
+    include: {
+      author: true,
+    },
+  });
+  if (product) {
+    const userEmail = product.author.email;
+    await sendMailTo(userEmail, "Rejection Letter", messsage);
+  }
+  return new responseFormat(200, true, "product rejected");
 };

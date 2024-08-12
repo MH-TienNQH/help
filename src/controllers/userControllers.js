@@ -117,3 +117,15 @@ export const likeProduct = asyncErrorHandler(async (req, res) => {
   }
   res.send(new responseFormat(200, true, "unliked product"));
 });
+export const verifyProduct = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const response = await userServices.verifyProduct(productId);
+  res.send(response);
+});
+
+export const rejectProduct = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const { message } = req.body;
+  const response = await userServices.rejectProduct(productId, message);
+  res.send(response);
+});

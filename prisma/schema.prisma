@@ -19,8 +19,9 @@ enum Role {
 }
 
 enum Status {
-  Sold
-  Selling
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model User {
@@ -73,15 +74,14 @@ model Product {
   name         String         @unique
   description  String
   price        Int
-  image       String?
-  status       Status         @default(Selling)
-  categoryId   Int
+  image        String?
+  status       Status         @default(PENDING)
+  categoryId   Int            @default(1)
   category     Category       @relation(fields: [categoryId], references: [categoryId])
   userId       Int?
   author       User?          @relation(fields: [userId], references: [userId])
   createdAt    DateTime       @default(now())
   soldAt       DateTime?
-  pending Boolean @default(true)
   ProductSaved ProductSaved[]
   likeNumber   ProductLiked[]
 }

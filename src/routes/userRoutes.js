@@ -8,8 +8,10 @@ import {
   getUserById,
   likeProduct,
   personalProduct,
+  rejectProduct,
   saveProduct,
   updateUser,
+  verifyProduct,
 } from "../controllers/userControllers.js";
 
 //authentication middlewares
@@ -22,14 +24,13 @@ import { signUpSchema } from "../schema/userSchema.js";
 
 //upload file
 
-
 export const userRoutes = Router();
 
 userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.post(
   "/add-user",
-  
+
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   adminMiddlewares,
@@ -42,6 +43,21 @@ userRoutes.put(
   verifyTokenMiddlewares,
   updateUser
 );
+
+userRoutes.put(
+  "/verify-product/:id",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
+  verifyProduct
+);
+
+userRoutes.put(
+  "/reject-product/:id",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
+  rejectProduct
+);
+
 userRoutes.delete(
   "/delete/:id",
   verifyTokenMiddlewares,
