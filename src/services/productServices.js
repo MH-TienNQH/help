@@ -18,6 +18,7 @@ export const findById = async (id) => {
         },
       },
       author: true,
+      comments: true,
     },
   });
   if (product) {

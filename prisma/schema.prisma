@@ -41,6 +41,7 @@ model User {
   otp           String?
   otpCreatedAt  DateTime?
   otpExpireAt   DateTime?
+  comments      Comment[]
 }
 
 model RefreshToken {
@@ -84,6 +85,7 @@ model Product {
   pending      Boolean        @default(true)
   ProductSaved ProductSaved[]
   likeNumber   ProductLiked[]
+  comments     Comment[]
 }
 
 model Category {
@@ -108,4 +110,14 @@ model ProductLiked {
   user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@unique([productId, userId])
+}
+
+model Comment {
+  commentId Int      @id @unique @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [productId])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [userId])
 }
