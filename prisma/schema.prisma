@@ -19,8 +19,9 @@ enum Role {
 }
 
 enum Status {
-  Sold
-  Selling
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model User {
@@ -69,21 +70,21 @@ model Message {
 }
 
 model Product {
-  productId    Int            @id @unique @default(autoincrement())
-  name         String         @unique
-  description  String
-  price        Int
-  images       Json
-  status       Status         @default(Selling)
-  categoryId   Int
-  category     Category       @relation(fields: [categoryId], references: [categoryId])
-  userId       Int?
-  author       User?          @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  createdAt    DateTime       @default(now())
-  soldAt       DateTime?
-  pending      Boolean        @default(true)
-  ProductSaved ProductSaved[]
-  likeNumber   ProductLiked[]
+  productId     Int            @id @unique @default(autoincrement())
+  name          String         @unique
+  description   String
+  price         Int
+  images        Json
+  status        Status         @default(PENDING)
+  statusMessage String         @default("Your product is pending for approval")
+  categoryId    Int            @default(1)
+  category      Category       @relation(fields: [categoryId], references: [categoryId])
+  userId        Int?
+  author        User?          @relation(fields: [userId], references: [userId])
+  createdAt     DateTime       @default(now())
+  soldAt        DateTime?
+  ProductSaved  ProductSaved[]
+  likeNumber    ProductLiked[]
 }
 
 model Category {
