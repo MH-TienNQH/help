@@ -148,9 +148,11 @@ export const listProduct = async (
 ) => {
   const skip = (page - 1) * limit;
 
-  const validStatus = Object.values(Status).includes(status.toUpperCase())
-    ? status.toUpperCase()
-    : Status.PENDING;
+  const validStatus = status
+    ? Object.values(Status).includes(status.toUpperCase())
+      ? status.toUpperCase()
+      : null
+    : null;
 
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()

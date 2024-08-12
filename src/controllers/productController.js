@@ -1,13 +1,13 @@
 import { prismaClient } from "../routes/index.js";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
+
 import {
   responseFormat,
   responseFormatWithPagination,
 } from "../utils/responseFormat.js";
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
-import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 dotenv.config();
 
