@@ -3,6 +3,7 @@ import { Router } from "express";
 //controllers
 import {
   addProduct,
+  approveProduct,
   deleteProduct,
   getAllProduct,
   getNewestProduct,
@@ -11,6 +12,7 @@ import {
   getSoldProduct,
   getThreeTrendingProduct,
   listProduct,
+  rejectProduct,
   updateProduct,
 } from "../controllers/productController.js";
 
@@ -22,8 +24,6 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { addProductSchema } from "../schema/productSchema.js";
-import { upload } from "../utils/multer.js";
-import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
@@ -48,4 +48,18 @@ productRoutes.put(
   verifyTokenMiddlewares,
   updateProduct
 );
+productRoutes.put(
+  "/approve/:id",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
+  approveProduct
+);
+
+productRoutes.put(
+  "/reject/:id",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
+  rejectProduct
+);
+
 productRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteProduct);

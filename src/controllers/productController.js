@@ -1,13 +1,13 @@
 import { prismaClient } from "../routes/index.js";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
+
 import {
   responseFormat,
   responseFormatWithPagination,
 } from "../utils/responseFormat.js";
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
-import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 dotenv.config();
 
@@ -101,14 +101,14 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
   res.send(new responseFormat(200, true, products));
 });
 export const listProduct = asyncErrorHandler(async (req, res) => {
-  const { productName, categoryId, order, pending } = req.query;
+  const { productName, categoryId, order, status } = req.query;
   const { page, limit } = req.pagination;
 
   let response = await productServices.listProduct(
     productName,
     categoryId,
     order,
-    pending,
+    status,
     page,
     limit
   );
@@ -120,4 +120,17 @@ export const listProduct = asyncErrorHandler(async (req, res) => {
       response.meta
     )
   );
+});
+
+export const approveProduct = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const response = await productServices.approveProduct(productId);
+  res.send(response);
+});
+
+export const rejectProduct = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const { message } = req.body;
+  const response = await productServices.rejectProduct(productId, message);
+  res.send(response);
 });
