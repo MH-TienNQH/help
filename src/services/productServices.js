@@ -59,29 +59,20 @@ export const findById = async (userId, productId) => {
   throw new OperationalException("No product found", 404);
 };
 export const addProduct = async (data, images, userId) => {
-  const category = await prismaClient.category.findUnique({
-    where: {
-      categoryId: parseInt(data.categoryId),
-    },
-  });
-  if (category) {
-    const product = await prismaClient.product.create({
-      data: {
-        name: data.name,
-        description: data.description,
-        images: JSON.stringify(images),
-        price: parseInt(data.price),
-        author: {
-          connect: {
-            userId: userId,
-          },
+  const product = await prismaClient.product.create({
+    data: {
+      name: data.name,
+      description: data.description,
+      images: JSON.stringify(images),
+      price: parseInt(data.price),
+      author: {
+        connect: {
+          userId: userId,
         },
       },
-    });
-    return new responseFormat(200, true, [product.name, "product created"]);
-  } else {
-    return new responseFormat(404, false, "categoryId not found");
-  }
+    },
+  });
+  return new responseFormat(200, true, [product.name, "product created"]);
 };
 
 export const updateProduct = async (productId, data, userId, images) => {
