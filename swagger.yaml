@@ -1,0 +1,252 @@
+openapi: 3.0.3
+info:
+  title: API Document for Mor Marketplace
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://localhost:3001/api
+tags:
+  - name: User
+    description: user operations
+  - name: Category
+    description: category operations
+  - name: Product
+    description: product operations
+  - name: Chat
+    description: chat operations
+  - name: Auth 
+    description: auth operations
+  - name: Comment
+    description: description operations 
+paths:
+  /user/get-all:
+    get:
+      tags:
+        - User
+      summary: Get all user in the db 
+      description: Get all user in the db 
+      operationId: getAll
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'     
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+  /user/get-by-id/{id}:
+    get:
+        tags:
+          - User
+        summary: get user by id
+        description: id is userId
+        operationId: getUserById
+        parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        responses:
+          '200':
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'          
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/User'
+          '404':
+            description: User not found
+  /user/add-user:
+    post:
+      tags:
+        - User
+      summary: Add a new user
+      description: avatar is image
+      operationId: addUser
+      requestBody:
+        description: Create a new user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: User already exist
+        '403':
+          description: Username already exist
+  /user/update/{id}:
+    put:
+      tags:
+        - User
+      summary: Update user
+      description: avatar is image
+      operationId: updateUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Update user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: User already exist
+  /user/delete/{id}:
+    delete:
+      tags:
+        - User
+      summary: Delete user
+      description: delete user
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: user deleted
+  /user/save-product/{id}:
+    post:
+      tags:
+      - User
+      summary: save a product
+      description: id is productId
+      operationId: saveProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: saved product
+  /user/like-product/{id}:
+    post:
+      tags:
+      - User
+      summary: like a product
+      description: id is productId
+      operationId: likeProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: liked product
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        verified:
+          type: boolean
+        role:
+          type: string
+          enum:
+            - USER
+            - ADMIN
+        createdAt:
+          type: string
+          format: date-time
+    UserCreate:
+        type: object
+        properties:
+          username:
+            type: string
+          email:
+            type: string
+          password:
+            type: string
+          name:
+            type: string
+          avatar:
+            type: string
+    SuccessMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User deleted"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  

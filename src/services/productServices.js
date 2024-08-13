@@ -1,6 +1,7 @@
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { Status } from "@prisma/client";
+import { responseFormat } from "../utils/responseFormat.js";
 
 export const getAllProduct = async () => {
   let products = await prismaClient.product.findMany();
