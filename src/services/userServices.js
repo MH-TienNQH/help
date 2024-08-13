@@ -4,7 +4,6 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { responseFormat } from "../utils/responseFormat.js";
 import { sendMailTo } from "../utils/sendMail.js";
 
-
 export const getAllUser = async () => {
   const users = await prismaClient.user.findMany();
   const usersWithImageUrls = users.map((user) => ({
@@ -208,11 +207,33 @@ export const getListOfRequesterForOneProduct = async (productId) => {
 
   return new responseFormat(200, true, buyer);
 };
-export const personalProduct = async (userId) => {
+export const personalProduct = async (
+  userId,
+  order = "desc",
+  status,
+  page,
+  limit
+) => {
+  const skip = (page - 1) * limit;
+  const validStatus = status
+    ? Object.values(Status).includes(status.toUpperCase())
+      ? status.toUpperCase()
+      : null
+    : null;
+
+  const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
+    ? order.toLowerCase()
+    : "desc";
   const userProduct = await prismaClient.product.findMany({
     where: {
       userId,
     },
+    ...(validStatus ? { status: validStatus } : {}),
+    orderBy: {
+      productId: orderDirection,
+    },
+    skip,
+    take: limit,
   });
   const saved = await prismaClient.productSaved.findMany({
     where: {
@@ -221,6 +242,11 @@ export const personalProduct = async (userId) => {
     include: {
       product: true,
     },
+    orderBy: {
+      productId: orderDirection,
+    },
+    skip,
+    take: limit,
   });
 
   const requested = await prismaClient.requestToBuy.findMany({
@@ -230,8 +256,26 @@ export const personalProduct = async (userId) => {
     include: {
       product: true,
     },
+    orderBy: {
+      productId: orderDirection,
+    },
+    skip,
+    take: limit,
   });
 
   const savedProducts = saved.map((item) => item.product);
-  return { savedProducts, userProduct, requested };
+  const totalPages = Math.ceil(numberOfProducts / limit);
+  const previousPage = page > 1 ? page - 1 : null;
+  const nextPage = page < totalPages ? page + 1 : null;
+  return {
+    savedProducts,
+    userProduct,
+    requested,
+    meta: {
+      privious_page: previousPage,
+      current_page: page,
+      next_page: nextPage,
+      total: totalPages,
+    },
+  };
 };

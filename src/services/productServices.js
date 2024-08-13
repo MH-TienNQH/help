@@ -4,7 +4,6 @@ import { responseFormat } from "../utils/responseFormat.js";
 import * as userServices from "./userServices.js";
 import { Status } from "@prisma/client";
 
-
 export const getAllProduct = async () => {
   let products = await prismaClient.product.findMany();
 
@@ -60,7 +59,6 @@ export const findById = async (userId, productId) => {
   throw new OperationalException("No product found", 404);
 };
 export const addProduct = async (data, images, userId) => {
-
   const category = await prismaClient.category.findUnique({
     where: {
       categoryId: parseInt(data.categoryId),
@@ -73,26 +71,10 @@ export const addProduct = async (data, images, userId) => {
         description: data.description,
         images: JSON.stringify(images),
         price: parseInt(data.price),
-        category: {
-          connect: {
-            categoryId: parseInt(data.categoryId),
-          },
-        },
         author: {
           connect: {
             userId: userId,
           },
-
-  const product = await prismaClient.product.create({
-    data: {
-      name: data.name,
-      description: data.description,
-      images: JSON.stringify(images),
-      price: parseInt(data.price),
-      author: {
-        connect: {
-          userId: userId,
-
         },
       },
     });
@@ -227,9 +209,6 @@ export const listProduct = async (
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
       ...(validStatus ? { status: validStatus } : {}),
-    },
-    orderBy: {
-      productId: orderDirection,
     },
     orderBy: {
       productId: orderDirection,
