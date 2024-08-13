@@ -3,11 +3,13 @@ import { Router } from "express";
 //controllers
 import {
   addUser,
+  approveRequest,
   deleteUser,
   getAllUser,
   getUserById,
   likeProduct,
   personalProduct,
+  rejectRequest,
   requestToBuy,
   saveProduct,
   updateUser,
@@ -43,6 +45,19 @@ userRoutes.put(
   verifyTokenMiddlewares,
   updateUser
 );
+
+userRoutes.put(
+  "/approve-request/:productId/:userId",
+  verifyTokenMiddlewares,
+  approveRequest
+);
+
+userRoutes.put(
+  "/reject-request/:productId/:userId",
+  verifyTokenMiddlewares,
+  rejectRequest
+);
+
 
 userRoutes.delete(
   "/delete/:id",

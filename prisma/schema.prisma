@@ -24,6 +24,12 @@ enum Status {
   REJECTED
 }
 
+enum requestStatus {
+  PENDING
+  APPROVE
+  REJECT
+}
+
 model User {
   userId        Int            @id @unique @default(autoincrement())
   username      String         @unique
@@ -91,12 +97,13 @@ model Product {
 }
 
 model RequestToBuy {
-  productId Int
-  product   Product @relation(fields: [productId], references: [productId])
-  userId    Int
-  user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  message   String
-  offer     Int
+  productId     Int
+  product       Product       @relation(fields: [productId], references: [productId])
+  userId        Int
+  user          User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  message       String
+  offer         Int
+  requestStatus requestStatus @default(PENDING)
 
   @@unique([productId, userId])
 }
