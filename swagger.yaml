@@ -198,6 +198,141 @@ paths:
           content:
             application/json: 
               example: liked product
+  /category/get-all:
+    get:
+      tags:
+        - Category
+      summary: Get all the category
+      description: Get all category
+      operationId: getAll
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'     
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Category'
+  /category/get-by-id/{id}:
+    get:
+      tags:
+        - Category
+      summary: get category by id
+      description: id is categoryId
+      operationId: getCategoryById
+      parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category not found
+  /category/add-category:
+    post:
+      tags:
+        - Category
+      summary: Add a new category
+      description: Add a new category
+      operationId: addCategory
+      
+      requestBody:
+        description: Create a new Category
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Category'   
+        '400':
+          description: Category already exist
+  /category/update/{id}:
+    put:
+      tags:
+        - Category
+      summary: Add a new category
+      description: Add a new category
+      operationId: updateCategory
+      parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Create a new Category
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Category'   
+        '404':
+          description: Category not found
+  /category/delete/{id}:
+    delete:
+      tags:
+        - Category
+      summary: Add a new category
+      description: Add a new category
+      operationId: updateCategory
+      parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+          '200':
+            description: Successful operation
+            content:
+              application/json:
+                example: "category deleted"
+          '400':
+            description: Category already exist
+
 components:
   schemas:
     User:
@@ -244,6 +379,18 @@ components:
         message:
           type: string
           example: "User deleted"
+    Category:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+        categoryName:
+          type: string
+    CategoryCreate:
+      type: object
+      properties:
+        categoryName: 
+          type: string
   securitySchemes:
     bearerAuth:
       type: http
