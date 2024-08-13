@@ -198,6 +198,25 @@ paths:
           content:
             application/json: 
               example: liked product
+  /user/request-to-buy/{id}:
+    post:
+      tags:
+      - User
+      summary: request to buy a product
+      description: id is productId
+      operationId: requestProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: requested product
   /category/get-all:
     get:
       tags:
@@ -459,7 +478,50 @@ paths:
           content:
             application/json:
               example: product deleted
-
+  /product/approve/{id}:
+    put:  
+      tags:
+        - Product
+      summary: Approve product
+      description: approve product
+      operationId: approveProduct
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              example: approved 
+  /product/reject/{id}:
+    put:
+      tags:
+        - Product
+      summary: Reject product
+      description: reject product
+      operationId: rejectProduct
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer    
+      requestBody:
+        description: Reject a product
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectProduct'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              example: rejected
 components:
   schemas:
     User:
@@ -506,6 +568,12 @@ components:
         message:
           type: string
           example: "User deleted"
+    RejectProduct:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "product rejected"
     Category:
       type: object
       properties:

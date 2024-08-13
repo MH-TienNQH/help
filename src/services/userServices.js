@@ -1,9 +1,6 @@
 import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
-import { responseFormat } from "../utils/responseFormat.js";
-import { sendMailTo } from "../utils/sendMail.js";
-
 export const getAllUser = async () => {
   const users = await prismaClient.user.findMany();
   const usersWithImageUrls = users.map((user) => ({
