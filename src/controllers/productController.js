@@ -20,21 +20,31 @@ export const getAllProduct = asyncErrorHandler(async (req, res) => {
 export const getProductById = asyncErrorHandler(async (req, res) => {
   const productId = parseInt(req.params.id);
   const userId = req.userId;
-  let product = await productServices.findById(productId);
-
-  const saved = await prismaClient.productSaved.findUnique({
-    where: {
-      productId_userId: {
-        productId,
-        userId,
-      },
-    },
-  });
-  res.send(
-    new responseFormat(200, true, [
-      { ...product, isSaved: saved ? true : false },
-    ])
-  );
+  let product = await productServices.findById(userId, productId);
+  if (product.product.userId == userId) {
+    res.send(
+      new responseFormat(200, true, [
+        {
+          ...product.product,
+          isSaved: product.saved ? true : false,
+          isLiked: product.liked ? true : false,
+          isRequested: product.requested ? true : false,
+          requests: product.requests.data,
+        },
+      ])
+    );
+  } else {
+    res.send(
+      new responseFormat(200, true, [
+        {
+          ...product.product,
+          isSaved: product.saved ? true : false,
+          isLiked: product.liked ? true : false,
+          isRequested: product.requested ? true : false,
+        },
+      ])
+    );
+  }
 });
 
 export const addProduct = async (req, res) => {
@@ -56,7 +66,7 @@ export const addProduct = async (req, res) => {
   }
   product = await productServices.addProduct(data, images, userId);
 
-  res.send(new responseFormat(200, true, [product.name, "product created"]));
+  res.send(product);
 };
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {

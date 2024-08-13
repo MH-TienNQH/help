@@ -4,6 +4,7 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { responseFormat } from "../utils/responseFormat.js";
 import { sendMailTo } from "../utils/sendMail.js";
 
+
 export const getAllUser = async () => {
   const users = await prismaClient.user.findMany();
   const usersWithImageUrls = users.map((user) => ({
@@ -101,6 +102,7 @@ export const saveProduct = async (userId, productId) => {
         },
       },
     });
+    return new responseFormat(200, true, "unsaved product");
   } else {
     await prismaClient.productSaved.create({
       data: {
@@ -108,6 +110,7 @@ export const saveProduct = async (userId, productId) => {
         productId,
       },
     });
+    return new responseFormat(200, true, "saved product");
   }
 };
 
@@ -130,6 +133,7 @@ export const likeProduct = async (userId, productId) => {
         },
       },
     });
+    return new responseFormat(200, true, "unliked product");
   } else {
     await prismaClient.productLiked.create({
       data: {
@@ -137,5 +141,70 @@ export const likeProduct = async (userId, productId) => {
         productId,
       },
     });
+    return new responseFormat(200, true, "liked product");
   }
+};
+
+export const requestToBuyProduct = async (
+  userId,
+  productId,
+  message,
+  offer
+) => {
+  const requestToBuy = await prismaClient.requestToBuy.findUnique({
+    where: {
+      productId_userId: {
+        userId,
+        productId,
+      },
+    },
+  });
+  if (requestToBuy) {
+    await prismaClient.requestToBuy.delete({
+      where: {
+        productId_userId: {
+          userId,
+          productId,
+        },
+      },
+    });
+    return new responseFormat(200, true, "unrequested product");
+  } else {
+    await prismaClient.requestToBuy.create({
+      data: {
+        userId,
+        productId,
+        message,
+        offer,
+      },
+    });
+    return new responseFormat(200, true, "requested product");
+  }
+};
+
+export const getListOfRequesterForOneProduct = async (productId) => {
+  const product = await prismaClient.product.findUnique({
+    where: {
+      productId,
+    },
+  });
+  if (!product) {
+    return new responseFormat(404, false, "product not found");
+  }
+  const requests = await prismaClient.requestToBuy.findMany({
+    where: {
+      productId,
+    },
+    include: {
+      user: true,
+    },
+  });
+  const buyer = requests.map((item) => ({
+    username: item.user.username,
+    avatar: JSON.parse(item.user.avatar),
+    message: item.message,
+    offer: item.offer,
+  }));
+
+  return new responseFormat(200, true, buyer);
 };
