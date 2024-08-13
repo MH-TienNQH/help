@@ -22,9 +22,8 @@ import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 //validation
 import { checkSchema } from "express-validator";
 import { signUpSchema } from "../schema/userSchema.js";
-
-import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 import { upload } from "../utils/multer.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 export const userRoutes = Router();
 
@@ -32,8 +31,7 @@ userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.post(
   "/add-user",
-  upload.fields([{ name: "avatar", maxCount: 1 }]),
-  uploadToCloudinary,
+
   checkSchema(signUpSchema),
   verifyTokenMiddlewares,
   adminMiddlewares,
@@ -47,6 +45,7 @@ userRoutes.put(
   verifyTokenMiddlewares,
   updateUser
 );
+
 userRoutes.put(
   "/approve-request/:productId/:userId",
   verifyTokenMiddlewares,
@@ -58,6 +57,7 @@ userRoutes.put(
   verifyTokenMiddlewares,
   rejectRequest
 );
+
 
 userRoutes.delete(
   "/delete/:id",
