@@ -71,22 +71,23 @@ model Message {
 }
 
 model Product {
-  productId    Int            @id @unique @default(autoincrement())
-  name         String         @unique
-  description  String
-  price        Int
-  images       Json
-  status       Status         @default(PENDING)
-  categoryId   Int            @default(1)
-  category     Category       @relation(fields: [categoryId], references: [categoryId], onDelete: Cascade)
-  userId       Int?
-  author       User?          @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  createdAt    DateTime       @default(now())
-  soldAt       DateTime?
-  pending      Boolean        @default(true)
-  ProductSaved ProductSaved[]
-  likeNumber   ProductLiked[]
-  RequestToBuy RequestToBuy[]
+  productId     Int            @id @unique @default(autoincrement())
+  name          String         @unique
+  description   String
+  price         Int
+  images        Json
+  status        Status         @default(PENDING)
+  statusMessage String
+  categoryId    Int            @default(1)
+  category      Category       @relation(fields: [categoryId], references: [categoryId], onDelete: Cascade)
+  userId        Int?
+  author        User?          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  soldAt        DateTime?
+  pending       Boolean        @default(true)
+  ProductSaved  ProductSaved[]
+  likeNumber    ProductLiked[]
+  RequestToBuy  RequestToBuy[]
 }
 
 model RequestToBuy {
