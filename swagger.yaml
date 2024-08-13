@@ -315,8 +315,8 @@ paths:
     delete:
       tags:
         - Category
-      summary: Add a new category
-      description: Add a new category
+      summary: Delete category
+      description: Delete category
       operationId: deleteCategory
       parameters:
       - name: categoryId
@@ -388,6 +388,12 @@ paths:
       summary: Get product by Id
       description: Get product by Id
       operationId: getById
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer
       responses:
         '200':
           description: Successful operation
@@ -398,6 +404,62 @@ paths:
             application/xml:
               schema:
                 $ref: '#/components/schemas/Product'
+  /product/update/{id}:
+    put:
+      tags:
+          - Product
+      summary: Update product
+      description: Update product
+      operationId: updateProduct
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Create a new Product
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'     
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /product/delete/{id}:
+    delete:
+      tags:
+        - Product
+      summary: Delete product
+      description: delete product
+      operationId: deleteProduct
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              example: product deleted
+
 components:
   schemas:
     User:
