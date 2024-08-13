@@ -58,7 +58,6 @@ userRoutes.put(
   rejectRequest
 );
 
-
 userRoutes.delete(
   "/delete/:id",
   verifyTokenMiddlewares,
