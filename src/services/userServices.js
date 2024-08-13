@@ -224,6 +224,12 @@ export const personalProduct = async (
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
     : "desc";
+  const numberOfProducts = await prismaClient.product.count({
+    where: {
+      userId,
+    },
+    ...(validStatus ? { status: validStatus } : {}),
+  });
   const userProduct = await prismaClient.product.findMany({
     where: {
       userId,
