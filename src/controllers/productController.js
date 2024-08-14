@@ -56,17 +56,9 @@ export const addProduct = async (req, res) => {
   const userId = req.userId;
   const images = req.cloudinaryUrls;
 
-  let product = await prismaClient.product.findUnique({
-    where: {
-      name: data.name,
-    },
-  });
-  if (product) {
-    res.send(new OperationalException("Product exist", 403));
-  }
-  product = await productServices.addProduct(data, images, userId);
+  const response = await productServices.addProduct(data, images, userId);
 
-  res.send(product);
+  res.send(response);
 };
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {

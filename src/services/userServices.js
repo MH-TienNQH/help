@@ -2,7 +2,7 @@ import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { responseFormat } from "../utils/responseFormat.js";
-import { sendMailTo } from "../utils/sendMail.js";
+import { RequestStatus, Status } from "@prisma/client";
 
 export const getAllUser = async () => {
   const users = await prismaClient.user.findMany();
@@ -211,6 +211,7 @@ export const personalProduct = async (
   userId,
   order = "desc",
   status,
+  requestStatus,
   page,
   limit
 ) => {
@@ -221,20 +222,26 @@ export const personalProduct = async (
       : null
     : null;
 
+  const validRequestStatus = requestStatus
+    ? Object.values(RequestStatus).includes(requestStatus.toUpperCase())
+      ? requestStatus.toUpperCase()
+      : null
+    : null;
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
     : "desc";
+
   const numberOfProducts = await prismaClient.product.count({
     where: {
       userId,
+      ...(validStatus ? { status: validStatus } : {}),
     },
-    ...(validStatus ? { status: validStatus } : {}),
   });
   const userProduct = await prismaClient.product.findMany({
     where: {
       userId,
+      ...(validStatus ? { status: validStatus } : {}),
     },
-    ...(validStatus ? { status: validStatus } : {}),
     orderBy: {
       productId: orderDirection,
     },
@@ -251,22 +258,22 @@ export const personalProduct = async (
     orderBy: {
       productId: orderDirection,
     },
-    skip,
-    take: limit,
   });
-
   const requested = await prismaClient.requestToBuy.findMany({
     where: {
       userId,
+      ...(validRequestStatus ? { requestStatus: validRequestStatus } : {}),
     },
     include: {
-      product: true,
+      product: {
+        include: {
+          author: true,
+        },
+      },
     },
     orderBy: {
       productId: orderDirection,
     },
-    skip,
-    take: limit,
   });
 
   const savedProducts = saved.map((item) => item.product);
@@ -274,6 +281,7 @@ export const personalProduct = async (
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
   return {
+    validRequestStatus,
     savedProducts,
     userProduct,
     requested,

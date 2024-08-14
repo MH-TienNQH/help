@@ -24,10 +24,10 @@ enum Status {
   REJECTED
 }
 
-enum requestStatus {
+enum RequestStatus {
   PENDING
-  APPROVE
-  REJECT
+  APPROVED
+  REJECTED
 }
 
 model User {
@@ -83,7 +83,7 @@ model Product {
   price         Int
   images        Json
   status        Status         @default(PENDING)
-  statusMessage String
+  statusMessage String         @default("Your product is waiting for approval")
   categoryId    Int            @default(1)
   category      Category       @relation(fields: [categoryId], references: [categoryId], onDelete: Cascade)
   userId        Int?
@@ -98,12 +98,12 @@ model Product {
 
 model RequestToBuy {
   productId     Int
-  product       Product       @relation(fields: [productId], references: [productId])
+  product       Product       @relation(fields: [productId], references: [productId], onDelete: Cascade)
   userId        Int
   user          User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
   message       String
   offer         Int
-  requestStatus requestStatus @default(PENDING)
+  requestStatus RequestStatus @default(PENDING)
 
   @@unique([productId, userId])
 }
@@ -116,7 +116,7 @@ model Category {
 
 model ProductSaved {
   productId Int
-  product   Product @relation(fields: [productId], references: [productId])
+  product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
   userId    Int
   user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
@@ -125,7 +125,7 @@ model ProductSaved {
 
 model ProductLiked {
   productId Int
-  product   Product @relation(fields: [productId], references: [productId])
+  product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
   userId    Int
   user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
