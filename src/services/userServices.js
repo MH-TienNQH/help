@@ -198,14 +198,8 @@ export const getListOfRequesterForOneProduct = async (productId) => {
       user: true,
     },
   });
-  const buyer = requests.map((item) => ({
-    username: item.user.username,
-    avatar: JSON.parse(item.user.avatar),
-    message: item.message,
-    offer: item.offer,
-  }));
 
-  return new responseFormat(200, true, buyer);
+  return new responseFormat(200, true, requests);
 };
 export const personalProduct = async (
   userId,
