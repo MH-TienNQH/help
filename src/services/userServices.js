@@ -333,17 +333,17 @@ export const personalProduct = async (
 };
 
 export const approveRequest = async (ownerId, productId, userId) => {
-  let product = await prismaClient.requestToBuy.findFirst({
-    where: {
-      productId,
-    },
-    include: {
-      product: true,
-    },
-  });
-  if (product.product.userId !== ownerId) {
-    return new responseFormat(401, false, "you are not the owner");
-  }
+  // let product = await prismaClient.requestToBuy.findFirst({
+  //   where: {
+  //     productId,
+  //   },
+  //   include: {
+  //     product: true,
+  //   },
+  // });
+  // if (product.product.userId !== ownerId) {
+  //   return new responseFormat(401, false, "you are not the owner");
+  // }
   await prismaClient.requestToBuy.update({
     where: {
       productId_userId: {
@@ -352,28 +352,28 @@ export const approveRequest = async (ownerId, productId, userId) => {
       },
     },
     data: {
-      requestStatus: "APPROVE",
+      requestStatus: "APPROVED",
     },
   });
+
+  await prismaClient.requestToBuy.updateMany({
+    where: {
+      productId,
+      NOT: {
+        userId,
+      },
+    },
+    data: {
+      requestStatus: "REJECTED",
+    },
+  });
+
   await prismaClient.product.update({
     where: {
       productId,
     },
     data: {
       categoryId: 2,
-    },
-  });
-  await prismaClient.requestToBuy.updateMany({
-    where: {
-      productId,
-      user: {
-        userId: {
-          not: userId,
-        },
-      },
-    },
-    data: {
-      requestStatus: "REJECT",
     },
   });
   return new responseFormat(200, true, "request approved");
@@ -398,7 +398,7 @@ export const rejectRequest = async (ownerId, productId, userId) => {
       },
     },
     data: {
-      requestStatus: "REJECT",
+      requestStatus: "REJECTED",
     },
   });
   return new responseFormat(200, true, "request rejected");
