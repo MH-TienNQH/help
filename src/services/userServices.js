@@ -210,6 +210,7 @@ export const getListOfRequesterForOneProduct = async (productId) => {
 export const personalProduct = async (
   userId,
   order = "desc",
+  categoryId,
   status,
   requestStatus,
   page,
@@ -221,7 +222,6 @@ export const personalProduct = async (
       ? status.toUpperCase()
       : null
     : null;
-
   const validRequestStatus = requestStatus
     ? Object.values(RequestStatus).includes(requestStatus.toUpperCase())
       ? requestStatus.toUpperCase()
@@ -230,16 +230,21 @@ export const personalProduct = async (
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
     : "desc";
+  const validCategoryId = [1, 2].includes(parseInt(categoryId))
+    ? parseInt(categoryId)
+    : 1;
 
   const numberOfProducts = await prismaClient.product.count({
     where: {
       userId,
+      ...(validCategoryId ? { categoryId: validCategoryId } : {}),
       ...(validStatus ? { status: validStatus } : {}),
     },
   });
   const userProduct = await prismaClient.product.findMany({
     where: {
       userId,
+      ...(validCategoryId ? { categoryId: validCategoryId } : {}),
       ...(validStatus ? { status: validStatus } : {}),
     },
     orderBy: {
@@ -248,15 +253,30 @@ export const personalProduct = async (
     skip,
     take: limit,
   });
+  const numberOfSavedProducts = await prismaClient.productSaved.count({
+    where: {
+      userId,
+    },
+  });
   const saved = await prismaClient.productSaved.findMany({
     where: {
       userId,
     },
     include: {
-      product: true,
+      product: {
+        include: {
+          author: true,
+        },
+      },
     },
     orderBy: {
       productId: orderDirection,
+    },
+  });
+  const numberOfRequestedProducts = await prismaClient.requestToBuy.count({
+    where: {
+      userId,
+      ...(validRequestStatus ? { requestStatus: validRequestStatus } : {}),
     },
   });
   const requested = await prismaClient.requestToBuy.findMany({
@@ -275,21 +295,45 @@ export const personalProduct = async (
       productId: orderDirection,
     },
   });
-
   const savedProducts = saved.map((item) => item.product);
   const totalPages = Math.ceil(numberOfProducts / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
+
+  const totalPagesSaved = Math.ceil(numberOfSavedProducts / limit);
+  const nextPageSaved = page < totalPagesSaved ? page + 1 : null;
+  const previousPageSaved = page > 1 ? page - 1 : null;
+
+  const totalPagesRequested = Math.ceil(numberOfRequestedProducts / limit);
+  const nextPageRequested = page < totalPagesRequested ? page + 1 : null;
+  const previousPageRequested = page > 1 ? page - 1 : null;
   return {
-    validRequestStatus,
-    savedProducts,
-    userProduct,
-    requested,
-    meta: {
-      privious_page: previousPage,
-      current_page: page,
-      next_page: nextPage,
-      total: totalPages,
+    userProducts: {
+      data: userProduct,
+      meta: {
+        previous_page: previousPage,
+        current_page: page,
+        next_page: nextPage,
+        total: totalPages,
+      },
+    },
+    savedProducts: {
+      data: savedProducts,
+      meta: {
+        previous_page: previousPageSaved,
+        current_page: page,
+        next_page: nextPageSaved,
+        total: totalPagesSaved,
+      },
+    },
+    requestedProducts: {
+      data: requested,
+      meta: {
+        previous_page: previousPageRequested,
+        current_page: page,
+        next_page: nextPageRequested,
+        total: totalPagesRequested,
+      },
     },
   };
 };
@@ -315,6 +359,14 @@ export const approveRequest = async (ownerId, productId, userId) => {
     },
     data: {
       requestStatus: "APPROVE",
+    },
+  });
+  await prismaClient.product.update({
+    where: {
+      productId,
+    },
+    data: {
+      categoryId: 2,
     },
   });
   await prismaClient.requestToBuy.updateMany({

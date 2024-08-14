@@ -83,12 +83,13 @@ export const saveProduct = asyncErrorHandler(async (req, res) => {
 });
 
 export const personalProduct = asyncErrorHandler(async (req, res) => {
-  const { order, status, requestStatus } = req.query;
+  const { order, status, requestStatus, categoryId } = req.query;
   const { page, limit } = req.pagination;
   const userId = parseInt(req.userId);
   const response = await userServices.personalProduct(
     userId,
     order,
+    categoryId,
     status,
     requestStatus,
     page,
@@ -97,11 +98,9 @@ export const personalProduct = asyncErrorHandler(async (req, res) => {
   res.send(
     new responseFormat(200, true, [
       {
-        requestStatus: response.validRequestStatus,
-        userProduct: response.userProduct,
+        userProduct: response.userProducts,
         savedProducts: response.savedProducts,
-        requestedProduct: response.requested,
-        meta: response.meta,
+        requestedProduct: response.requestedProducts,
       },
     ])
   );
