@@ -1,6 +1,7 @@
 import { prismaClient } from "../routes/index.js";
 import dotenv from "dotenv";
 import { validationResult } from "express-validator";
+
 import {
   responseFormat,
   responseFormatWithPagination,
@@ -19,21 +20,31 @@ export const getAllProduct = asyncErrorHandler(async (req, res) => {
 export const getProductById = asyncErrorHandler(async (req, res) => {
   const productId = parseInt(req.params.id);
   const userId = req.userId;
-  let product = await productServices.findById(productId);
-
-  const saved = await prismaClient.productSaved.findUnique({
-    where: {
-      productId_userId: {
-        productId,
-        userId,
-      },
-    },
-  });
-  res.send(
-    new responseFormat(200, true, [
-      { ...product, isSaved: saved ? true : false },
-    ])
-  );
+  let product = await productServices.findById(userId, productId);
+  if (product.product.userId == userId) {
+    res.send(
+      new responseFormat(200, true, [
+        {
+          ...product.product,
+          isSaved: product.saved ? true : false,
+          isLiked: product.liked ? true : false,
+          isRequested: product.requested ? true : false,
+          requests: product.requests.data,
+        },
+      ])
+    );
+  } else {
+    res.send(
+      new responseFormat(200, true, [
+        {
+          ...product.product,
+          isSaved: product.saved ? true : false,
+          isLiked: product.liked ? true : false,
+          isRequested: product.requested ? true : false,
+        },
+      ])
+    );
+  }
 });
 
 export const addProduct = async (req, res) => {
@@ -45,17 +56,9 @@ export const addProduct = async (req, res) => {
   const userId = req.userId;
   const images = req.cloudinaryUrls;
 
-  let product = await prismaClient.product.findUnique({
-    where: {
-      name: data.name,
-    },
-  });
-  if (product) {
-    res.send(new OperationalException("Product exist", 403));
-  }
-  product = await productServices.addProduct(data, images, userId);
+  const response = await productServices.addProduct(data, images, userId);
 
-  res.send(new responseFormat(200, true, [product.name, "product created"]));
+  res.send(response);
 };
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {
@@ -101,14 +104,14 @@ export const getSoldProduct = asyncErrorHandler(async (req, res) => {
   res.send(new responseFormat(200, true, products));
 });
 export const listProduct = asyncErrorHandler(async (req, res) => {
-  const { productName, categoryId, order, pending } = req.query;
+  const { productName, categoryId, order, status } = req.query;
   const { page, limit } = req.pagination;
 
   let response = await productServices.listProduct(
     productName,
     categoryId,
     order,
-    pending,
+    status,
     page,
     limit
   );
@@ -120,4 +123,17 @@ export const listProduct = asyncErrorHandler(async (req, res) => {
       response.meta
     )
   );
+});
+
+export const approveProduct = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const response = await productServices.approveProduct(productId);
+  res.send(response);
+});
+
+export const rejectProduct = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const { message } = req.body;
+  const response = await productServices.rejectProduct(productId, message);
+  res.send(response);
 });

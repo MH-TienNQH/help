@@ -19,8 +19,15 @@ enum Role {
 }
 
 enum Status {
-  Sold
-  Selling
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model User {
@@ -42,6 +49,8 @@ model User {
   otpCreatedAt  DateTime?
   otpExpireAt   DateTime?
   comments      Comment[]
+  RequestToBuy  RequestToBuy[]
+
 }
 
 model RefreshToken {
@@ -70,6 +79,7 @@ model Message {
 }
 
 model Product {
+
   productId    Int            @id @unique @default(autoincrement())
   name         String         @unique
   description  String
@@ -88,6 +98,17 @@ model Product {
   comments     Comment[]
 }
 
+model RequestToBuy {
+  productId     Int
+  product       Product       @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  userId        Int
+  user          User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  message       String
+  offer         Int
+  requestStatus RequestStatus @default(PENDING)
+  @@unique([productId, userId])
+}
+
 model Category {
   categoryId   Int       @id @unique @default(autoincrement())
   categoryName String    @unique
@@ -96,7 +117,7 @@ model Category {
 
 model ProductSaved {
   productId Int
-  product   Product @relation(fields: [productId], references: [productId])
+  product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
   userId    Int
   user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
@@ -105,7 +126,7 @@ model ProductSaved {
 
 model ProductLiked {
   productId Int
-  product   Product @relation(fields: [productId], references: [productId])
+  product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
   userId    Int
   user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 

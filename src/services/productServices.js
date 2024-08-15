@@ -1,15 +1,18 @@
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { responseFormat } from "../utils/responseFormat.js";
+import * as userServices from "./userServices.js";
+import { Status } from "@prisma/client";
 
 export const getAllProduct = async () => {
   let products = await prismaClient.product.findMany();
 
   return products;
 };
-export const findById = async (id) => {
+export const findById = async (userId, productId) => {
   const product = await prismaClient.product.findUnique({
     where: {
-      productId: id,
+      productId,
     },
     include: {
       _count: {
@@ -22,22 +25,55 @@ export const findById = async (id) => {
     },
   });
   if (product) {
-    return product;
+    const saved = await prismaClient.productSaved.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    const liked = await prismaClient.productLiked.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    const requested = await prismaClient.requestToBuy.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    if (product.userId == userId) {
+      const requests = await userServices.getListOfRequesterForOneProduct(
+        productId
+      );
+      return { product, saved, liked, requested, requests };
+    }
+    return { product, saved, liked, requested };
   }
   throw new OperationalException("No product found", 404);
 };
 export const addProduct = async (data, images, userId) => {
-  const product = await prismaClient.product.create({
+  let product = await prismaClient.product.findFirst({
+    where: {
+      name: data.name,
+    },
+  });
+  if (product) {
+    return new responseFormat(403, false, "Product exist");
+  }
+  product = await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,
       images: JSON.stringify(images),
       price: parseInt(data.price),
-      category: {
-        connect: {
-          categoryId: parseInt(data.categoryId),
-        },
-      },
       author: {
         connect: {
           userId: userId,
@@ -45,7 +81,7 @@ export const addProduct = async (data, images, userId) => {
       },
     },
   });
-  return product;
+  return new responseFormat(200, true, [product.name, "product created"]);
 };
 
 export const updateProduct = async (productId, data, userId, images) => {
@@ -74,11 +110,6 @@ export const updateProduct = async (productId, data, userId, images) => {
       description: data.description,
       images: JSON.stringify(images),
       price: parseInt(data.price),
-      category: {
-        connect: {
-          categoryId: parseInt(data.categoryId),
-        },
-      },
       author: {
         connect: {
           userId,
@@ -145,23 +176,31 @@ export const getSoldProduct = async () => {
 export const listProduct = async (
   productName,
   categoryId,
-  order,
-  pending,
+  order = "desc",
+  status,
   page,
   limit
 ) => {
   const skip = (page - 1) * limit;
 
+  const validStatus = status
+    ? Object.values(Status).includes(status.toUpperCase())
+      ? status.toUpperCase()
+      : null
+    : null;
+
+  const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
+    ? order.toLowerCase()
+    : "desc";
   let numberOfProducts = await prismaClient.product.count({
     where: {
       name: {
         contains: productName || "", // Search for products where the name contains the specified value
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
-      ...(pending ? { pending: true } : {}),
+      ...(validStatus ? { status: validStatus } : {}),
     },
   });
-  const orderDirection = order === "asc" || order === "desc" ? order : "desc";
 
   let products = await prismaClient.product.findMany({
     where: {
@@ -169,7 +208,7 @@ export const listProduct = async (
         contains: productName || "", // Search for products where the name contains the specified value
       },
       ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
-      ...(pending ? { pending: true } : {}),
+      ...(validStatus ? { status: validStatus } : {}),
     },
     orderBy: {
       productId: orderDirection,
@@ -198,16 +237,33 @@ export const listProduct = async (
   };
 };
 
-export const verifyProduct = async (productId) => {
-  const product = await prismaClient.product.update({
+export const approveProduct = async (productId) => {
+  await prismaClient.product.update({
     where: {
       productId: parseInt(productId),
     },
     data: {
-      pending: false,
+      status: "APPROVED",
+      statusMessage: "Your product have been approved",
     },
   });
-  return product;
+  return new responseFormat(200, true, "product approved");
+};
+
+export const rejectProduct = async (productId, message) => {
+  if (message == "") {
+    return new responseFormat(404, false, "Please enter reason for rejection");
+  }
+  await prismaClient.product.update({
+    where: {
+      productId,
+    },
+    data: {
+      status: "REJECTED",
+      statusMessage: message,
+    },
+  });
+  return new responseFormat(200, true, "product rejected");
 };
 
 export const getImageUrl = async (filename) => {

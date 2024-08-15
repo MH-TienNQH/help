@@ -79,32 +79,29 @@ export const saveProduct = asyncErrorHandler(async (req, res) => {
   const productId = parseInt(req.params.id);
   const userId = req.userId;
   const save = await userServices.saveProduct(userId, productId);
-  if (save) {
-    res.send(new responseFormat(200, true, "saved product"));
-  }
-  res.send(new responseFormat(200, true, "unsave product"));
+  res.send(save);
 });
 
 export const personalProduct = asyncErrorHandler(async (req, res) => {
-  const userId = parseInt(req.params.id);
-  const userProduct = await prismaClient.product.findMany({
-    where: {
-      userId,
-    },
-  });
-  const saved = await prismaClient.productSaved.findMany({
-    where: {
-      userId,
-    },
-    include: {
-      product: true,
-    },
-  });
-
-  const savedProducts = saved.map((item) => item.product);
+  const { order, status, requestStatus, categoryId } = req.query;
+  const { page, limit } = req.pagination;
+  const userId = parseInt(req.userId);
+  const response = await userServices.personalProduct(
+    userId,
+    order,
+    categoryId,
+    status,
+    requestStatus,
+    page,
+    limit
+  );
   res.send(
     new responseFormat(200, true, [
-      { userProduct: userProduct, savedProducts: savedProducts },
+      {
+        userProduct: response.userProducts,
+        savedProducts: response.savedProducts,
+        requestedProduct: response.requestedProducts,
+      },
     ])
   );
 });
@@ -112,8 +109,39 @@ export const likeProduct = asyncErrorHandler(async (req, res) => {
   const productId = parseInt(req.params.id);
   const userId = req.userId;
   const liked = await userServices.likeProduct(userId, productId);
-  if (save) {
-    res.send(new responseFormat(200, true, "liked product"));
-  }
-  res.send(new responseFormat(200, true, "unliked product"));
+  res.send(liked);
+});
+
+export const requestToBuy = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const userId = req.userId;
+  const { message, offer } = req.body;
+  const requested = await userServices.requestToBuyProduct(
+    userId,
+    productId,
+    message,
+    offer
+  );
+  res.send(requested);
+});
+
+export const approveRequest = asyncErrorHandler(async (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const productId = parseInt(req.params.productId);
+  const ownerId = req.userId;
+
+  const response = await userServices.approveRequest(
+    ownerId,
+    productId,
+    userId
+  );
+  res.send(response);
+});
+export const rejectRequest = asyncErrorHandler(async (req, res) => {
+  const userId = parseInt(req.params.userId);
+  const productId = parseInt(req.params.productId);
+  const ownerId = req.userId;
+
+  const response = await userServices.rejectRequest(ownerId, productId, userId);
+  res.send(response);
 });
