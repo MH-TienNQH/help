@@ -150,16 +150,13 @@ export const requestToBuyProduct = async (
   message,
   offer
 ) => {
-  const requestToBuy = await prismaClient.requestToBuy.findUnique({
+  const product = await prismaClient.product.findUnique({
     where: {
-      productId_userId: {
-        userId,
-        productId,
-      },
+      productId,
     },
   });
-  if (requestToBuy) {
-    await prismaClient.requestToBuy.delete({
+  if (product) {
+    const requestToBuy = await prismaClient.requestToBuy.findUnique({
       where: {
         productId_userId: {
           userId,
@@ -167,18 +164,29 @@ export const requestToBuyProduct = async (
         },
       },
     });
-    return new responseFormat(200, true, "unrequested product");
-  } else {
-    await prismaClient.requestToBuy.create({
-      data: {
-        userId,
-        productId,
-        message,
-        offer,
-      },
-    });
-    return new responseFormat(200, true, "requested product");
+    if (requestToBuy) {
+      await prismaClient.requestToBuy.delete({
+        where: {
+          productId_userId: {
+            userId,
+            productId,
+          },
+        },
+      });
+      return new responseFormat(200, true, "unrequested product");
+    } else {
+      await prismaClient.requestToBuy.create({
+        data: {
+          userId,
+          productId,
+          message,
+          offer,
+        },
+      });
+      return new responseFormat(200, true, "requested product");
+    }
   }
+  return new responseFormat(404, false, "Product not found");
 };
 
 export const getListOfRequesterForOneProduct = async (productId) => {
@@ -333,14 +341,20 @@ export const personalProduct = async (
 };
 
 export const approveRequest = async (ownerId, productId, userId) => {
-  let product = await prismaClient.requestToBuy.findFirst({
+  let product = await prismaClient.requestToBuy.findUnique({
     where: {
-      productId,
+      productId_userId: {
+        productId,
+        userId,
+      },
     },
     include: {
       product: true,
     },
   });
+  if (!product) {
+    return new responseFormat(404, false, "request not found");
+  }
   if (product.product.userId !== ownerId) {
     return new responseFormat(401, false, "you are not the owner");
   }
@@ -355,7 +369,6 @@ export const approveRequest = async (ownerId, productId, userId) => {
       requestStatus: "APPROVED",
     },
   });
-
   await prismaClient.requestToBuy.updateMany({
     where: {
       productId,
@@ -379,14 +392,20 @@ export const approveRequest = async (ownerId, productId, userId) => {
   return new responseFormat(200, true, "request approved");
 };
 export const rejectRequest = async (ownerId, productId, userId) => {
-  let product = await prismaClient.requestToBuy.findFirst({
+  let product = await prismaClient.requestToBuy.findUnique({
     where: {
-      productId,
+      productId_userId: {
+        productId,
+        userId,
+      },
     },
     include: {
       product: true,
     },
   });
+  if (!product) {
+    return new responseFormat(404, false, "request not found");
+  }
   if (product.product.userId !== ownerId) {
     return new responseFormat(401, false, "you are not the owner");
   }
