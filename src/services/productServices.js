@@ -91,13 +91,19 @@ export const addProduct = async (data, images, userId) => {
   return new responseFormat(200, true, [product.name, "product created"]);
 };
 
-export const updateProduct = async (productId, data, userId, images) => {
+export const updateProduct = async (
+  productId,
+  data,
+  userId,
+  userRole,
+  images
+) => {
   let product = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
     },
   });
-  if (product.userId !== userId) {
+  if (product.userId !== userId && userRole !== "ADMIN") {
     return new responseFormat(
       403,
       false,
@@ -135,13 +141,13 @@ export const updateProduct = async (productId, data, userId, images) => {
   return new responseFormat(200, true, [product.name, "product updated"]);
 };
 
-export const deleteProduct = async (id, userId) => {
+export const deleteProduct = async (id, userId, userRole) => {
   let product = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(id),
     },
   });
-  if (product.userId !== userId) {
+  if (product.userId !== userId && userRole !== "ADMIN") {
     return new responseFormat(
       403,
       false,

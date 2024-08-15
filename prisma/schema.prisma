@@ -50,7 +50,6 @@ model User {
   otpExpireAt   DateTime?
   comments      Comment[]
   RequestToBuy  RequestToBuy[]
-
 }
 
 model RefreshToken {
@@ -79,24 +78,24 @@ model Message {
 }
 
 model Product {
-  productId    Int            @id @unique @default(autoincrement())
-  name         String         @unique
-  description  String
-  price        Int
-  images       Json
-  status       Status         @default(PENDING)
-  statusMessage String @default("Your product is waiting for approval")
-  categoryId   Int    @default(1)
-  category     Category       @relation(fields: [categoryId], references: [categoryId])
-  userId       Int?
-  author       User?          @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  createdAt    DateTime       @default(now())
-  soldAt       DateTime?
-  pending      Boolean        @default(true)
-  ProductSaved ProductSaved[]
-  likeNumber   ProductLiked[]
-  comments     Comment[]  
-  RequestToBuy RequestToBuy[]
+  productId     Int            @id @unique @default(autoincrement())
+  name          String         @unique
+  description   String
+  price         Int
+  images        Json
+  status        Status         @default(PENDING)
+  statusMessage String         @default("Your product is waiting for approval")
+  categoryId    Int            @default(1)
+  category      Category       @relation(fields: [categoryId], references: [categoryId])
+  userId        Int?
+  author        User?          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  soldAt        DateTime?
+  pending       Boolean        @default(true)
+  ProductSaved  ProductSaved[]
+  likeNumber    ProductLiked[]
+  comments      Comment[]
+  RequestToBuy  RequestToBuy[]
 }
 
 model RequestToBuy {
@@ -107,6 +106,7 @@ model RequestToBuy {
   message       String
   offer         Int
   requestStatus RequestStatus @default(PENDING)
+
   @@unique([productId, userId])
 }
 

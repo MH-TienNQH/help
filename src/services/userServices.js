@@ -333,17 +333,17 @@ export const personalProduct = async (
 };
 
 export const approveRequest = async (ownerId, productId, userId) => {
-  // let product = await prismaClient.requestToBuy.findFirst({
-  //   where: {
-  //     productId,
-  //   },
-  //   include: {
-  //     product: true,
-  //   },
-  // });
-  // if (product.product.userId !== ownerId) {
-  //   return new responseFormat(401, false, "you are not the owner");
-  // }
+  let product = await prismaClient.requestToBuy.findFirst({
+    where: {
+      productId,
+    },
+    include: {
+      product: true,
+    },
+  });
+  if (product.product.userId !== ownerId) {
+    return new responseFormat(401, false, "you are not the owner");
+  }
   await prismaClient.requestToBuy.update({
     where: {
       productId_userId: {
