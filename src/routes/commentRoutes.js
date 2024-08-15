@@ -11,5 +11,5 @@ export const commentRoutes = Router();
 
 commentRoutes.put("/update/:id", verifyTokenMiddlewares, updateComment);
 commentRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteComment);
-commentRoutes.get("/get-comments", getComments);
+commentRoutes.get("/get-comments/:id", getComments);
 commentRoutes.post("/add-comment/:id", verifyTokenMiddlewares, addComment);
