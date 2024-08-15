@@ -21,6 +21,7 @@ export const findById = async (userId, productId) => {
         },
       },
       author: true,
+      comments: true,
     },
   });
   if (product) {
