@@ -97,8 +97,15 @@ export const updateProduct = async (productId, data, userId, images) => {
       productId: parseInt(productId),
     },
   });
+  if (product.userId !== userId) {
+    return new responseFormat(
+      403,
+      false,
+      "You are not authorized to update this product"
+    );
+  }
   if (!product) {
-    throw new OperationalException("Product not found", 404);
+    return new responseFormat(404, false, "Product not found");
   }
   product = await prismaClient.product.findUnique({
     where: {
@@ -106,8 +113,9 @@ export const updateProduct = async (productId, data, userId, images) => {
     },
   });
   if (product) {
-    throw new OperationalException("Product exist", 403);
+    return new responseFormat(403, false, "Product exist");
   }
+
   product = await prismaClient.product.update({
     where: {
       productId: parseInt(productId),
@@ -124,15 +132,31 @@ export const updateProduct = async (productId, data, userId, images) => {
       },
     },
   });
-  return product;
+  return new responseFormat(200, true, [product.name, "product updated"]);
 };
 
-export const deleteProduct = async (id) => {
+export const deleteProduct = async (id, userId) => {
+  let product = await prismaClient.product.findUnique({
+    where: {
+      productId: parseInt(id),
+    },
+  });
+  if (product.userId !== userId) {
+    return new responseFormat(
+      403,
+      false,
+      "You are not authorized to delete this product"
+    );
+  }
+  if (!product) {
+    return new responseFormat(404, false, "Product not found");
+  }
   await prismaClient.product.delete({
     where: {
       productId: parseInt(id),
     },
   });
+  return new responseFormat(200, true, ["product deleted"]);
 };
 
 export const getThreeTrendingProduct = async () => {

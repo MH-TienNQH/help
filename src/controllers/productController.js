@@ -8,7 +8,6 @@ import {
 } from "../utils/responseFormat.js";
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
-import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 dotenv.config();
 
@@ -77,13 +76,14 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
     userId,
     images
   );
-  res.send(new responseFormat(200, true, [product.name, "product updated"]));
+  res.send(product);
 });
 
 export const deleteProduct = asyncErrorHandler(async (req, res) => {
+  const userId = req.userId;
   const productId = req.params.id;
-  await productServices.deleteProduct(productId);
-  res.send(new responseFormat(200, true, ["product deleted"]));
+  const response = await productServices.deleteProduct(productId, userId);
+  res.send(response);
 });
 export const getThreeTrendingProduct = asyncErrorHandler(async (req, res) => {
   let products = await productServices.getThreeTrendingProduct();
