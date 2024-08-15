@@ -2,8 +2,10 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { responseFormat } from "../utils/responseFormat.js";
 
-export const getComments = async (productId, order, page, limit) => {
-  const orderDirection = order === "asc" || order === "desc" ? order : "desc";
+export const getComments = async (productId, order = "desc", page, limit) => {
+  const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
+    ? order.toLowerCase()
+    : "desc";
   const skip = (page - 1) * limit;
 
   let numberOfComments = await prismaClient.comment.count({
@@ -16,12 +18,7 @@ export const getComments = async (productId, order, page, limit) => {
       productId: parseInt(productId),
     },
     include: {
-      user: {
-        select: {
-          username: true,
-          avatar: true,
-        },
-      },
+      user: true,
     },
     orderBy: {
       commentId: orderDirection,

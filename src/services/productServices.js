@@ -5,8 +5,11 @@ import * as userServices from "./userServices.js";
 import { Status } from "@prisma/client";
 
 export const getAllProduct = async () => {
-  let products = await prismaClient.product.findMany();
-
+  let products = await prismaClient.product.findMany({
+    include: {
+      author: true,
+    },
+  });
   return products;
 };
 export const findById = async (userId, productId) => {
@@ -21,7 +24,11 @@ export const findById = async (userId, productId) => {
         },
       },
       author: true,
-      comments: true,
+      comments: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
   if (product) {

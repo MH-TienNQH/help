@@ -6,7 +6,8 @@ import {
 } from "../utils/responseFormat.js";
 
 export const getComments = asyncErrorHandler(async (req, res) => {
-  const { productId, order } = req.query;
+  const { order } = req.query;
+  const { productId } = parseInt(req.params);
   const { page, limit } = req.pagination;
   const comments = await commentServices.getComments(
     productId,
