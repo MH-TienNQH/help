@@ -62,12 +62,7 @@ userRoutes.put(
   rejectRequest
 );
 
-userRoutes.delete(
-  "/delete/:id",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
-  deleteUser
-);
+userRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteUser);
 userRoutes.post("/save-product/:id", verifyTokenMiddlewares, saveProduct);
 userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
 userRoutes.post("/like-product/:id", verifyTokenMiddlewares, likeProduct);

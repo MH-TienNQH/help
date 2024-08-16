@@ -61,9 +61,21 @@ export const addUser = async (data, avatar) => {
   return user;
 };
 
-export const updateUser = async (id, data, avatar) => {
+export const updateUser = async (id, userId, userRole, data, avatar) => {
+  let user = await prismaClient.user.findUnique({
+    where: {
+      userId: id,
+    },
+  });
+  if (user.userId !== userId && userRole !== "ADMIN") {
+    return new responseFormatForErrors(
+      401,
+      false,
+      "You are not authorized to update this account"
+    );
+  }
   data.password = hashSync(data.password, 10);
-  return await prismaClient.user.update({
+  user = await prismaClient.user.update({
     where: {
       userId: id,
     },
@@ -76,14 +88,28 @@ export const updateUser = async (id, data, avatar) => {
       role: data.role,
     },
   });
+  return user;
 };
 
-export const deleteUser = async (id) => {
-  return await prismaClient.user.delete({
+export const deleteUser = async (id, userId, userRole) => {
+  let user = await prismaClient.user.findUnique({
     where: {
       userId: id,
     },
   });
+  if (user.userId !== userId && userRole !== "ADMIN") {
+    return new responseFormatForErrors(
+      401,
+      false,
+      "You are not authorized to delete this account"
+    );
+  }
+  await prismaClient.user.delete({
+    where: {
+      userId: id,
+    },
+  });
+  return new responseFormat(200, true, { message: "account deleted" });
 };
 
 export const saveProduct = async (userId, productId) => {
