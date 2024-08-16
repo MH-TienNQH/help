@@ -145,3 +145,14 @@ export const rejectProduct = asyncErrorHandler(async (req, res) => {
   const response = await productServices.rejectProduct(productId, message);
   res.send(response);
 });
+
+export const countProducts = asyncErrorHandler(async (req, res) => {
+  const { categoryId, status, startDate, endDate } = req.query;
+  let response = await productServices.countProducts(
+    categoryId,
+    status,
+    startDate,
+    endDate
+  );
+  res.send(response);
+});

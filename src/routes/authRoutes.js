@@ -26,6 +26,9 @@ import {
 
 export const authRoutes = Router();
 
+authRoutes.get("/refresh", refresh);
+authRoutes.get("/verify/:email", verifyEmail);
+
 authRoutes.post(
   "/signup",
   upload.fields([{ name: "avatar" }]),
@@ -35,17 +38,16 @@ authRoutes.post(
 );
 authRoutes.post("/login", validationMiddlware(loginSchema), login);
 authRoutes.post("/logout", verifyTokenMiddlewares, logout);
-authRoutes.get("/refresh", refresh);
-authRoutes.get("/verify/:email", verifyEmail);
+authRoutes.post(
+  "/forgot-password",
+  validationMiddlware(emailSchema),
+  forgotPassword
+);
+
 authRoutes.put(
   "/set-password",
   validationMiddlware(emailSchema),
   validationMiddlware(passwordSchema),
   validationMiddlware(otpSchema),
   setPassword
-);
-authRoutes.post(
-  "/forgot-password",
-  validationMiddlware(emailSchema),
-  forgotPassword
 );

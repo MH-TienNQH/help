@@ -4,6 +4,7 @@ import { Router } from "express";
 import {
   addProduct,
   approveProduct,
+  countProducts,
   deleteProduct,
   getAllProduct,
   getNewestProduct,
@@ -39,6 +40,7 @@ productRoutes.get("/sold-products", getSoldProduct);
 productRoutes.get("/newest", getNewestProduct);
 productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
+productRoutes.get("/count-product", verifyTokenMiddlewares, countProducts);
 productRoutes.post(
   "/add-product",
   upload.fields([{ name: "images" }]),

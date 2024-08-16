@@ -291,3 +291,32 @@ export const rejectProduct = async (productId, message) => {
   });
   return new responseFormat(200, true, { message: "product rejected" });
 };
+
+export const countProducts = async (categoryId, status, startDate, endDate) => {
+  const validStatus = status
+    ? Object.values(Status).includes(status.toUpperCase())
+      ? status.toUpperCase()
+      : null
+    : null;
+  const validCategoryId = [1, 2].includes(parseInt(categoryId))
+    ? parseInt(categoryId)
+    : {};
+
+  const whereClause = {
+    ...(validStatus ? { status: validStatus } : {}),
+    ...(validCategoryId ? { categoryId: validCategoryId } : {}),
+    ...(startDate || endDate
+      ? {
+          createdAt: {
+            ...(startDate ? { gte: new Date(startDate) } : {}),
+            ...(endDate ? { lte: new Date(endDate) } : {}),
+          },
+        }
+      : {}),
+  };
+  const products = await prismaClient.product.count({
+    where: Object.keys(whereClause).length > 0 ? whereClause : {},
+  });
+
+  return new responseFormat(200, true, { numberOfProducts: products });
+};

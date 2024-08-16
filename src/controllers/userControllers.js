@@ -155,3 +155,8 @@ export const rejectRequest = asyncErrorHandler(async (req, res) => {
   const response = await userServices.rejectRequest(ownerId, productId, userId);
   res.send(response);
 });
+export const countUsers = asyncErrorHandler(async (req, res) => {
+  const { startDate, endDate } = req.query;
+  let response = await userServices.countUsers(startDate, endDate);
+  res.send(response);
+});
