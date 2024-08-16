@@ -72,7 +72,7 @@ export const updateUser = async (id, data, avatar) => {
       username: data.username,
       email: data.email,
       password: data.password,
-      avatar,
+      avatar: JSON.stringify(avatar),
       role: data.role,
     },
   });

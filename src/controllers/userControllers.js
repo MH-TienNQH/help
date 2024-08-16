@@ -65,7 +65,7 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
     next(error);
   }
   user = await userServices.updateUser(id, data, avatar);
-  res.send(new responseFormat(200, true, [user.email, "user updated"]));
+  res.send(new responseFormat(200, true, user));
 });
 
 export const deleteUser = asyncErrorHandler(async (req, res) => {
