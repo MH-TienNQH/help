@@ -4,6 +4,7 @@ import { Router } from "express";
 import {
   addUser,
   approveRequest,
+  checkRequest,
   deleteUser,
   getAllUser,
   getUserById,
@@ -72,3 +73,4 @@ userRoutes.post(
   verifyTokenMiddlewares,
   requestToBuy
 );
+userRoutes.get("/check-request/:id", verifyTokenMiddlewares, checkRequest);
