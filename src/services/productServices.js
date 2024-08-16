@@ -106,6 +106,9 @@ export const updateProduct = async (
       productId: parseInt(productId),
     },
   });
+  if (!product) {
+    return new responseFormatForErrors(404, false, "Product not found");
+  }
   if (product.userId !== userId && userRole !== "ADMIN") {
     return new responseFormatForErrors(
       403,
@@ -113,9 +116,7 @@ export const updateProduct = async (
       "You are not authorized to update this product"
     );
   }
-  if (!product) {
-    return new responseFormatForErrors(404, false, "Product not found");
-  }
+
   product = await prismaClient.product.findUnique({
     where: {
       name: data.name,
