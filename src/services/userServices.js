@@ -221,7 +221,7 @@ export const requestToBuyProduct = async (
           },
         },
       });
-      return new responseFormat(200, true, "unrequested product");
+      return new responseFormat(200, true, { message: "unrequested product" });
     } else {
       await prismaClient.requestToBuy.create({
         data: {
@@ -231,10 +231,12 @@ export const requestToBuyProduct = async (
           offer,
         },
       });
-      return new responseFormat(200, true, "requested product");
+      return new responseFormat(200, true, { message: "requested product" });
     }
   }
-  return new responseFormat(404, false, "Product not found");
+  return new responseFormatForErrors(404, false, {
+    message: "Product not found",
+  });
 };
 
 export const getListOfRequesterForOneProduct = async (productId) => {
@@ -244,7 +246,7 @@ export const getListOfRequesterForOneProduct = async (productId) => {
     },
   });
   if (!product) {
-    return new responseFormat(404, false, "product not found");
+    return new responseFormat(404, false, { mmessage: "product not found" });
   }
   const requests = await prismaClient.requestToBuy.findMany({
     where: {
