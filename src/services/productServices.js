@@ -1,6 +1,9 @@
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
-import { responseFormat } from "../utils/responseFormat.js";
+import {
+  responseFormat,
+  responseFormatForErrors,
+} from "../utils/responseFormat.js";
 import * as userServices from "./userServices.js";
 import { Status } from "@prisma/client";
 
@@ -73,7 +76,7 @@ export const addProduct = async (data, images, userId) => {
     },
   });
   if (product) {
-    return new responseFormat(403, false, "Product exist");
+    return new responseFormatForErrors(403, false, "Product exist");
   }
   product = await prismaClient.product.create({
     data: {
@@ -88,7 +91,7 @@ export const addProduct = async (data, images, userId) => {
       },
     },
   });
-  return new responseFormat(200, true, [product.name, "product created"]);
+  return new responseFormat(200, true, product);
 };
 
 export const updateProduct = async (
@@ -104,14 +107,14 @@ export const updateProduct = async (
     },
   });
   if (product.userId !== userId && userRole !== "ADMIN") {
-    return new responseFormat(
+    return new responseFormatForErrors(
       403,
       false,
       "You are not authorized to update this product"
     );
   }
   if (!product) {
-    return new responseFormat(404, false, "Product not found");
+    return new responseFormatForErrors(404, false, "Product not found");
   }
   product = await prismaClient.product.findUnique({
     where: {
@@ -119,7 +122,7 @@ export const updateProduct = async (
     },
   });
   if (product) {
-    return new responseFormat(403, false, "Product exist");
+    return new responseFormatForErrors(403, false, "Product exist");
   }
 
   product = await prismaClient.product.update({
@@ -138,7 +141,7 @@ export const updateProduct = async (
       },
     },
   });
-  return new responseFormat(200, true, [product.name, "product updated"]);
+  return new responseFormat(200, true, product);
 };
 
 export const deleteProduct = async (id, userId, userRole) => {
@@ -148,21 +151,21 @@ export const deleteProduct = async (id, userId, userRole) => {
     },
   });
   if (product.userId !== userId && userRole !== "ADMIN") {
-    return new responseFormat(
-      403,
-      false,
-      "You are not authorized to delete this product"
-    );
+    return new responseFormatForErrors(403, false, {
+      message: "You are not authorized to delete this product",
+    });
   }
   if (!product) {
-    return new responseFormat(404, false, "Product not found");
+    return new responseFormatForErrors(404, false, {
+      message: "Product not found",
+    });
   }
   await prismaClient.product.delete({
     where: {
       productId: parseInt(id),
     },
   });
-  return new responseFormat(200, true, ["product deleted"]);
+  return new responseFormat(200, true, { message: "product deleted" });
 };
 
 export const getThreeTrendingProduct = async () => {
@@ -173,6 +176,7 @@ export const getThreeTrendingProduct = async () => {
           likeNumber: true,
         },
       },
+      author: true,
     },
     orderBy: {
       likeNumber: {
@@ -184,28 +188,13 @@ export const getThreeTrendingProduct = async () => {
   return products;
 };
 
-export const getSellingProduct = async () => {
-  const products = await prismaClient.product.findMany({
-    where: {
-      status: "Selling",
-    },
-  });
-  return products;
-};
-
 export const getNewestProduct = async () => {
   const products = await prismaClient.product.findMany({
     orderBy: {
       createdAt: "desc",
     },
-  });
-  return products;
-};
-
-export const getSoldProduct = async () => {
-  const products = await await prismaClient.product.findMany({
-    where: {
-      status: "Sold",
+    include: {
+      author: true,
     },
   });
   return products;
@@ -229,12 +218,15 @@ export const listProduct = async (
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
     : "desc";
+  const validCategoryId = [1, 2].includes(parseInt(categoryId))
+    ? parseInt(categoryId)
+    : 1;
   let numberOfProducts = await prismaClient.product.count({
     where: {
       name: {
         contains: productName || "", // Search for products where the name contains the specified value
       },
-      ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
+      ...(validCategoryId ? { categoryId: validCategoryId } : {}),
       ...(validStatus ? { status: validStatus } : {}),
     },
   });
@@ -244,7 +236,7 @@ export const listProduct = async (
       name: {
         contains: productName || "", // Search for products where the name contains the specified value
       },
-      ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
+      ...(validCategoryId ? { categoryId: validCategoryId } : {}),
       ...(validStatus ? { status: validStatus } : {}),
     },
     orderBy: {
@@ -266,7 +258,7 @@ export const listProduct = async (
   return {
     productsWithImageUrls,
     meta: {
-      privious_page: previousPage,
+      previous_page: previousPage,
       current_page: page,
       next_page: nextPage,
       total: totalPages,
@@ -284,13 +276,10 @@ export const approveProduct = async (productId) => {
       statusMessage: "Your product have been approved",
     },
   });
-  return new responseFormat(200, true, "product approved");
+  return new responseFormat(200, true, { message: "product approved" });
 };
 
 export const rejectProduct = async (productId, message) => {
-  if (message == "") {
-    return new responseFormat(404, false, "Please enter reason for rejection");
-  }
   await prismaClient.product.update({
     where: {
       productId,
@@ -300,12 +289,5 @@ export const rejectProduct = async (productId, message) => {
       statusMessage: message,
     },
   });
-  return new responseFormat(200, true, "product rejected");
-};
-
-export const getImageUrl = async (filename) => {
-  const __dirname = "./public";
-  const filePath = path.resolve(__dirname, "images", filename);
-
-  return filePath;
+  return new responseFormat(200, true, { message: "product rejected" });
 };

@@ -4,6 +4,7 @@ import * as userServices from "../services/userServices.js";
 import { compareSync, hashSync } from "bcrypt";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
+import { responseFormat } from "../utils/responseFormat.js";
 
 export const verifyEmail = async (email) => {
   await prismaClient.user.update({
@@ -71,7 +72,7 @@ export const refresh = async (refreshToken) => {
     },
   });
   if (!user) {
-    throw new OperationalException("User not found", 404);
+    return new OperationalException("User not found", 404);
   }
   const response = generateToken(user);
   await prismaClient.refreshToken.update({
@@ -101,11 +102,12 @@ export const verifyRefreshToken = async (refreshToken) => {
 };
 
 export const logout = async (userId) => {
-  const result = await prismaClient.refreshToken.deleteMany({
+  await prismaClient.refreshToken.deleteMany({
     where: {
       userId: userId,
     },
   });
+  return new responseFormat(200, true, { message: "Logged out" });
 };
 export const setPassword = async (email, password, otp) => {
   const now = new Date();

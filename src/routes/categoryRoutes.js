@@ -14,8 +14,8 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 
 //validation
-import { checkSchema } from "express-validator";
-import { addCategorySchema } from "../schema/categorySchema.js";
+import { categorySchema } from "../schema/categorySchema.js";
+import { validationMiddlware } from "../middlewares/validationMiddlewares.js";
 
 export const categoryRoutes = Router();
 
@@ -25,14 +25,14 @@ categoryRoutes.post(
   "/add-category",
   verifyTokenMiddlewares,
   adminMiddlewares,
-  checkSchema(addCategorySchema),
+  validationMiddlware(categorySchema),
   addCategory
 );
 categoryRoutes.put(
   "/update/:id",
   verifyTokenMiddlewares,
   adminMiddlewares,
-  checkSchema(addCategorySchema),
+  validationMiddlware(categorySchema),
   verifyTokenMiddlewares,
   updateCategory
 );

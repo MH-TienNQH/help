@@ -1,7 +1,10 @@
 import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
-import { responseFormat } from "../utils/responseFormat.js";
+import {
+  responseFormat,
+  responseFormatForErrors,
+} from "../utils/responseFormat.js";
 import { RequestStatus, Status } from "@prisma/client";
 
 export const getAllUser = async () => {
@@ -353,10 +356,14 @@ export const approveRequest = async (ownerId, productId, userId) => {
     },
   });
   if (!product) {
-    return new responseFormat(404, false, "request not found");
+    return new responseFormat(404, false, {
+      message: "request not found",
+    });
   }
   if (product.product.userId !== ownerId) {
-    return new responseFormat(401, false, "you are not the owner");
+    return new responseFormat(401, false, {
+      message: "you are not the owner",
+    });
   }
   await prismaClient.requestToBuy.update({
     where: {
@@ -389,7 +396,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
       categoryId: 2,
     },
   });
-  return new responseFormat(200, true, "request approved");
+  return new responseFormat(200, true, { message: "request approved" });
 };
 export const rejectRequest = async (ownerId, productId, userId) => {
   let product = await prismaClient.requestToBuy.findUnique({
@@ -404,10 +411,14 @@ export const rejectRequest = async (ownerId, productId, userId) => {
     },
   });
   if (!product) {
-    return new responseFormat(404, false, "request not found");
+    return new responseFormatForErrors(404, false, {
+      message: "request not found",
+    });
   }
   if (product.product.userId !== ownerId) {
-    return new responseFormat(401, false, "you are not the owner");
+    return new responseFormatForErrors(401, false, {
+      message: "you are not the owner",
+    });
   }
   await prismaClient.requestToBuy.update({
     where: {
@@ -420,5 +431,5 @@ export const rejectRequest = async (ownerId, productId, userId) => {
       requestStatus: "REJECTED",
     },
   });
-  return new responseFormat(200, true, "request rejected");
+  return new responseFormat(200, true, { message: "request rejected" });
 };

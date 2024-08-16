@@ -1,4 +1,3 @@
-import { Readable } from "stream";
 import cloudinaryV2 from "../../cloudinaryConfig.js";
 
 const uploadToCloudinary = async (req, res, next) => {
@@ -22,7 +21,6 @@ const uploadToCloudinary = async (req, res, next) => {
           .end(file.buffer);
       });
     };
-
 
     const cloudinaryUrls = {};
 

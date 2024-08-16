@@ -31,10 +31,6 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const login = asyncErrorHandler(async (req, res) => {
-  let result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
-  }
   const data = req.body;
 
   const response = await authServices.login(data);
@@ -51,9 +47,7 @@ export const logout = asyncErrorHandler(async (req, res, next) => {
   const userId = req.userId;
 
   const response = await authServices.logout(userId);
-  res
-    .clearCookie("refreshToken")
-    .send(new responseFormat(200, true, "logged out"));
+  res.clearCookie("refreshToken").send(response);
 });
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
