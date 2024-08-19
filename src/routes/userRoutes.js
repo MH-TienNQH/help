@@ -4,7 +4,6 @@ import { Router } from "express";
 import {
   addUser,
   approveRequest,
-  checkRequest,
   countUsers,
   deleteUser,
   getAllUser,
@@ -33,7 +32,6 @@ export const userRoutes = Router();
 userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.get("/count-user", verifyTokenMiddlewares, countUsers);
-userRoutes.get("/check-request/:id", verifyTokenMiddlewares, checkRequest);
 userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
 
 userRoutes.post(

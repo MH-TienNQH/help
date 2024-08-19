@@ -173,25 +173,6 @@ export const likeProduct = async (userId, productId) => {
   }
 };
 
-export const checkRequest = async (userId, productId) => {
-  const product = await prismaClient.requestToBuy.findUnique({
-    where: {
-      productId_userId: {
-        userId,
-        productId,
-      },
-    },
-  });
-  if (product) {
-    return new responseFormat(200, true, {
-      status: "requested",
-    });
-  }
-  return new responseFormat(200, true, {
-    status: "not requested",
-  });
-};
-
 export const requestToBuyProduct = async (
   userId,
   productId,
