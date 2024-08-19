@@ -6,6 +6,7 @@ import {
   responseFormatForErrors,
 } from "../utils/responseFormat.js";
 import { RequestStatus, Status } from "@prisma/client";
+import { getThreeTrendingProduct } from "./productServices.js";
 
 export const getAllUser = async () => {
   const users = await prismaClient.user.findMany();
@@ -424,7 +425,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
       categoryId: 2,
     },
   });
-  return new responseFormat(200, true, { message: "request approved" });
+  return { message: "request approved" };
 };
 export const rejectRequest = async (ownerId, productId, userId) => {
   let product = await prismaClient.requestToBuy.findUnique({
@@ -459,7 +460,7 @@ export const rejectRequest = async (ownerId, productId, userId) => {
       requestStatus: "REJECTED",
     },
   });
-  return new responseFormat(200, true, { message: "request rejected" });
+  return { message: "request rejected" };
 };
 export const countUsers = async (startDate, endDate) => {
   const whereClause = {
@@ -476,4 +477,54 @@ export const countUsers = async (startDate, endDate) => {
     where: Object.keys(whereClause).length > 0 ? whereClause : {},
   });
   return new responseFormat(200, true, { numberOfUsers: users });
+};
+
+export const createChart = async (startDate, endDate) => {
+  try {
+    const products = await getThreeTrendingProduct(startDate, endDate);
+
+    // Format data for Chart.js
+    const labels = products.map((product) => product.name);
+    const counts = products.map((product) => product._count.RequestToBuy);
+
+    const ctx = document
+      .getElementById("trendingProductsChart")
+      .getContext("2d");
+    if (window.chart) {
+      // Update existing chart
+      window.chart.data.labels = labels;
+      window.chart.data.datasets[0].data = counts;
+      window.chart.update();
+    } else {
+      // Create new chart
+      window.chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: "Number of Requests",
+              data: counts,
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              beginAtZero: true,
+            },
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    }
+  } catch (error) {
+    throw new OperationalException(500, false, { error: error });
+  }
 };

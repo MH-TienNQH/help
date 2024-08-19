@@ -168,18 +168,34 @@ export const deleteProduct = async (id, userId, userRole) => {
   return true;
 };
 
-export const getThreeTrendingProduct = async () => {
+export const getThreeTrendingProduct = async (startDate, endDate) => {
+  const whereClause = {
+    ...(startDate || endDate
+      ? {
+          createdAt: {
+            ...(startDate ? { gte: new Date(startDate) } : {}),
+            ...(endDate ? { lte: new Date(endDate) } : {}),
+          },
+        }
+      : {}),
+  };
   return await prismaClient.product.findMany({
+    where: Object.keys(whereClause).length > 0 ? whereClause : {},
     include: {
-      _count: {
-        select: {
-          likeNumber: true,
+      RequestToBuy: {
+        include: {
+          user: true,
         },
       },
       author: true,
+      _count: {
+        select: {
+          RequestToBuy: true,
+        },
+      },
     },
     orderBy: {
-      likeNumber: {
+      RequestToBuy: {
         _count: "desc",
       },
     },
