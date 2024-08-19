@@ -29,7 +29,7 @@ export const addComment = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
   const data = req.body;
   const comment = await commentServices.addComment(productId, userId, data);
-  res.send(comment);
+  res.send(new responseFormat(200, true, comment));
 });
 
 export const updateComment = asyncErrorHandler(async (req, res) => {
@@ -37,12 +37,12 @@ export const updateComment = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
   const data = req.body;
   const comment = await commentServices.updateComment(commentId, userId, data);
-  res.send(comment);
+  res.send(new responseFormat(200, true, comment));
 });
 
 export const deleteComment = asyncErrorHandler(async (req, res) => {
   const commentId = req.params.id;
   const userId = req.userId;
   const response = await commentServices.deleteComment(commentId, userId);
-  res.send(response);
+  res.send(new responseFormat(200, true, response));
 });

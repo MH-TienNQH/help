@@ -9,8 +9,6 @@ import {
   getAllProduct,
   getNewestProduct,
   getProductById,
-  getSellingProduct,
-  getSoldProduct,
   getThreeTrendingProduct,
   listProduct,
   rejectProduct,
@@ -26,17 +24,16 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 import { upload } from "../utils/multer.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 import adminMiddlewares from "../middlewares/adminMiddlewares.js";
-import {
-  validateProductSchema,
-  validationMiddlware,
-} from "../middlewares/validationMiddlewares.js";
+import { validationMiddlware } from "../middlewares/validationMiddlewares.js";
 import { messageSchema } from "../schema/requestSchema.js";
+import {
+  addProductSchema,
+  updateProductSchema,
+} from "../schema/productSchema.js";
 export const productRoutes = Router();
 
 productRoutes.get("/get-all", getAllProduct);
 productRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getProductById);
-productRoutes.get("/selling-products", getSellingProduct);
-productRoutes.get("/sold-products", getSoldProduct);
 productRoutes.get("/newest", getNewestProduct);
 productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
@@ -44,16 +41,16 @@ productRoutes.get("/count-product", verifyTokenMiddlewares, countProducts);
 productRoutes.post(
   "/add-product",
   upload.fields([{ name: "images" }]),
-  validateProductSchema(),
   verifyTokenMiddlewares,
+  validationMiddlware(addProductSchema),
   uploadToCloudinary,
   addProduct
 );
 productRoutes.put(
   "/update/:id",
   upload.fields([{ name: "images" }]),
-  validateProductSchema(),
   verifyTokenMiddlewares,
+  validationMiddlware(updateProductSchema),
   uploadToCloudinary,
   updateProduct
 );

@@ -24,11 +24,9 @@ import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 //validation
 import { upload } from "../utils/multer.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
-import {
-  validateSignUpSchema,
-  validationMiddlware,
-} from "../middlewares/validationMiddlewares.js";
+import { validationMiddlware } from "../middlewares/validationMiddlewares.js";
 import { requestSchema } from "../schema/requestSchema.js";
+import { signUpSchema } from "../schema/userSchema.js";
 
 export const userRoutes = Router();
 
@@ -41,7 +39,7 @@ userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
 userRoutes.post(
   "/add-user",
   upload.fields([{ name: "avatar", maxCount: 1 }]),
-  validateSignUpSchema(),
+  validationMiddlware(signUpSchema),
   verifyTokenMiddlewares,
   adminMiddlewares,
   uploadToCloudinary,
@@ -60,9 +58,9 @@ userRoutes.post(
 userRoutes.put(
   "/update/:id",
   upload.fields([{ name: "avatar", maxCount: 1 }]),
-  uploadToCloudinary,
-  validateSignUpSchema(),
   verifyTokenMiddlewares,
+  validationMiddlware(signUpSchema),
+  uploadToCloudinary,
   updateUser
 );
 userRoutes.put(

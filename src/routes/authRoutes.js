@@ -11,7 +11,7 @@ import {
 import {
   emailSchema,
   loginSchema,
-  passwordSchema,
+  setPasswordSchema,
   signUpSchema,
 } from "../schema/userSchema.js";
 import { otpSchema } from "../schema/otpSchema.js";
@@ -19,10 +19,7 @@ import { otpSchema } from "../schema/otpSchema.js";
 import { upload } from "../utils/multer.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
-import {
-  validateSignUpSchema,
-  validationMiddlware,
-} from "../middlewares/validationMiddlewares.js";
+import { validationMiddlware } from "../middlewares/validationMiddlewares.js";
 
 export const authRoutes = Router();
 
@@ -32,7 +29,7 @@ authRoutes.get("/verify/:email", verifyEmail);
 authRoutes.post(
   "/signup",
   upload.fields([{ name: "avatar" }]),
-  validateSignUpSchema(),
+  validationMiddlware(signUpSchema),
   uploadToCloudinary,
   signUp
 );
@@ -46,8 +43,6 @@ authRoutes.post(
 
 authRoutes.put(
   "/set-password",
-  validationMiddlware(emailSchema),
-  validationMiddlware(passwordSchema),
-  validationMiddlware(otpSchema),
+  validationMiddlware(setPasswordSchema),
   setPassword
 );

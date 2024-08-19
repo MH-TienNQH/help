@@ -22,9 +22,20 @@ export const getUserById = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const addUser = asyncErrorHandler(async (req, res, next) => {
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
+  if (!req.files.avatar) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "Avatar cannot be empty",
+      })
+    );
+  }
+
+  if (req.files.avatar && req.files.avatar.length > 1) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "You can only add one avatar",
+      })
+    );
   }
   try {
     const data = req.body;
