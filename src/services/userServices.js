@@ -6,10 +6,10 @@ import {
   responseFormatForErrors,
 } from "../utils/responseFormat.js";
 import { RequestStatus, Status } from "@prisma/client";
-import {
-  getProductsForChart,
-  getThreeTrendingProduct,
-} from "./productServices.js";
+import { getThreeTrendingProduct } from "./productServices.js";
+import { io } from "socket.io-client";
+import { socket } from "../../index.js";
+import { userSockets } from "../socket.io/server.js";
 
 export const getAllUser = async () => {
   const users = await prismaClient.user.findMany();
@@ -147,6 +147,19 @@ export const saveProduct = async (userId, productId) => {
 };
 
 export const likeProduct = async (userId, productId) => {
+  const product = await prismaClient.product.findUnique({
+    where: {
+      productId,
+    },
+  });
+  const user = await prismaClient.user.findUnique({
+    where: {
+      userId,
+    },
+  });
+  if (!product) {
+    throw new OperationalException(404, false, "Product not found");
+  }
   const likedProduct = await prismaClient.productLiked.findUnique({
     where: {
       productId_userId: {
@@ -165,7 +178,7 @@ export const likeProduct = async (userId, productId) => {
         },
       },
     });
-    return new responseFormat(200, true, "unliked product");
+    return true;
   } else {
     await prismaClient.productLiked.create({
       data: {
@@ -173,8 +186,19 @@ export const likeProduct = async (userId, productId) => {
         productId,
       },
     });
-    return new responseFormat(200, true, "liked product");
+    if (product.userId !== userId) {
+      const ownerSocketId = userSockets.get(userId);
+      if (ownerSocketId) {
+        socket.emit("notification", {
+          userId,
+          productId,
+          message: `${user.name} has liked your product`,
+        });
+      }
+      // Emit the notification only to the product owner
+    }
   }
+  return true;
 };
 
 export const requestToBuyProduct = async (

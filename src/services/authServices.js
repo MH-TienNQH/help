@@ -5,6 +5,8 @@ import { compareSync, hashSync } from "bcrypt";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { responseFormat } from "../utils/responseFormat.js";
+import { io } from "../socket.io/server.js";
+import { socket } from "../../index.js";
 
 export const verifyEmail = async (email) => {
   let user = await userServices.findUserByEmail(email);
@@ -37,6 +39,7 @@ export const login = async (data) => {
       userId: user.userId,
     },
   });
+  socket.emit("login", user.userId);
   return {
     user,
     accessToken,
