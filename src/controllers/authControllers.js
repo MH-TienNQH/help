@@ -2,16 +2,30 @@ import dotenv from "dotenv";
 import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
-import { responseFormat } from "../utils/responseFormat.js";
+import {
+  responseFormat,
+  responseFormatForErrors,
+} from "../utils/responseFormat.js";
 import * as authServices from "../services/authServices.js";
 import * as userServices from "../services/userServices.js";
 
 dotenv.config();
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
-  let result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
+  if (!req.files.avatar) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "Avatar cannot be empty",
+      })
+    );
+  }
+
+  if (req.files.avatar && req.files.avatar.length > 1) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "You can only add one avatar",
+      })
+    );
   }
   const data = req.body;
   const avatar = req.cloudinaryUrls;
@@ -74,8 +88,8 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
 
 export const verifyEmail = asyncErrorHandler(async (req, res) => {
   let email = req.params.email;
-  await authServices.verifyEmail(email);
-  res.send("verified");
+  const response = await authServices.verifyEmail(email);
+  res.send(new responseFormat(200, true, response));
 });
 
 export const setPassword = asyncErrorHandler(async (req, res) => {

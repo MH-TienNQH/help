@@ -8,12 +8,11 @@ import * as userServices from "./userServices.js";
 import { Status } from "@prisma/client";
 
 export const getAllProduct = async () => {
-  let products = await prismaClient.product.findMany({
+  return await prismaClient.product.findMany({
     include: {
       author: true,
     },
   });
-  return products;
 };
 export const findById = async (userId, productId) => {
   const product = await prismaClient.product.findUnique({
@@ -67,18 +66,18 @@ export const findById = async (userId, productId) => {
     }
     return { product, saved, liked, requested };
   }
-  throw new OperationalException("No product found", 404);
+  throw new OperationalException(404, false, "No product found");
 };
 export const addProduct = async (data, images, userId) => {
-  let product = await prismaClient.product.findFirst({
+  const isExist = await prismaClient.product.findFirst({
     where: {
       name: data.name,
     },
   });
-  if (product) {
-    return new responseFormatForErrors(403, false, "Product exist");
+  if (isExist) {
+    throw new OperationalException(403, false, "Product exist");
   }
-  product = await prismaClient.product.create({
+  return await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,
@@ -91,7 +90,6 @@ export const addProduct = async (data, images, userId) => {
       },
     },
   });
-  return new responseFormat(200, true, product);
 };
 
 export const updateProduct = async (
@@ -101,31 +99,32 @@ export const updateProduct = async (
   userRole,
   images
 ) => {
-  let product = await prismaClient.product.findUnique({
+  let isExist = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
     },
   });
+  if (!isExist) {
+    throw new OperationalException(404, false, "Product not found");
+  }
   if (product.userId !== userId && userRole !== "ADMIN") {
-    return new responseFormatForErrors(
+    throw new OperationalException(
       403,
       false,
       "You are not authorized to update this product"
     );
   }
-  if (!product) {
-    return new responseFormatForErrors(404, false, "Product not found");
-  }
-  product = await prismaClient.product.findUnique({
+
+  isExist = await prismaClient.product.findUnique({
     where: {
       name: data.name,
     },
   });
-  if (product) {
-    return new responseFormatForErrors(403, false, "Product exist");
+  if (isExist) {
+    return new OperationalException(403, false, "Product exist");
   }
 
-  product = await prismaClient.product.update({
+  await prismaClient.product.update({
     where: {
       productId: parseInt(productId),
     },
@@ -141,7 +140,7 @@ export const updateProduct = async (
       },
     },
   });
-  return new responseFormat(200, true, product);
+  return true;
 };
 
 export const deleteProduct = async (id, userId, userRole) => {
@@ -150,26 +149,27 @@ export const deleteProduct = async (id, userId, userRole) => {
       productId: parseInt(id),
     },
   });
-  if (product.userId !== userId && userRole !== "ADMIN") {
-    return new responseFormatForErrors(403, false, {
-      message: "You are not authorized to delete this product",
-    });
-  }
   if (!product) {
-    return new responseFormatForErrors(404, false, {
-      message: "Product not found",
-    });
+    throw new OperationalException(404, false, "Product not found");
   }
+  if (product.userId !== userId && userRole !== "ADMIN") {
+    throw new OperationalException(
+      403,
+      false,
+      "You are not authorized to delete this product"
+    );
+  }
+
   await prismaClient.product.delete({
     where: {
       productId: parseInt(id),
     },
   });
-  return new responseFormat(200, true, { message: "product deleted" });
+  return true;
 };
 
 export const getThreeTrendingProduct = async () => {
-  const products = await prismaClient.product.findMany({
+  return await prismaClient.product.findMany({
     include: {
       _count: {
         select: {
@@ -185,11 +185,10 @@ export const getThreeTrendingProduct = async () => {
     },
     take: 3,
   });
-  return products;
 };
 
 export const getNewestProduct = async () => {
-  const products = await prismaClient.product.findMany({
+  return await prismaClient.product.findMany({
     orderBy: {
       createdAt: "desc",
     },
@@ -197,7 +196,6 @@ export const getNewestProduct = async () => {
       author: true,
     },
   });
-  return products;
 };
 export const listProduct = async (
   productName,
@@ -267,27 +265,70 @@ export const listProduct = async (
 };
 
 export const approveProduct = async (productId) => {
-  await prismaClient.product.update({
-    where: {
-      productId: parseInt(productId),
-    },
-    data: {
-      status: "APPROVED",
-      statusMessage: "Your product have been approved",
-    },
-  });
-  return new responseFormat(200, true, { message: "product approved" });
-};
-
-export const rejectProduct = async (productId, message) => {
-  await prismaClient.product.update({
+  const isExist = await prismaClient.product.findUnique({
     where: {
       productId,
     },
-    data: {
-      status: "REJECTED",
-      statusMessage: message,
+  });
+  if (isExist) {
+    await prismaClient.product.update({
+      where: {
+        productId,
+      },
+      data: {
+        status: "APPROVED",
+        statusMessage: "Your product have been approved",
+      },
+    });
+    return true;
+  }
+  throw new OperationalException(404, false, "Product not found");
+};
+
+export const rejectProduct = async (productId, message) => {
+  const isExist = await prismaClient.product.findUnique({
+    where: {
+      productId,
     },
   });
-  return new responseFormat(200, true, { message: "product rejected" });
+  if (isExist) {
+    await prismaClient.product.update({
+      where: {
+        productId,
+      },
+      data: {
+        status: "REJECTED",
+        statusMessage: message,
+      },
+    });
+    return true;
+  }
+  throw new OperationalException(404, false, "Product not found");
+};
+
+export const countProducts = async (categoryId, status, startDate, endDate) => {
+  const validStatus = status
+    ? Object.values(Status).includes(status.toUpperCase())
+      ? status.toUpperCase()
+      : null
+    : null;
+  const validCategoryId = [1, 2].includes(parseInt(categoryId))
+    ? parseInt(categoryId)
+    : {};
+
+  const whereClause = {
+    ...(validStatus ? { status: validStatus } : {}),
+    ...(validCategoryId ? { categoryId: validCategoryId } : {}),
+    ...(startDate || endDate
+      ? {
+          createdAt: {
+            ...(startDate ? { gte: new Date(startDate) } : {}),
+            ...(endDate ? { lte: new Date(endDate) } : {}),
+          },
+        }
+      : {}),
+  };
+  return await prismaClient.product.count({
+    where: Object.keys(whereClause).length > 0 ? whereClause : {},
+  });
 };

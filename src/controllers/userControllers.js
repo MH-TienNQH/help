@@ -22,9 +22,20 @@ export const getUserById = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const addUser = asyncErrorHandler(async (req, res, next) => {
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
+  if (!req.files.avatar) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "Avatar cannot be empty",
+      })
+    );
+  }
+
+  if (req.files.avatar && req.files.avatar.length > 1) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "You can only add one avatar",
+      })
+    );
   }
   try {
     const data = req.body;
@@ -127,13 +138,6 @@ export const requestToBuy = asyncErrorHandler(async (req, res) => {
   res.send(requested);
 });
 
-export const checkRequest = asyncErrorHandler(async (req, res) => {
-  const productId = parseInt(req.params.id);
-  const userId = req.userId;
-  const response = await userServices.checkRequest(userId, productId);
-  res.send(response);
-});
-
 export const approveRequest = asyncErrorHandler(async (req, res) => {
   const userId = parseInt(req.params.userId);
   const productId = parseInt(req.params.productId);
@@ -153,5 +157,10 @@ export const rejectRequest = asyncErrorHandler(async (req, res) => {
   const ownerId = req.userId;
 
   const response = await userServices.rejectRequest(ownerId, productId, userId);
+  res.send(response);
+});
+export const countUsers = asyncErrorHandler(async (req, res) => {
+  const { startDate, endDate } = req.query;
+  let response = await userServices.countUsers(startDate, endDate);
   res.send(response);
 });

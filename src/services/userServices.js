@@ -173,25 +173,6 @@ export const likeProduct = async (userId, productId) => {
   }
 };
 
-export const checkRequest = async (userId, productId) => {
-  const product = await prismaClient.requestToBuy.findUnique({
-    where: {
-      productId_userId: {
-        userId,
-        productId,
-      },
-    },
-  });
-  if (product) {
-    return new responseFormat(200, true, {
-      status: "requested",
-    });
-  }
-  return new responseFormat(200, true, {
-    status: "not requested",
-  });
-};
-
 export const requestToBuyProduct = async (
   userId,
   productId,
@@ -479,4 +460,20 @@ export const rejectRequest = async (ownerId, productId, userId) => {
     },
   });
   return new responseFormat(200, true, { message: "request rejected" });
+};
+export const countUsers = async (startDate, endDate) => {
+  const whereClause = {
+    ...(startDate || endDate
+      ? {
+          createdAt: {
+            ...(startDate ? { gte: new Date(startDate) } : {}),
+            ...(endDate ? { lte: new Date(endDate) } : {}),
+          },
+        }
+      : {}),
+  };
+  const users = await prismaClient.user.count({
+    where: Object.keys(whereClause).length > 0 ? whereClause : {},
+  });
+  return new responseFormat(200, true, { numberOfUsers: users });
 };

@@ -41,7 +41,7 @@ export const getComments = async (productId, order = "desc", page, limit) => {
 };
 
 export const addComment = async (productId, userId, data) => {
-  const comment = await prismaClient.comment.create({
+  return await prismaClient.comment.create({
     data: {
       content: data.content,
       user: {
@@ -56,7 +56,6 @@ export const addComment = async (productId, userId, data) => {
       },
     },
   });
-  return new responseFormat(200, true, comment);
 };
 
 export const updateComment = async (commentId, userId, data) => {
@@ -66,15 +65,16 @@ export const updateComment = async (commentId, userId, data) => {
     },
   });
   if (!comment) {
-    throw new OperationalException("Comment not found", 404);
+    throw new OperationalException(404, false, "Comment not found");
   }
   if (comment.userId !== userId) {
     throw new OperationalException(
-      "You are not authorized to update this comment",
-      403
+      403,
+      false,
+      "You are not authorized to update this comment"
     );
   }
-  comment = await prismaClient.comment.update({
+  await prismaClient.comment.update({
     where: {
       commentId: parseInt(commentId),
     },
@@ -87,7 +87,7 @@ export const updateComment = async (commentId, userId, data) => {
       },
     },
   });
-  return new responseFormat(200, true, comment);
+  return true;
 };
 
 export const deleteComment = async (commentId, userId) => {
@@ -97,12 +97,13 @@ export const deleteComment = async (commentId, userId) => {
     },
   });
   if (!comment) {
-    throw new OperationalException("Comment not found", 404);
+    throw new OperationalException(404, false, "Comment not found");
   }
   if (comment.userId !== userId) {
     throw new OperationalException(
-      "You are not authorized to delete this comment",
-      403
+      403,
+      false,
+      "You are not authorized to delete this comment"
     );
   }
   await prismaClient.comment.delete({
@@ -110,5 +111,5 @@ export const deleteComment = async (commentId, userId) => {
       commentId: parseInt(commentId),
     },
   });
-  return new responseFormat(200, true, "comment deleted");
+  return true;
 };
