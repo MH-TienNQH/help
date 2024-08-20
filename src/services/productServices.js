@@ -322,7 +322,12 @@ export const rejectProduct = async (productId, message) => {
   throw new OperationalException(404, false, "Product not found");
 };
 
-export const countProducts = async (categoryId, status, startDate, endDate) => {
+export const getProductsForChart = async (
+  categoryId,
+  status,
+  startDate,
+  endDate
+) => {
   const validStatus = status
     ? Object.values(Status).includes(status.toUpperCase())
       ? status.toUpperCase()
@@ -344,7 +349,7 @@ export const countProducts = async (categoryId, status, startDate, endDate) => {
         }
       : {}),
   };
-  return await prismaClient.product.count({
+  return await prismaClient.product.findMany({
     where: Object.keys(whereClause).length > 0 ? whereClause : {},
   });
 };

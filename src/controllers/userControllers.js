@@ -167,5 +167,9 @@ export const countUsers = asyncErrorHandler(async (req, res) => {
 
 export const createChart = asyncErrorHandler(async (req, res) => {
   const { startDate, endDate } = req.query;
-  const response = await userServices.createChart(startDate, endDate);
+  const response = await userServices.createChartForTrending(
+    startDate,
+    endDate
+  );
+  res.send(new responseFormat(200, true, response));
 });
