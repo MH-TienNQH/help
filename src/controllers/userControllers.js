@@ -127,6 +127,13 @@ export const requestToBuy = asyncErrorHandler(async (req, res) => {
   res.send(requested);
 });
 
+export const checkRequest = asyncErrorHandler(async (req, res) => {
+  const productId = parseInt(req.params.id);
+  const userId = req.userId;
+  const response = await userServices.checkRequest(userId, productId);
+  res.send(response);
+});
+
 export const approveRequest = asyncErrorHandler(async (req, res) => {
   const userId = parseInt(req.params.userId);
   const productId = parseInt(req.params.productId);
@@ -139,6 +146,7 @@ export const approveRequest = asyncErrorHandler(async (req, res) => {
   );
   res.send(response);
 });
+
 export const rejectRequest = asyncErrorHandler(async (req, res) => {
   const userId = parseInt(req.params.userId);
   const productId = parseInt(req.params.productId);
