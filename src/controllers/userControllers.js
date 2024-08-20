@@ -157,10 +157,19 @@ export const rejectRequest = asyncErrorHandler(async (req, res) => {
   const ownerId = req.userId;
 
   const response = await userServices.rejectRequest(ownerId, productId, userId);
-  res.send(response);
+  res.send(new responseFormat(200, true, response));
 });
 export const countUsers = asyncErrorHandler(async (req, res) => {
   const { startDate, endDate } = req.query;
-  let response = await userServices.countUsers(startDate, endDate);
-  res.send(response);
+  const response = await userServices.countUsers(startDate, endDate);
+  res.send(new responseFormat(200, true, response));
+});
+
+export const createChart = asyncErrorHandler(async (req, res) => {
+  const { startDate, endDate } = req.query;
+  const response = await userServices.createChartForTrending(
+    startDate,
+    endDate
+  );
+  res.send(new responseFormat(200, true, response));
 });

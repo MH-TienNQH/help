@@ -168,18 +168,34 @@ export const deleteProduct = async (id, userId, userRole) => {
   return true;
 };
 
-export const getThreeTrendingProduct = async () => {
+export const getThreeTrendingProduct = async (startDate, endDate) => {
+  const whereClause = {
+    ...(startDate || endDate
+      ? {
+          createdAt: {
+            ...(startDate ? { gte: new Date(startDate) } : {}),
+            ...(endDate ? { lte: new Date(endDate) } : {}),
+          },
+        }
+      : {}),
+  };
   return await prismaClient.product.findMany({
+    where: Object.keys(whereClause).length > 0 ? whereClause : {},
     include: {
-      _count: {
-        select: {
-          likeNumber: true,
+      RequestToBuy: {
+        include: {
+          user: true,
         },
       },
       author: true,
+      _count: {
+        select: {
+          RequestToBuy: true,
+        },
+      },
     },
     orderBy: {
-      likeNumber: {
+      RequestToBuy: {
         _count: "desc",
       },
     },
@@ -306,7 +322,12 @@ export const rejectProduct = async (productId, message) => {
   throw new OperationalException(404, false, "Product not found");
 };
 
-export const countProducts = async (categoryId, status, startDate, endDate) => {
+export const getProductsForChart = async (
+  categoryId,
+  status,
+  startDate,
+  endDate
+) => {
   const validStatus = status
     ? Object.values(Status).includes(status.toUpperCase())
       ? status.toUpperCase()
@@ -328,7 +349,7 @@ export const countProducts = async (categoryId, status, startDate, endDate) => {
         }
       : {}),
   };
-  return await prismaClient.product.count({
+  return await prismaClient.product.findMany({
     where: Object.keys(whereClause).length > 0 ? whereClause : {},
   });
 };

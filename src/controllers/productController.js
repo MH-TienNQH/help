@@ -7,6 +7,7 @@ import {
 } from "../utils/responseFormat.js";
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
+import { start } from "repl";
 
 dotenv.config();
 
@@ -101,7 +102,11 @@ export const deleteProduct = asyncErrorHandler(async (req, res) => {
   res.send(new responseFormat(200, true, response));
 });
 export const getThreeTrendingProduct = asyncErrorHandler(async (req, res) => {
-  let products = await productServices.getThreeTrendingProduct();
+  const { startDate, endDate } = req.query;
+  let products = await productServices.getThreeTrendingProduct(
+    startDate,
+    endDate
+  );
   res.send(new responseFormat(200, true, products));
 });
 
@@ -110,10 +115,6 @@ export const getNewestProduct = asyncErrorHandler(async (req, res) => {
   res.send(new responseFormat(200, true, products));
 });
 
-export const getSoldProduct = asyncErrorHandler(async (req, res) => {
-  let products = await productServices.getSoldProduct();
-  res.send(new responseFormat(200, true, products));
-});
 export const listProduct = asyncErrorHandler(async (req, res) => {
   const { productName, categoryId, order, status } = req.query;
   const { page, limit } = req.pagination;

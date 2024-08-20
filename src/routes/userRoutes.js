@@ -5,6 +5,7 @@ import {
   addUser,
   approveRequest,
   countUsers,
+  createChart,
   deleteUser,
   getAllUser,
   getUserById,
@@ -33,6 +34,12 @@ userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.get("/count-user", verifyTokenMiddlewares, countUsers);
 userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
+userRoutes.get(
+  "/add-chart-for-trending",
+  verifyTokenMiddlewares,
+  adminMiddlewares,
+  createChart
+);
 
 userRoutes.post(
   "/add-user",

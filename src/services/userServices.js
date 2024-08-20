@@ -6,6 +6,10 @@ import {
   responseFormatForErrors,
 } from "../utils/responseFormat.js";
 import { RequestStatus, Status } from "@prisma/client";
+import {
+  getProductsForChart,
+  getThreeTrendingProduct,
+} from "./productServices.js";
 
 export const getAllUser = async () => {
   const users = await prismaClient.user.findMany();
@@ -424,7 +428,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
       categoryId: 2,
     },
   });
-  return new responseFormat(200, true, { message: "request approved" });
+  return { message: "request approved" };
 };
 export const rejectRequest = async (ownerId, productId, userId) => {
   let product = await prismaClient.requestToBuy.findUnique({
@@ -459,9 +463,9 @@ export const rejectRequest = async (ownerId, productId, userId) => {
       requestStatus: "REJECTED",
     },
   });
-  return new responseFormat(200, true, { message: "request rejected" });
+  return { message: "request rejected" };
 };
-export const countUsers = async (startDate, endDate) => {
+export const getUsersForChart = async (startDate, endDate) => {
   const whereClause = {
     ...(startDate || endDate
       ? {
@@ -472,8 +476,17 @@ export const countUsers = async (startDate, endDate) => {
         }
       : {}),
   };
-  const users = await prismaClient.user.count({
+  const users = await prismaClient.user.findMany({
     where: Object.keys(whereClause).length > 0 ? whereClause : {},
   });
-  return new responseFormat(200, true, { numberOfUsers: users });
+  return users;
+};
+
+export const createChartForTrending = async (startDate, endDate) => {
+  const trendingProducts = await getThreeTrendingProduct(startDate, endDate);
+  const trending = trendingProducts.map((product) => ({
+    label: product.name,
+    value: product._count.RequestToBuy,
+  }));
+  return trending;
 };
