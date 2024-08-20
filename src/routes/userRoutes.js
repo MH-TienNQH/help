@@ -20,10 +20,13 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 import adminMiddlewares from "../middlewares/adminMiddlewares.js";
 
 //validation
-import { checkSchema } from "express-validator";
-import { signUpSchema } from "../schema/userSchema.js";
 import { upload } from "../utils/multer.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
+import {
+  validateSignUpSchema,
+  validationMiddlware,
+} from "../middlewares/validationMiddlewares.js";
+import { requestSchema } from "../schema/requestSchema.js";
 
 export const userRoutes = Router();
 
@@ -31,17 +34,18 @@ userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
 userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
 userRoutes.post(
   "/add-user",
-
-  checkSchema(signUpSchema),
+  upload.fields([{ name: "avatar", maxCount: 1 }]),
+  validateSignUpSchema(),
   verifyTokenMiddlewares,
   adminMiddlewares,
+  uploadToCloudinary,
   addUser
 );
 userRoutes.put(
   "/update/:id",
   upload.fields([{ name: "avatar", maxCount: 1 }]),
   uploadToCloudinary,
-  checkSchema(signUpSchema),
+  validateSignUpSchema(),
   verifyTokenMiddlewares,
   updateUser
 );
@@ -58,13 +62,13 @@ userRoutes.put(
   rejectRequest
 );
 
-userRoutes.delete(
-  "/delete/:id",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
-  deleteUser
-);
+userRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteUser);
 userRoutes.post("/save-product/:id", verifyTokenMiddlewares, saveProduct);
 userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
 userRoutes.post("/like-product/:id", verifyTokenMiddlewares, likeProduct);
-userRoutes.post("/request-to-buy/:id", verifyTokenMiddlewares, requestToBuy);
+userRoutes.post(
+  "/request-to-buy/:id",
+  validationMiddlware(requestSchema),
+  verifyTokenMiddlewares,
+  requestToBuy
+);

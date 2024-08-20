@@ -47,7 +47,8 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
 
 export const updateUser = asyncErrorHandler(async (req, res, next) => {
   const id = parseInt(req.params.id);
-
+  const userId = req.userId;
+  const userRole = req.userRole;
   const result = validationResult(req);
   if (!result.isEmpty()) {
     return res.status(400).send(result.array({ onlyFirstError: true }));
@@ -64,15 +65,16 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
     const error = new OperationalException("User already exist", 400);
     next(error);
   }
-  user = await userServices.updateUser(id, data, avatar);
-  res.send(new responseFormat(200, true, [user.email, "user updated"]));
+  user = await userServices.updateUser(id, userId, userRole, data, avatar);
+  res.send(new responseFormat(200, true, user));
 });
 
 export const deleteUser = asyncErrorHandler(async (req, res) => {
   const id = parseInt(req.params.id);
-
-  await userServices.deleteUser(id);
-  res.send(new responseFormat(200, true, "user deleted"));
+  const userId = req.userId;
+  const userRole = req.userRole;
+  const response = await userServices.deleteUser(id, userId, userRole);
+  res.send(response);
 });
 
 export const saveProduct = asyncErrorHandler(async (req, res) => {
