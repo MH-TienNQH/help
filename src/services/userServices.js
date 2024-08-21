@@ -108,7 +108,7 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
       avatar: JSON.stringify(avatar),
       role: data.role,
     },
-  });
+  })
 };
 
 export const deleteUser = async (id, userId, userRole) => {

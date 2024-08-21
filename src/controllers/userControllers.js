@@ -43,7 +43,7 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
   try {
     const data = req.body;
     const avatar = req.cloudinaryUrls;
-    user = await userServices.addUser(data, avatar);
+    const user = await userServices.addUser(data, avatar);
     res.send(new responseFormat(200, true, user));
   } catch (error) {
     next(error);
