@@ -49,10 +49,10 @@ export const addUser = async (data, avatar) => {
     },
   });
   if (user) {
-    throw new OperationalException("Username already exist", 403);
+    throw new OperationalException(403, false, "Username already exist");
   }
   data.password = hashSync(data.password, 10);
-  user = await prismaClient.user.create({
+  return await prismaClient.user.create({
     data: {
       name: data.name,
       username: data.username,
@@ -62,7 +62,6 @@ export const addUser = async (data, avatar) => {
       role: data.role,
     },
   });
-  return user;
 };
 
 export const updateUser = async (id, userId, userRole, data, avatar) => {
@@ -78,8 +77,26 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
       "You are not authorized to update this account"
     );
   }
+
+  const existingUserWithUsername = await prismaClient.user.findUnique({
+    where: {
+      username: data.username,
+    },
+  });
+
+  const existingUserWithEmail = await prismaClient.user.findUnique({
+    where: {
+      email: data.email,
+    },
+  });
+  if (existingUserWithUsername && existingUserWithUsername.userId !== id) {
+    throw new OperationalException(400, false, "Username already exists");
+  }
+  if (existingUserWithEmail && existingUserWithEmail.userId !== id) {
+    throw new OperationalException(400, false, "Email already exists");
+  }
   data.password = hashSync(data.password, 10);
-  user = await prismaClient.user.update({
+  return await prismaClient.user.update({
     where: {
       userId: id,
     },
@@ -92,7 +109,6 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
       role: data.role,
     },
   });
-  return user;
 };
 
 export const deleteUser = async (id, userId, userRole) => {
@@ -102,7 +118,7 @@ export const deleteUser = async (id, userId, userRole) => {
     },
   });
   if (user.userId !== userId && userRole !== "ADMIN") {
-    return new responseFormatForErrors(
+    throw new OperationalException(
       401,
       false,
       "You are not authorized to delete this account"
@@ -113,7 +129,7 @@ export const deleteUser = async (id, userId, userRole) => {
       userId: id,
     },
   });
-  return new responseFormat(200, true, { message: "account deleted" });
+  return true;
 };
 
 export const saveProduct = async (userId, productId) => {

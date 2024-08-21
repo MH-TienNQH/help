@@ -1,7 +1,10 @@
 import { body, validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
 import { hashSync } from "bcrypt";
-import { responseFormat } from "../utils/responseFormat.js";
+import {
+  responseFormat,
+  responseFormatForErrors,
+} from "../utils/responseFormat.js";
 import * as userServices from "../services/userServices.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
@@ -40,17 +43,8 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
   try {
     const data = req.body;
     const avatar = req.cloudinaryUrls;
-    let user = await prismaClient.user.findFirst({
-      where: {
-        username: data.username,
-      },
-    });
-    if (user) {
-      const error = new OperationalException("User already exist", 400);
-      next(error);
-    }
     user = await userServices.addUser(data, avatar);
-    res.send(new responseFormat(200, true, [user.email, "user created"]));
+    res.send(new responseFormat(200, true, user));
   } catch (error) {
     next(error);
   }
@@ -60,23 +54,16 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
   const id = parseInt(req.params.id);
   const userId = req.userId;
   const userRole = req.userRole;
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
-  }
-
   const data = req.body;
   const avatar = req.cloudinaryUrls;
-  let user = await prismaClient.user.findFirst({
-    where: {
-      username: data.username,
-    },
-  });
-  if (user) {
-    const error = new OperationalException("User already exist", 400);
-    next(error);
-  }
-  user = await userServices.updateUser(id, userId, userRole, data, avatar);
+
+  const user = await userServices.updateUser(
+    id,
+    userId,
+    userRole,
+    data,
+    avatar
+  );
   res.send(new responseFormat(200, true, user));
 });
 
