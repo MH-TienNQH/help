@@ -5,27 +5,23 @@ import {
   responseFormat,
   responseFormatForErrors,
 } from "../utils/responseFormat.js";
-import { RequestStatus, Status } from "@prisma/client";
+import { RequestStatus, Role, Status } from "@prisma/client";
 import {
   getProductsForChart,
   getThreeTrendingProduct,
 } from "./productServices.js";
 import { checkIfFileExists } from "../helper/checkIfFileExist.js";
 
-export const getAllUser = async (
-  name,
-  order = "asc",
-  role = "USER",
-  page,
-  limit
-) => {
+export const getAllUser = async (name, order = "asc", role, page, limit) => {
   const skip = (page - 1) * limit;
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
     : "asc";
-  const validRole = ["ADMIN", "USER"].includes(role.toUpperCase())
-    ? role.toUpperCase()
-    : "USER";
+  const validRole = role
+    ? Object.values(Role).includes(role.toUpperCase())
+      ? role.toUpperCase()
+      : null
+    : null;
   let numberOfUsers = await prismaClient.user.count({
     where: {
       name: {
