@@ -84,13 +84,22 @@ export const findUserByEmail = async (email) => {
 };
 
 export const addUser = async (data, avatar) => {
-  let user = await prismaClient.user.findUnique({
+  const existingUserWithUsername = await prismaClient.user.findUnique({
     where: {
       username: data.username,
     },
   });
-  if (user) {
-    throw new OperationalException(403, false, "Username already exist");
+
+  const existingUserWithEmail = await prismaClient.user.findUnique({
+    where: {
+      email: data.email,
+    },
+  });
+  if (existingUserWithUsername) {
+    throw new OperationalException(400, false, "Username already exists");
+  }
+  if (existingUserWithEmail) {
+    throw new OperationalException(400, false, "Email already exists");
   }
   data.password = hashSync(data.password, 10);
   return await prismaClient.user.create({
@@ -139,8 +148,7 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
 
   data.password = hashSync(data.password, 10);
 
-  const fileEixst = await checkIfFileExists(avatar);
-  if (avatar == null && fileEixst) {
+  if (avatar == "") {
     avatar = user.avatar;
     return await prismaClient.user.update({
       where: {
