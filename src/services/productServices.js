@@ -99,7 +99,7 @@ export const updateProduct = async (
   userRole,
   images
 ) => {
-  let isExist = await prismaClient.product.findUnique({
+  const isExist = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
     },
@@ -115,15 +115,34 @@ export const updateProduct = async (
     );
   }
 
-  isExist = await prismaClient.product.findUnique({
+  const isNameExist = await prismaClient.product.findUnique({
     where: {
       name: data.name,
     },
   });
-  if (isExist) {
-    return new OperationalException(403, false, "Product exist");
+  if (isNameExist) {
+    return new OperationalException(403, false, "Product name exist");
   }
 
+  if (images == "") {
+    images = isExist.images;
+    await prismaClient.product.update({
+      where: {
+        productId: parseInt(productId),
+      },
+      data: {
+        name: data.name,
+        description: data.description,
+        images: images,
+        price: parseInt(data.price),
+        author: {
+          connect: {
+            userId,
+          },
+        },
+      },
+    });
+  }
   await prismaClient.product.update({
     where: {
       productId: parseInt(productId),
@@ -140,6 +159,7 @@ export const updateProduct = async (
       },
     },
   });
+
   return true;
 };
 
