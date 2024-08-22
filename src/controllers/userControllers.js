@@ -53,6 +53,11 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const updateUser = asyncErrorHandler(async (req, res, next) => {
+  const id = parseInt(req.params.id);
+  const userId = req.userId;
+  const userRole = req.userRole;
+  const data = req.body;
+  const avatar = req.cloudinaryUrls;
   if (req.files.avatar && req.files.avatar.length > 1) {
     return res.json(
       new responseFormatForErrors(401, false, {
@@ -60,11 +65,6 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
       })
     );
   }
-  const id = parseInt(req.params.id);
-  const userId = req.userId;
-  const userRole = req.userRole;
-  const data = req.body;
-  const avatar = req.cloudinaryUrls;
 
   const user = await userServices.updateUser(
     id,

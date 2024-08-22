@@ -136,26 +136,11 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
   if (existingUserWithEmail && existingUserWithEmail.userId !== id) {
     throw new OperationalException(400, false, "Email already exists");
   }
-  if (data.password) {
-    data.password = hashSync(data.password, 10);
-  }
+
+  data.password = hashSync(data.password, 10);
 
   const fileEixst = await checkIfFileExists(avatar);
-  if (fileEixst) {
-    return await prismaClient.user.update({
-      where: {
-        userId: id,
-      },
-      data: {
-        name: data.name,
-        username: data.username,
-        email: data.email,
-        password: data.password,
-        avatar: JSON.stringify(avatar),
-        role: data.role,
-      },
-    });
-  } else {
+  if (avatar == null && fileEixst) {
     avatar = user.avatar;
     return await prismaClient.user.update({
       where: {
@@ -171,6 +156,19 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
       },
     });
   }
+  return await prismaClient.user.update({
+    where: {
+      userId: id,
+    },
+    data: {
+      name: data.name,
+      username: data.username,
+      email: data.email,
+      password: data.password,
+      avatar: JSON.stringify(avatar),
+      role: data.role,
+    },
+  });
 };
 
 export const deleteUser = async (id, userId, userRole) => {
