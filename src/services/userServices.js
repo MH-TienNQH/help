@@ -10,14 +10,59 @@ import {
   getProductsForChart,
   getThreeTrendingProduct,
 } from "./productServices.js";
+import { checkIfFileExists } from "../helper/checkIfFileExist.js";
 
-export const getAllUser = async () => {
-  const users = await prismaClient.user.findMany();
+export const getAllUser = async (
+  name,
+  order = "asc",
+  role = "USER",
+  page,
+  limit
+) => {
+  const skip = (page - 1) * limit;
+  const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
+    ? order.toLowerCase()
+    : "asc";
+  const validRole = ["ADMIN", "USER"].includes(role.toUpperCase())
+    ? role.toUpperCase()
+    : "USER";
+  let numberOfUsers = await prismaClient.user.count({
+    where: {
+      name: {
+        contains: name || "",
+      },
+      ...(validRole ? { role: validRole } : {}),
+    },
+  });
+  const users = await prismaClient.user.findMany({
+    where: {
+      name: {
+        contains: name || "",
+      },
+      ...(validRole ? { role: validRole } : {}),
+    },
+    take: limit,
+    skip: skip,
+    orderBy: {
+      createdAt: orderDirection,
+    },
+  });
   const usersWithImageUrls = users.map((user) => ({
     ...user,
     imageUrl: `${process.env.BASE_URL}/${user.avatar}`, // Construct the full image URL
   }));
-  return usersWithImageUrls;
+  const totalPages = Math.ceil(numberOfUsers / limit);
+  const previousPage = page > 1 ? page - 1 : null;
+  const nextPage = page < totalPages ? page + 1 : null;
+  return {
+    usersWithImageUrls,
+    meta: {
+      previous_page: previousPage,
+      current_page: page,
+      next_page: nextPage,
+      total: totalPages,
+    },
+  };
 };
 
 export const findById = async (id) => {
@@ -95,29 +140,53 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
   if (existingUserWithEmail && existingUserWithEmail.userId !== id) {
     throw new OperationalException(400, false, "Email already exists");
   }
-  data.password = hashSync(data.password, 10);
-  return await prismaClient.user.update({
-    where: {
-      userId: id,
-    },
-    data: {
-      name: data.name,
-      username: data.username,
-      email: data.email,
-      password: data.password,
-      avatar: JSON.stringify(avatar),
-      role: data.role,
-    },
-  })
+  if (data.password) {
+    data.password = hashSync(data.password, 10);
+  }
+
+  const fileEixst = await checkIfFileExists(avatar);
+  if (fileEixst) {
+    return await prismaClient.user.update({
+      where: {
+        userId: id,
+      },
+      data: {
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        avatar: JSON.stringify(avatar),
+        role: data.role,
+      },
+    });
+  } else {
+    avatar = user.avatar;
+    return await prismaClient.user.update({
+      where: {
+        userId: id,
+      },
+      data: {
+        name: data.name,
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        avatar: avatar,
+        role: data.role,
+      },
+    });
+  }
 };
 
 export const deleteUser = async (id, userId, userRole) => {
-  let user = await prismaClient.user.findUnique({
+  const userExist = await prismaClient.user.findUnique({
     where: {
       userId: id,
     },
   });
-  if (user.userId !== userId && userRole !== "ADMIN") {
+  if (!userExist) {
+    throw new OperationalException(404, false, "User not found");
+  }
+  if (userExist.userId !== userId && userRole !== "ADMIN") {
     throw new OperationalException(
       401,
       false,

@@ -10,7 +10,9 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 
 export const getAllUser = asyncErrorHandler(async (req, res) => {
-  let users = await userServices.getAllUser();
+  const { name, order, role } = req.query;
+  const { page, limit } = req.pagination;
+  let users = await userServices.getAllUser(name, order, role, page, limit);
   res.send(new responseFormat(200, true, users));
 });
 
@@ -51,6 +53,21 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const updateUser = asyncErrorHandler(async (req, res, next) => {
+  if (!req.files.avatar) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "Avatar cannot be empty",
+      })
+    );
+  }
+
+  if (req.files.avatar && req.files.avatar.length > 1) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "You can only add one avatar",
+      })
+    );
+  }
   const id = parseInt(req.params.id);
   const userId = req.userId;
   const userRole = req.userRole;
