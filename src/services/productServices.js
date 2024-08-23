@@ -262,8 +262,8 @@ export const listProduct = async (
   const validStatus = status
     ? Object.values(Status).includes(status.toUpperCase())
       ? status.toUpperCase()
-      : null
-    : null;
+      : "APPROVED"
+    : "APPROVED";
 
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
