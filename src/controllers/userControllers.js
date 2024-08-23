@@ -135,7 +135,7 @@ export const requestToBuy = asyncErrorHandler(async (req, res) => {
     message,
     offer
   );
-  res.send(requested);
+  res.send(new responseFormat(200, true, requested));
 });
 
 export const approveRequest = asyncErrorHandler(async (req, res) => {

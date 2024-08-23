@@ -16,16 +16,20 @@ export const userSockets = new Map();
 
 // Socket.IO connection handling
 io.on("connection", (socket) => {
-  console.log("A user connected", socket.id);
-
-  socket.on("notification", (data) => {
-    console.log("Notification received:", data);
-    io.emit("notification", data);
-  });
   socket.on("login", (userId) => {
     userSockets.set(userId, socket.id);
-    console.log(`User ${userId} registered with socket ID ${socket.id}`);
-    console.log("Current userSockets map:", userSockets);
+  });
+
+  socket.on("like", (data) => {
+    io.emit("like", data);
+  });
+
+  socket.on("buyRequest", (data) => {
+    io.emit("buyRequest", data);
+  });
+
+  socket.on("comment", (data) => {
+    io.emit("comment", data);
   });
 
   socket.on("disconnect", () => {
@@ -33,10 +37,8 @@ io.on("connection", (socket) => {
     userSockets.forEach((id, userId) => {
       if (id === socket.id) {
         userSockets.delete(userId);
-        console.log(`User ${userId} removed from userSockets map`);
       }
     });
-    console.log("Current userSockets map:", userSockets);
   });
 });
 

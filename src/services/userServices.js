@@ -187,18 +187,28 @@ export const likeProduct = async (userId, productId) => {
       },
     });
     if (product.userId !== userId) {
-      const ownerSocketId = userSockets.get(userId);
+      const ownerSocketId = userSockets.get(product.userId);
       if (ownerSocketId) {
-        socket.emit("notification", {
+        socket.to(ownerSocketId).emit("like", {
           userId,
           productId,
           message: `${user.name} has liked your product`,
         });
+      } else {
+        await prismaClient.productLiked.delete({
+          where: {
+            productId_userId: {
+              productId,
+              userId,
+            },
+          },
+        });
+        throw new OperationalException(404, "Owner socket ID not found");
       }
       // Emit the notification only to the product owner
     }
+    return true;
   }
-  return true;
 };
 
 export const requestToBuyProduct = async (
@@ -212,6 +222,11 @@ export const requestToBuyProduct = async (
       productId,
     },
   });
+  const user = await prismaClient.user.findUnique({
+    where: {
+      userId,
+    },
+  });
   if (product) {
     const requestToBuy = await prismaClient.requestToBuy.findUnique({
       where: {
@@ -219,6 +234,10 @@ export const requestToBuyProduct = async (
           userId,
           productId,
         },
+      },
+      include: {
+        product: true,
+        user: true,
       },
     });
     if (requestToBuy) {
@@ -230,7 +249,7 @@ export const requestToBuyProduct = async (
           },
         },
       });
-      return new responseFormat(200, true, { message: "unrequested product" });
+      return true;
     } else {
       await prismaClient.requestToBuy.create({
         data: {
@@ -240,12 +259,31 @@ export const requestToBuyProduct = async (
           offer,
         },
       });
-      return new responseFormat(200, true, { message: "requested product" });
+      if (product.userId !== userId) {
+        const ownerSocketId = userSockets.get(product.userId);
+        if (ownerSocketId) {
+          socket.to(ownerSocketId).emit("buyRequest", {
+            product,
+            user,
+            message: `${user.username} has requested to buy your product`,
+          });
+          // Emit the notification only to the product owner}
+          return true;
+        }
+      } else {
+        await prismaClient.requestToBuy.delete({
+          where: {
+            productId_userId: {
+              productId,
+              userId,
+            },
+          },
+        });
+        throw new OperationalException(404, "Owner socket ID not found");
+      }
     }
   }
-  return new responseFormatForErrors(404, false, {
-    message: "Product not found",
-  });
+  throw new OperationalException(404, false, "Product not found");
 };
 
 export const getListOfRequesterForOneProduct = async (productId) => {
