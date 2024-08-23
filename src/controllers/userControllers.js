@@ -1,6 +1,4 @@
-import { body, validationResult } from "express-validator";
 import { prismaClient } from "../routes/index.js";
-import { hashSync } from "bcrypt";
 import { responseFormat } from "../utils/responseFormat.js";
 import * as userServices from "../services/userServices.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
@@ -60,10 +58,6 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
   const id = parseInt(req.params.id);
   const userId = req.userId;
   const userRole = req.userRole;
-  const result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
-  }
 
   const data = req.body;
   const avatar = req.cloudinaryUrls;
