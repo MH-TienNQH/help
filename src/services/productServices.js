@@ -68,7 +68,7 @@ export const findById = async (userId, productId) => {
   }
   throw new OperationalException(404, false, "No product found");
 };
-export const addProduct = async (data, images, userId) => {
+export const addProduct = async (data, images, userId, userRole) => {
   const isExist = await prismaClient.product.findFirst({
     where: {
       name: data.name,
@@ -76,6 +76,22 @@ export const addProduct = async (data, images, userId) => {
   });
   if (isExist) {
     throw new OperationalException(403, false, "Product exist");
+  }
+  if (userRole == "ADMIN") {
+    return await prismaClient.product.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        images: JSON.stringify(images),
+        price: parseInt(data.price),
+        status: "APPROVED",
+        author: {
+          connect: {
+            userId: userId,
+          },
+        },
+      },
+    });
   }
   return await prismaClient.product.create({
     data: {

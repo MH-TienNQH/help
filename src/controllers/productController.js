@@ -65,9 +65,15 @@ export const addProduct = async (req, res) => {
   }
   const data = req.body;
   const userId = req.userId;
+  const userRole = req.userRole;
   const images = req.cloudinaryUrls;
 
-  const response = await productServices.addProduct(data, images, userId);
+  const response = await productServices.addProduct(
+    data,
+    images,
+    userId,
+    userRole
+  );
 
   res.send(new responseFormat(200, true, response));
 };
