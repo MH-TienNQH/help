@@ -146,24 +146,12 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
     throw new OperationalException(400, false, "Email already exists");
   }
 
-  data.password = hashSync(data.password, 10);
+  const hashedPassword = data.password
+    ? hashSync(data.password, 10)
+    : user.password;
 
-  if (avatar == "") {
-    avatar = user.avatar;
-    return await prismaClient.user.update({
-      where: {
-        userId: id,
-      },
-      data: {
-        name: data.name,
-        username: data.username,
-        email: data.email,
-        password: data.password,
-        avatar: avatar,
-        role: data.role,
-      },
-    });
-  }
+  // Determine if avatar should be updated or not
+  const finalAvatar = avatar == "" ? user.avatar : JSON.stringify(avatar);
   return await prismaClient.user.update({
     where: {
       userId: id,
@@ -172,8 +160,8 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
       name: data.name,
       username: data.username,
       email: data.email,
-      password: data.password,
-      avatar: JSON.stringify(avatar),
+      password: hashedPassword,
+      avatar: finalAvatar,
       role: data.role,
     },
   });

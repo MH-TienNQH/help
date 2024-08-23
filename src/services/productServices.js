@@ -254,7 +254,7 @@ export const listProduct = async (
     : "desc";
   const validCategoryId = [1, 2].includes(parseInt(categoryId))
     ? parseInt(categoryId)
-    : 1;
+    : null;
   let numberOfProducts = await prismaClient.product.count({
     where: {
       name: {
