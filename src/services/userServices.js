@@ -187,25 +187,25 @@ export const likeProduct = async (userId, productId) => {
       },
     });
     if (product.userId !== userId) {
-      // const ownerSocketId = userSockets.get(product.userId);
-      // if (ownerSocketId) {
-      socket.emit("like", {
-        userId,
-        productId,
-        message: `${user.name} has liked your product`,
-      });
-      // } else {
-      //   await prismaClient.productLiked.delete({
-      //     where: {
-      //       productId_userId: {
-      //         productId,
-      //         userId,
-      //       },
-      //     },
-      //   });
-      //   throw new OperationalException(404, "Owner socket ID not found");
-      // }
-      // Emit the notification only to the product owner
+      const ownerSocketId = userSockets.get(product.userId);
+      if (ownerSocketId) {
+        socket.emit("like", {
+          userId,
+          productId,
+          message: `${user.name} has liked your product`,
+        });
+      } else {
+        await prismaClient.productLiked.delete({
+          where: {
+            productId_userId: {
+              productId,
+              userId,
+            },
+          },
+        });
+        throw new OperationalException(404, "Owner socket ID not found");
+      }
+      //Emit the notification only to the product owner
     }
     return true;
   }
