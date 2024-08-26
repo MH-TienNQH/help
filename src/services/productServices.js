@@ -102,6 +102,7 @@ export const addProduct = async (data, images, userId, userRole) => {
       user: product.author,
     });
   });
+  return product;
 };
 
 export const updateProduct = async (

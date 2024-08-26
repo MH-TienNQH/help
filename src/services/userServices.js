@@ -286,8 +286,8 @@ export const likeProduct = async (userId, productId) => {
       }
       //Emit the notification only to the product owner
     }
-    return true;
   }
+  return true;
 };
 
 export const requestToBuyProduct = async (
@@ -348,7 +348,6 @@ export const requestToBuyProduct = async (
             message: `${user.username} has requested to buy your product`,
           });
           // Emit the notification only to the product owner}
-          return true;
         }
       } else {
         await prismaClient.requestToBuy.delete({
@@ -362,6 +361,7 @@ export const requestToBuyProduct = async (
         throw new OperationalException(404, "Owner socket ID not found");
       }
     }
+    return true;
   }
   throw new OperationalException(404, false, "Product not found");
 };
@@ -579,7 +579,6 @@ export const approveRequest = async (ownerId, productId, userId) => {
         user,
         message: `Your buy request for ${product.product.name} have been accepted`,
       });
-      return true;
     }
   } else {
     await prismaClient.requestToBuy.updateMany({
@@ -644,7 +643,6 @@ export const rejectRequest = async (ownerId, productId, userId) => {
         user,
         message: `Your buy request for ${product.product.name} have been rejected`,
       });
-      return true;
     }
   } else {
     await prismaClient.requestToBuy.update({
