@@ -3,6 +3,7 @@ import { Status } from "@prisma/client";
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
+import { responseFormatForErrors } from "../utils/responseFormat.js";
 
 export const getAllProduct = async () => {
   return await prismaClient.product.findMany({
@@ -66,13 +67,13 @@ export const findById = async (userId, productId) => {
   throw new OperationalException(404, false, "No product found");
 };
 export const addProduct = async (data, images, userId, userRole) => {
-  const isExist = await prismaClient.product.findFirst({
+  const isExist = await prismaClient.product.findUnique({
     where: {
       name: data.name,
     },
   });
   if (isExist) {
-    throw new OperationalException(403, false, "Product exist");
+    return new OperationalException(403, false, "Product exist");
   }
   if (userRole == "ADMIN") {
     return await prismaClient.product.create({
@@ -120,7 +121,7 @@ export const updateProduct = async (
   if (!isExist) {
     throw new OperationalException(404, false, "Product not found");
   }
-  if (product.userId !== userId && userRole !== "ADMIN") {
+  if (isExist.userId !== userId && userRole !== "ADMIN") {
     throw new OperationalException(
       403,
       false,
@@ -137,8 +138,8 @@ export const updateProduct = async (
     return new OperationalException(403, false, "Product name exist");
   }
 
-  if (images == "") {
-    images = isExist.images;
+  if (!images.length || images == "") {
+    images = JSON.parse(isExist.images); // Convert from JSON string to object
     await prismaClient.product.update({
       where: {
         productId: parseInt(productId),
@@ -146,7 +147,7 @@ export const updateProduct = async (
       data: {
         name: data.name,
         description: data.description,
-        images: images,
+        images: JSON.stringify(images),
         price: parseInt(data.price),
         author: {
           connect: {
@@ -172,7 +173,6 @@ export const updateProduct = async (
       },
     },
   });
-
   return true;
 };
 

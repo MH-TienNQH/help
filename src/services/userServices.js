@@ -1,6 +1,5 @@
 import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
-import { RequestStatus, Status } from "@prisma/client";
 
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import {
@@ -13,12 +12,6 @@ import { socket } from "../../index.js";
 import { userSockets } from "../socket.io/server.js";
 
 import { RequestStatus, Role, Status } from "@prisma/client";
-import {
-  getProductsForChart,
-  getThreeTrendingProduct,
-} from "./productServices.js";
-import { checkIfFileExists } from "../helper/checkIfFileExist.js";
-
 
 export const getAllUser = async (name, order = "asc", role, page, limit) => {
   const skip = (page - 1) * limit;
