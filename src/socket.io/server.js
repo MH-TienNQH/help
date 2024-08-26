@@ -24,7 +24,7 @@ export const emitToAdmins = (event, data) => {
 io.on("connection", (socket) => {
   socket.on("login", (userId, role) => {
     userSockets.set(userId, socket.id);
-    if (role == "ADMIN") {
+    if (role === "ADMIN") {
       adminSockets.set(userId, socket.id);
     }
     console.log(adminSockets);
