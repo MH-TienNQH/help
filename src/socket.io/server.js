@@ -27,7 +27,6 @@ io.on("connection", (socket) => {
     if (role === "ADMIN") {
       adminSockets.set(userId, socket.id);
     }
-    console.log(adminSockets);
   });
 
   socket.on("like", (data) => {
@@ -44,7 +43,6 @@ io.on("connection", (socket) => {
 
   socket.on("productAdded", (data) => {
     emitToAdmins("productAdded", data);
-    console.log(`A product have been added by ${data.user.name}`, data);
   });
 
   socket.on("productApproved", (data) => {
@@ -63,7 +61,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
     userSockets.forEach((id, userId) => {
       if (id === socket.id) {
         userSockets.delete(userId);
