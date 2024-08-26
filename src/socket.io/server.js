@@ -60,18 +60,7 @@ io.on("connection", (socket) => {
     io.to(data.buyer).emit("rejectBuyReq", data);
   });
 
-  socket.on("disconnect", () => {
-    userSockets.forEach((id, userId) => {
-      if (id === socket.id) {
-        userSockets.delete(userId);
-      }
-    });
-    adminSockets.forEach((id, userId) => {
-      if (id === socket.id) {
-        adminSockets.delete(userId);
-      }
-    });
-  });
+  socket.on("disconnect", () => {});
 });
 
 export { socketServer, io };
