@@ -39,6 +39,7 @@ io.on("connection", (socket) => {
 
   socket.on("productAdded", (data) => {
     io.emit("productAdded", data);
+    console.log(`A product have been added by ${data.user.name}`, data);
   });
 
   socket.on("productApproved", (data) => {
