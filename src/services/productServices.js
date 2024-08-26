@@ -129,13 +129,17 @@ export const updateProduct = async (
     );
   }
 
-  const isNameExist = await prismaClient.product.findUnique({
+  const existingUserWithProductname = await prismaClient.product.findUnique({
     where: {
       name: data.name,
     },
   });
-  if (isNameExist) {
-    return new OperationalException(403, false, "Product name exist");
+
+  if (
+    existingUserWithProductname &&
+    existingUserWithProductname.userId !== userId
+  ) {
+    throw new OperationalException(400, false, "Username already exists");
   }
 
   if (!images.length || images == "") {

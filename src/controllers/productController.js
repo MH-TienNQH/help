@@ -92,7 +92,16 @@ export const addProduct = async (req, res) => {
 };
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {
-  const numberOfFiles = req.files?.images?.length || 0;
+  const productId = req.params.id;
+  const data = req.body;
+  const userId = req.userId;
+  const userRole = req.userRole;
+  let images = req.cloudinaryUrls;
+
+  const numberOfFiles = req.files?.images?.length;
+  if (!numberOfFiles) {
+    images = [];
+  }
   if (numberOfFiles < 1 || numberOfFiles > 6) {
     return res.json(
       new responseFormatForErrors(401, false, {
@@ -100,11 +109,6 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
       })
     );
   }
-  const productId = req.params.id;
-  const data = req.body;
-  const userId = req.userId;
-  const userRole = req.userRole;
-  const images = req.cloudinaryUrls || [];
 
   let response = await productServices.updateProduct(
     productId,
