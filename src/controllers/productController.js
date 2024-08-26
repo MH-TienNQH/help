@@ -96,13 +96,11 @@ export const updateProduct = asyncErrorHandler(async (req, res, next) => {
   const data = req.body;
   const userId = req.userId;
   const userRole = req.userRole;
-  let images = req.cloudinaryUrls;
+  let images = req.cloudinaryUrls || [];
 
   const numberOfFiles = req.files?.images?.length;
-  if (!numberOfFiles) {
-    images = [];
-  }
-  if (numberOfFiles < 1 || numberOfFiles > 6) {
+
+  if (req.files.images && numberOfFiles > 6) {
     return res.json(
       new responseFormatForErrors(401, false, {
         message: "You can only add one to six images",
