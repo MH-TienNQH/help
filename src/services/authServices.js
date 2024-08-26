@@ -39,7 +39,7 @@ export const login = async (data) => {
       userId: user.userId,
     },
   });
-  socket.emit("login", user.userId);
+  socket.emit("login", user.userId, user.role);
   return {
     user,
     accessToken,

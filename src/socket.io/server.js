@@ -13,11 +13,16 @@ const io = new SocketIO(socketServer, {
 });
 
 export const userSockets = new Map();
+export const adminSockets = new Map();
 
 // Socket.IO connection handling
 io.on("connection", (socket) => {
-  socket.on("login", (userId) => {
+  socket.on("login", (userId, role) => {
     userSockets.set(userId, socket.id);
+    if (role == "ADMIN") {
+      adminSockets.set(userId, socket.id);
+    }
+    console.log(adminSockets);
   });
 
   socket.on("like", (data) => {
@@ -30,6 +35,25 @@ io.on("connection", (socket) => {
 
   socket.on("comment", (data) => {
     io.emit("comment", data);
+  });
+
+  socket.on("productAdded", (data) => {
+    io.emit("productAdded", data);
+  });
+
+  socket.on("productApproved", (data) => {
+    io.emit("productApproved", data);
+  });
+  socket.on("productRejected", (data) => {
+    io.emit("productRejected", data);
+  });
+
+  socket.on("approveBuyReq", (data) => {
+    io.emit("approveBuyReq", data);
+  });
+
+  socket.on("rejectBuyReq", (data) => {
+    io.emit("rejectBuyReq", data);
   });
 
   socket.on("disconnect", () => {

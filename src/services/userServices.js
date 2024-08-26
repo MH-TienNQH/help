@@ -267,7 +267,7 @@ export const likeProduct = async (userId, productId) => {
     if (product.userId !== userId) {
       const ownerSocketId = userSockets.get(product.userId);
       if (ownerSocketId) {
-        socket.emit("like", {
+        socket.to(ownerSocketId).emit("like", {
           userId,
           productId,
           message: `${user.name} has liked your product`,
@@ -568,7 +568,36 @@ export const approveRequest = async (ownerId, productId, userId) => {
       categoryId: 2,
     },
   });
-  return { message: "request approved" };
+  if (product.userId !== userId) {
+    const buyer = userSockets.get(product.userId);
+    if (buyer) {
+      socket.to(buyer).emit("approveBuyReq", {
+        product,
+        user,
+        message: `Your buy request for ${product.product.name} have been accepted`,
+      });
+      return true;
+    }
+  } else {
+    await prismaClient.requestToBuy.updateMany({
+      where: {
+        productId,
+      },
+      data: {
+        requestStatus: "PENDING",
+      },
+    });
+    await prismaClient.product.update({
+      where: {
+        productId,
+      },
+      data: {
+        categoryId: 1,
+      },
+    });
+    throw new OperationalException(404, "Owner socket ID not found");
+  }
+  return true;
 };
 export const rejectRequest = async (ownerId, productId, userId) => {
   let product = await prismaClient.requestToBuy.findUnique({
@@ -603,7 +632,31 @@ export const rejectRequest = async (ownerId, productId, userId) => {
       requestStatus: "REJECTED",
     },
   });
-  return { message: "request rejected" };
+  if (product.userId !== userId) {
+    const buyer = userSockets.get(product.userId);
+    if (buyer) {
+      socket.to(buyer).emit("rejectBuyReq", {
+        product,
+        user,
+        message: `Your buy request for ${product.product.name} have been rejected`,
+      });
+      return true;
+    }
+  } else {
+    await prismaClient.requestToBuy.update({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+      data: {
+        requestStatus: "PENDING",
+      },
+    });
+    throw new OperationalException(404, "Owner socket ID not found");
+  }
+  return true;
 };
 export const getUsersForChart = async (startDate, endDate) => {
   const whereClause = {
