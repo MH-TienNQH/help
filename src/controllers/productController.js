@@ -7,6 +7,7 @@ import {
 } from "../utils/responseFormat.js";
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
+import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 dotenv.config();
 
@@ -67,14 +68,27 @@ export const addProduct = async (req, res) => {
   const userRole = req.userRole;
   const images = req.cloudinaryUrls;
 
-  const response = await productServices.addProduct(
-    data,
-    images,
-    userId,
-    userRole
-  );
-
-  res.send(new responseFormat(200, true, response));
+  try {
+    const response = await productServices.addProduct(
+      data,
+      images,
+      userId,
+      userRole
+    );
+    res.send(new responseFormat(200, true, response));
+  } catch (error) {
+    if (error instanceof OperationalException) {
+      res.status(error.statusCode).send({
+        success: error.success,
+        message: error.message,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 };
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {

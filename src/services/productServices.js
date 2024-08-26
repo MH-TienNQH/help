@@ -73,7 +73,7 @@ export const addProduct = async (data, images, userId, userRole) => {
     },
   });
   if (isExist) {
-    return new OperationalException(403, false, "Product exist");
+    throw new OperationalException(403, false, "Product exist");
   }
   if (userRole == "ADMIN") {
     return await prismaClient.product.create({
