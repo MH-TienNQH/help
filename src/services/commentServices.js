@@ -81,8 +81,8 @@ export const addComment = async (productId, userId, data) => {
         message: `${user.username} has commented on your product`,
       });
     }
-    return comment;
   }
+  return comment;
 };
 
 export const updateComment = async (commentId, userId, data) => {
