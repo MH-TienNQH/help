@@ -334,7 +334,8 @@ export const approveProduct = async (productId) => {
     if (isExist.userId !== userId) {
       const ownerSocketId = userSockets.get(isExist.userId);
       if (ownerSocketId) {
-        socket.to(ownerSocketId).emit("productApproved", {
+        socket.emit("productApproved", {
+          ownerSocketId,
           product: isExist,
           user: isExist.userId,
           message: `Your product have been approved`,
@@ -367,7 +368,8 @@ export const rejectProduct = async (productId, message) => {
     if (isExist.userId !== userId) {
       const ownerSocketId = userSockets.get(isExist.userId);
       if (ownerSocketId) {
-        socket.to(ownerSocketId).emit("productRejected", {
+        socket.emit("productRejected", {
+          ownerSocketId,
           product: isExist,
           user: isExist.userId,
           message: `Your product have been rejected`,
