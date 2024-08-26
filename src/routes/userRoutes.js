@@ -43,7 +43,7 @@ userRoutes.get(
 
 userRoutes.post(
   "/add-user",
-  upload.fields([{ name: "avatar", maxCount: 1 }]),
+  upload.fields([{ name: "avatar" }]),
   validationMiddlware(signUpSchema),
   verifyTokenMiddlewares,
   adminMiddlewares,
@@ -62,7 +62,7 @@ userRoutes.post(
 
 userRoutes.put(
   "/update/:id",
-  upload.fields([{ name: "avatar", maxCount: 1 }]),
+  upload.fields([{ name: "avatar" }]),
   verifyTokenMiddlewares,
   validationMiddlware(signUpSchema),
   uploadToCloudinary,

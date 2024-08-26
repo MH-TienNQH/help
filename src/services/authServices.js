@@ -127,7 +127,7 @@ export const setPassword = async (email, password, otp) => {
   if (!user) {
     throw new OperationalException(404, false, "Email doesn't exist");
   }
-  if (user.otp !== otp) {
+  if (parseInt(user.otp) !== otp) {
     throw new OperationalException(401, false, "Invalid OTP");
   }
   if (now.getTime() > user.otpExpireAt) {

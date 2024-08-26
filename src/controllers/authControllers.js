@@ -31,12 +31,7 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
   const data = req.body;
   const avatar = req.cloudinaryUrls;
 
-  let user = await userServices.findUserByEmail(data.email);
-  if (user) {
-    const error = new OperationalException("User already exist", 400);
-    next(error);
-  }
-  user = await userServices.addUser(data, avatar);
+  const user = await userServices.addUser(data, avatar);
   try {
     authServices.sendVerificationEmail(data.email);
   } catch (error) {
@@ -105,11 +100,6 @@ export const setPassword = asyncErrorHandler(async (req, res) => {
 });
 
 export const forgotPassword = asyncErrorHandler(async (req, res) => {
-  let result = validationResult(req);
-
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
-  }
   const { email } = req.body;
   let response = await authServices.forgotPassword(email);
   res.send(new responseFormat(200, true, response));

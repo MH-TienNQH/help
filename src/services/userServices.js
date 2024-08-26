@@ -7,17 +7,66 @@ import {
   responseFormat,
   responseFormatForErrors,
 } from "../utils/responseFormat.js";
+
 import { getThreeTrendingProduct } from "./productServices.js";
 import { socket } from "../../index.js";
 import { userSockets } from "../socket.io/server.js";
 
-export const getAllUser = async () => {
-  const users = await prismaClient.user.findMany();
+import { RequestStatus, Role, Status } from "@prisma/client";
+import {
+  getProductsForChart,
+  getThreeTrendingProduct,
+} from "./productServices.js";
+import { checkIfFileExists } from "../helper/checkIfFileExist.js";
+
+
+export const getAllUser = async (name, order = "asc", role, page, limit) => {
+  const skip = (page - 1) * limit;
+  const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
+    ? order.toLowerCase()
+    : "asc";
+  const validRole = role
+    ? Object.values(Role).includes(role.toUpperCase())
+      ? role.toUpperCase()
+      : null
+    : null;
+  let numberOfUsers = await prismaClient.user.count({
+    where: {
+      name: {
+        contains: name || "",
+      },
+      ...(validRole ? { role: validRole } : {}),
+    },
+  });
+  const users = await prismaClient.user.findMany({
+    where: {
+      name: {
+        contains: name || "",
+      },
+      ...(validRole ? { role: validRole } : {}),
+    },
+    take: limit,
+    skip: skip,
+    orderBy: {
+      createdAt: orderDirection,
+    },
+  });
   const usersWithImageUrls = users.map((user) => ({
     ...user,
     imageUrl: `${process.env.BASE_URL}/${user.avatar}`, // Construct the full image URL
   }));
-  return usersWithImageUrls;
+  const totalPages = Math.ceil(numberOfUsers / limit);
+  const previousPage = page > 1 ? page - 1 : null;
+  const nextPage = page < totalPages ? page + 1 : null;
+  return {
+    usersWithImageUrls,
+    meta: {
+      previous_page: previousPage,
+      current_page: page,
+      next_page: nextPage,
+      total: totalPages,
+    },
+  };
 };
 
 export const findById = async (id) => {
@@ -43,16 +92,25 @@ export const findUserByEmail = async (email) => {
 };
 
 export const addUser = async (data, avatar) => {
-  let user = await prismaClient.user.findUnique({
+  const existingUserWithUsername = await prismaClient.user.findUnique({
     where: {
       username: data.username,
     },
   });
-  if (user) {
-    throw new OperationalException("Username already exist", 403);
+
+  const existingUserWithEmail = await prismaClient.user.findUnique({
+    where: {
+      email: data.email,
+    },
+  });
+  if (existingUserWithUsername) {
+    throw new OperationalException(400, false, "Username already exists");
+  }
+  if (existingUserWithEmail) {
+    throw new OperationalException(400, false, "Email already exists");
   }
   data.password = hashSync(data.password, 10);
-  user = await prismaClient.user.create({
+  return await prismaClient.user.create({
     data: {
       name: data.name,
       username: data.username,
@@ -62,7 +120,6 @@ export const addUser = async (data, avatar) => {
       role: data.role,
     },
   });
-  return user;
 };
 
 export const updateUser = async (id, userId, userRole, data, avatar) => {
@@ -78,8 +135,32 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
       "You are not authorized to update this account"
     );
   }
-  data.password = hashSync(data.password, 10);
-  user = await prismaClient.user.update({
+
+  const existingUserWithUsername = await prismaClient.user.findUnique({
+    where: {
+      username: data.username,
+    },
+  });
+
+  const existingUserWithEmail = await prismaClient.user.findUnique({
+    where: {
+      email: data.email,
+    },
+  });
+  if (existingUserWithUsername && existingUserWithUsername.userId !== id) {
+    throw new OperationalException(400, false, "Username already exists");
+  }
+  if (existingUserWithEmail && existingUserWithEmail.userId !== id) {
+    throw new OperationalException(400, false, "Email already exists");
+  }
+
+  const hashedPassword = data.password
+    ? hashSync(data.password, 10)
+    : user.password;
+
+  // Determine if avatar should be updated or not
+  const finalAvatar = avatar == "" ? user.avatar : JSON.stringify(avatar);
+  return await prismaClient.user.update({
     where: {
       userId: id,
     },
@@ -87,22 +168,24 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
       name: data.name,
       username: data.username,
       email: data.email,
-      password: data.password,
-      avatar: JSON.stringify(avatar),
+      password: hashedPassword,
+      avatar: finalAvatar,
       role: data.role,
     },
   });
-  return user;
 };
 
 export const deleteUser = async (id, userId, userRole) => {
-  let user = await prismaClient.user.findUnique({
+  const userExist = await prismaClient.user.findUnique({
     where: {
       userId: id,
     },
   });
-  if (user.userId !== userId && userRole !== "ADMIN") {
-    return new responseFormatForErrors(
+  if (!userExist) {
+    throw new OperationalException(404, false, "User not found");
+  }
+  if (userExist.userId !== userId && userRole !== "ADMIN") {
+    throw new OperationalException(
       401,
       false,
       "You are not authorized to delete this account"
@@ -113,7 +196,7 @@ export const deleteUser = async (id, userId, userRole) => {
       userId: id,
     },
   });
-  return new responseFormat(200, true, { message: "account deleted" });
+  return true;
 };
 
 export const saveProduct = async (userId, productId) => {

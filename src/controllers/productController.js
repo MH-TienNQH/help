@@ -64,19 +64,33 @@ export const addProduct = async (req, res) => {
   }
   const data = req.body;
   const userId = req.userId;
+  const userRole = req.userRole;
   const images = req.cloudinaryUrls;
 
-  const response = await productServices.addProduct(data, images, userId);
+  const response = await productServices.addProduct(
+    data,
+    images,
+    userId,
+    userRole
+  );
 
   res.send(new responseFormat(200, true, response));
 };
 
 export const updateProduct = asyncErrorHandler(async (req, res, next) => {
+  if (numberOfFiles < 1 || numberOfFiles > 6) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "You can only add one to six images",
+      })
+    );
+  }
   const productId = req.params.id;
   const data = req.body;
   const userId = req.userId;
   const userRole = req.userRole;
   const images = req.cloudinaryUrls;
+  const numberOfFiles = req.files.images.length;
 
   let response = await productServices.updateProduct(
     productId,

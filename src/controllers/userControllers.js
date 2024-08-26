@@ -1,11 +1,18 @@
 import { prismaClient } from "../routes/index.js";
-import { responseFormat } from "../utils/responseFormat.js";
+
+import { hashSync } from "bcrypt";
+import {
+  responseFormat,
+  responseFormatForErrors,
+} from "../utils/responseFormat.js";
 import * as userServices from "../services/userServices.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 
 export const getAllUser = asyncErrorHandler(async (req, res) => {
-  let users = await userServices.getAllUser();
+  const { name, order, role } = req.query;
+  const { page, limit } = req.pagination;
+  let users = await userServices.getAllUser(name, order, role, page, limit);
   res.send(new responseFormat(200, true, users));
 });
 
@@ -38,17 +45,8 @@ export const addUser = asyncErrorHandler(async (req, res, next) => {
   try {
     const data = req.body;
     const avatar = req.cloudinaryUrls;
-    let user = await prismaClient.user.findFirst({
-      where: {
-        username: data.username,
-      },
-    });
-    if (user) {
-      const error = new OperationalException("User already exist", 400);
-      next(error);
-    }
-    user = await userServices.addUser(data, avatar);
-    res.send(new responseFormat(200, true, [user.email, "user created"]));
+    const user = await userServices.addUser(data, avatar);
+    res.send(new responseFormat(200, true, user));
   } catch (error) {
     next(error);
   }
@@ -58,19 +56,23 @@ export const updateUser = asyncErrorHandler(async (req, res, next) => {
   const id = parseInt(req.params.id);
   const userId = req.userId;
   const userRole = req.userRole;
-
   const data = req.body;
   const avatar = req.cloudinaryUrls;
-  let user = await prismaClient.user.findFirst({
-    where: {
-      username: data.username,
-    },
-  });
-  if (user) {
-    const error = new OperationalException("User already exist", 400);
-    next(error);
+  if (req.files.avatar && req.files.avatar.length > 1) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: "You can only add one avatar",
+      })
+    );
   }
-  user = await userServices.updateUser(id, userId, userRole, data, avatar);
+
+  const user = await userServices.updateUser(
+    id,
+    userId,
+    userRole,
+    data,
+    avatar
+  );
   res.send(new responseFormat(200, true, user));
 });
 

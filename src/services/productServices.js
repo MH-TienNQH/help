@@ -65,7 +65,7 @@ export const findById = async (userId, productId) => {
   }
   throw new OperationalException(404, false, "No product found");
 };
-export const addProduct = async (data, images, userId) => {
+export const addProduct = async (data, images, userId, userRole) => {
   const isExist = await prismaClient.product.findFirst({
     where: {
       name: data.name,
@@ -73,6 +73,22 @@ export const addProduct = async (data, images, userId) => {
   });
   if (isExist) {
     throw new OperationalException(403, false, "Product exist");
+  }
+  if (userRole == "ADMIN") {
+    return await prismaClient.product.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        images: JSON.stringify(images),
+        price: parseInt(data.price),
+        status: "APPROVED",
+        author: {
+          connect: {
+            userId: userId,
+          },
+        },
+      },
+    });
   }
   return await prismaClient.product.create({
     data: {
@@ -96,7 +112,7 @@ export const updateProduct = async (
   userRole,
   images
 ) => {
-  let isExist = await prismaClient.product.findUnique({
+  const isExist = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
     },
@@ -112,15 +128,34 @@ export const updateProduct = async (
     );
   }
 
-  isExist = await prismaClient.product.findUnique({
+  const isNameExist = await prismaClient.product.findUnique({
     where: {
       name: data.name,
     },
   });
-  if (isExist) {
-    return new OperationalException(403, false, "Product exist");
+  if (isNameExist) {
+    return new OperationalException(403, false, "Product name exist");
   }
 
+  if (images == "") {
+    images = isExist.images;
+    await prismaClient.product.update({
+      where: {
+        productId: parseInt(productId),
+      },
+      data: {
+        name: data.name,
+        description: data.description,
+        images: images,
+        price: parseInt(data.price),
+        author: {
+          connect: {
+            userId,
+          },
+        },
+      },
+    });
+  }
   await prismaClient.product.update({
     where: {
       productId: parseInt(productId),
@@ -137,6 +172,7 @@ export const updateProduct = async (
       },
     },
   });
+
   return true;
 };
 
@@ -223,15 +259,15 @@ export const listProduct = async (
   const validStatus = status
     ? Object.values(Status).includes(status.toUpperCase())
       ? status.toUpperCase()
-      : null
-    : null;
+      : "APPROVED"
+    : "APPROVED";
 
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
     : "desc";
   const validCategoryId = [1, 2].includes(parseInt(categoryId))
     ? parseInt(categoryId)
-    : 1;
+    : null;
   let numberOfProducts = await prismaClient.product.count({
     where: {
       name: {
