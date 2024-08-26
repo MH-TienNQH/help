@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("comment", (data) => {
-    io.emit("comment", data);
+    io.to(data.ownerSocketId).emit("comment", data);
   });
 
   socket.on("productAdded", (data) => {
