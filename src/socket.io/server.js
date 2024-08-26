@@ -66,6 +66,11 @@ io.on("connection", (socket) => {
         userSockets.delete(userId);
       }
     });
+    adminSockets.forEach((id, userId) => {
+      if (id === socket.id) {
+        adminSockets.delete(userId);
+      }
+    });
   });
 });
 

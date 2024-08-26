@@ -115,7 +115,8 @@ export const logout = async (userId) => {
       userId: userId,
     },
   });
-  return new responseFormat(200, true, { message: "Logged out" });
+  socket.emit("disconnect", user.userId);
+  return true;
 };
 export const setPassword = async (email, password, otp) => {
   const now = new Date();

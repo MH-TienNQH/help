@@ -82,14 +82,6 @@ export const addComment = async (productId, userId, data) => {
       });
     }
     return comment;
-  } else {
-    await prismaClient.comment.delete({
-      where: {
-        productId,
-        userId,
-      },
-    });
-    throw new OperationalException(404, "Owner socket ID not found");
   }
 };
 
