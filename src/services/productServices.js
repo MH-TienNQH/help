@@ -5,6 +5,7 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
 import { responseFormatForErrors } from "../utils/responseFormat.js";
 import { adminSockets, userSockets } from "../socket.io/server.js";
+import { socket } from "../../index.js";
 
 export const getAllProduct = async () => {
   return await prismaClient.product.findMany({
@@ -90,15 +91,17 @@ export const addProduct = async (data, images, userId, userRole) => {
         },
       },
     },
+    include: {
+      author: true,
+    },
   });
-  if (userRole !== "ADMIN") {
-    adminSockets.forEach((socket) => {
-      socket.emit("productAdded", {
-        product: product,
-        user: userId,
-      });
+
+  adminSockets.forEach((sockets) => {
+    socket.emit("productAdded", {
+      product: product,
+      user: product.author,
     });
-  }
+  });
 };
 
 export const updateProduct = async (
