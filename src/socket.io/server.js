@@ -14,6 +14,11 @@ const io = new SocketIO(socketServer, {
 
 export const userSockets = new Map();
 export const adminSockets = new Map();
+export const emitToAdmins = (event, data) => {
+  adminSockets.forEach((socketId) => {
+    io.to(socketId).emit(event, data);
+  });
+};
 
 // Socket.IO connection handling
 io.on("connection", (socket) => {
@@ -26,11 +31,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("like", (data) => {
-    io.emit("like", data);
+    io.to(data.ownerSocketId).emit("like", data);
   });
 
   socket.on("buyRequest", (data) => {
-    io.emit("buyRequest", data);
+    io.to(data.ownerSocketId).emit("buyRequest", data);
   });
 
   socket.on("comment", (data) => {
@@ -38,23 +43,23 @@ io.on("connection", (socket) => {
   });
 
   socket.on("productAdded", (data) => {
-    io.emit("productAdded", data);
+    emitToAdmins("productAdded", data);
     console.log(`A product have been added by ${data.user.name}`, data);
   });
 
   socket.on("productApproved", (data) => {
-    io.emit("productApproved", data);
+    io.to(data.ownerSocketId).emit("productApproved", data);
   });
   socket.on("productRejected", (data) => {
-    io.emit("productRejected", data);
+    io.to(data.ownerSocketId).emit("productRejected", data);
   });
 
   socket.on("approveBuyReq", (data) => {
-    io.emit("approveBuyReq", data);
+    io.to(data.buyer).emit("approveBuyReq", data);
   });
 
   socket.on("rejectBuyReq", (data) => {
-    io.emit("rejectBuyReq", data);
+    io.to(data.buyer).emit("rejectBuyReq", data);
   });
 
   socket.on("disconnect", () => {

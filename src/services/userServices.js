@@ -267,9 +267,10 @@ export const likeProduct = async (userId, productId) => {
     if (product.userId !== userId) {
       const ownerSocketId = userSockets.get(product.userId);
       if (ownerSocketId) {
-        socket.to(ownerSocketId).emit("like", {
+        socket.emit("like", {
           userId,
           productId,
+          ownerSocketId,
           message: `${user.name} has liked your product`,
         });
       } else {
@@ -340,7 +341,8 @@ export const requestToBuyProduct = async (
       if (product.userId !== userId) {
         const ownerSocketId = userSockets.get(product.userId);
         if (ownerSocketId) {
-          socket.to(ownerSocketId).emit("buyRequest", {
+          socket.emit("buyRequest", {
+            ownerSocketId,
             product,
             user,
             message: `${user.username} has requested to buy your product`,
@@ -571,7 +573,8 @@ export const approveRequest = async (ownerId, productId, userId) => {
   if (product.userId !== userId) {
     const buyer = userSockets.get(product.userId);
     if (buyer) {
-      socket.to(buyer).emit("approveBuyReq", {
+      socket.emit("approveBuyReq", {
+        buyer,
         product,
         user,
         message: `Your buy request for ${product.product.name} have been accepted`,
@@ -595,7 +598,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
         categoryId: 1,
       },
     });
-    throw new OperationalException(404, "Owner socket ID not found");
+    throw new OperationalException(404, "Buyer socket ID not found");
   }
   return true;
 };
@@ -635,7 +638,8 @@ export const rejectRequest = async (ownerId, productId, userId) => {
   if (product.userId !== userId) {
     const buyer = userSockets.get(product.userId);
     if (buyer) {
-      socket.to(buyer).emit("rejectBuyReq", {
+      socket.emit("rejectBuyReq", {
+        buyer,
         product,
         user,
         message: `Your buy request for ${product.product.name} have been rejected`,
@@ -654,7 +658,7 @@ export const rejectRequest = async (ownerId, productId, userId) => {
         requestStatus: "PENDING",
       },
     });
-    throw new OperationalException(404, "Owner socket ID not found");
+    throw new OperationalException(404, "Buyer socket ID not found");
   }
   return true;
 };
