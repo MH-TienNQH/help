@@ -7,7 +7,6 @@ import {
 } from "../utils/responseFormat.js";
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
-import { start } from "repl";
 
 dotenv.config();
 

@@ -1,3 +1,4 @@
+import { socket } from "../../index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { responseFormat } from "../utils/responseFormat.js";
@@ -41,7 +42,20 @@ export const getComments = async (productId, order = "desc", page, limit) => {
 };
 
 export const addComment = async (productId, userId, data) => {
-  return await prismaClient.comment.create({
+  const product = await prismaClient.product.findUnique({
+    where: {
+      productId,
+    },
+  });
+  if (!product) {
+    throw new OperationalException(404, false, "Product not found");
+  }
+  const user = await prismaClient.user.findUnique({
+    where: {
+      userId,
+    },
+  });
+  const comment = await prismaClient.comment.create({
     data: {
       content: data.content,
       user: {
@@ -56,6 +70,25 @@ export const addComment = async (productId, userId, data) => {
       },
     },
   });
+  if (product.userId !== userId) {
+    const ownerSocketId = userSockets.get(product.userId);
+    if (ownerSocketId) {
+      socket.to(ownerSocketId).emit("comment", {
+        product,
+        user,
+        message: `${user.username} has commented on your product`,
+      });
+    }
+    return comment;
+  } else {
+    await prismaClient.comment.delete({
+      where: {
+        productId,
+        userId,
+      },
+    });
+    throw new OperationalException(404, "Owner socket ID not found");
+  }
 };
 
 export const updateComment = async (commentId, userId, data) => {

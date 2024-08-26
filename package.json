@@ -31,7 +31,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "socket": "node ./src/socket.io/server.js"
   },
   "keywords": [],
   "author": "",
