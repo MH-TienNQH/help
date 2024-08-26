@@ -4,6 +4,7 @@ import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
 import { responseFormatForErrors } from "../utils/responseFormat.js";
+import { adminSockets, userSockets } from "../socket.io/server.js";
 
 export const getAllProduct = async () => {
   return await prismaClient.product.findMany({
@@ -75,28 +76,14 @@ export const addProduct = async (data, images, userId, userRole) => {
   if (isExist) {
     throw new OperationalException(403, false, "Product exist");
   }
-  if (userRole == "ADMIN") {
-    return await prismaClient.product.create({
-      data: {
-        name: data.name,
-        description: data.description,
-        images: JSON.stringify(images),
-        price: parseInt(data.price),
-        status: "APPROVED",
-        author: {
-          connect: {
-            userId: userId,
-          },
-        },
-      },
-    });
-  }
-  return await prismaClient.product.create({
+
+  const product = await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,
       images: JSON.stringify(images),
       price: parseInt(data.price),
+      status: userRole == "ADMIN" ? "APPROVED" : "PENDING",
       author: {
         connect: {
           userId: userId,
@@ -104,6 +91,14 @@ export const addProduct = async (data, images, userId, userRole) => {
       },
     },
   });
+  if (userRole !== "ADMIN") {
+    adminSockets.forEach((socket) => {
+      socket.emit("productAdded", {
+        product: product,
+        user: userId,
+      });
+    });
+  }
 };
 
 export const updateProduct = async (
@@ -333,6 +328,18 @@ export const approveProduct = async (productId) => {
         statusMessage: "Your product have been approved",
       },
     });
+    if (isExist.userId !== userId) {
+      const ownerSocketId = userSockets.get(isExist.userId);
+      if (ownerSocketId) {
+        socket.to(ownerSocketId).emit("productApproved", {
+          product: isExist,
+          user: isExist.userId,
+          message: `Your product have been approved`,
+        });
+      } else {
+        throw new OperationalException(404, "Owner socket ID not found");
+      }
+    }
     return true;
   }
   throw new OperationalException(404, false, "Product not found");
@@ -354,6 +361,18 @@ export const rejectProduct = async (productId, message) => {
         statusMessage: message,
       },
     });
+    if (isExist.userId !== userId) {
+      const ownerSocketId = userSockets.get(isExist.userId);
+      if (ownerSocketId) {
+        socket.to(ownerSocketId).emit("productRejected", {
+          product: isExist,
+          user: isExist.userId,
+          message: `Your product have been rejected`,
+        });
+      } else {
+        throw new OperationalException(404, "Owner socket ID not found");
+      }
+    }
     return true;
   }
   throw new OperationalException(404, false, "Product not found");

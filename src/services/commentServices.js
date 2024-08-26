@@ -1,6 +1,7 @@
 import { socket } from "../../index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
+import { userSockets } from "../socket.io/server.js";
 import { responseFormat } from "../utils/responseFormat.js";
 
 export const getComments = async (productId, order = "desc", page, limit) => {
