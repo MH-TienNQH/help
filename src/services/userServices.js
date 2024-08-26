@@ -1,4 +1,4 @@
-import { hashSync } from "bcrypt";
+import { compareSync, hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 
 import { OperationalException } from "../exceptions/operationalExceptions.js";
@@ -147,11 +147,13 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
     throw new OperationalException(400, false, "Email already exists");
   }
 
-  const hashedPassword = data.password
-    ? hashSync(data.password, 10)
-    : user.password;
+  let hashedPassword;
+  if (data.password == user.password) {
+    hashedPassword = user.password;
+  } else {
+    hashedPassword = hashSync(data.password, 10);
+  }
 
-  // Determine if avatar should be updated or not
   const finalAvatar = avatar == "" ? user.avatar : JSON.stringify(avatar);
   return await prismaClient.user.update({
     where: {

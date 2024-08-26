@@ -21,9 +21,9 @@ export function validationMiddlware(schema) {
           field,
           message: errorMap[field],
         }));
-        return res.send(
-          new responseFormatForErrors(422, false, formattedErrors)
-        );
+        return res
+          .status(422)
+          .send(new responseFormatForErrors(422, false, formattedErrors));
       } else {
         next(error);
       }
