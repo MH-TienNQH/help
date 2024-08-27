@@ -15,9 +15,17 @@ const io = new SocketIO(socketServer, {
 export const adminSockets = new Set();
 // Socket.IO connection handling
 io.on("connection", (socket) => {
-  socket.on("joinRoom", (room) => {
-    socket.join(room);
-    console.log(`User ${socket.id} joined room ${room}`);
+  socket.on("joinRoom", async (productId, userId) => {
+    // Optionally check if the user is the owner of the product
+    const product = await prismaClient.product.findUnique({
+      where: { id: productId },
+      select: { userId: true },
+    });
+
+    if (product && product.userId === userId) {
+      socket.join(`product-${productId}`);
+      console.log(`User ${userId} joined room product-${productId}`);
+    }
   });
 
   socket.on("login", (userId) => {
