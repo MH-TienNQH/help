@@ -3,9 +3,8 @@ import { Status } from "@prisma/client";
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
-import { responseFormatForErrors } from "../utils/responseFormat.js";
-import { adminSockets, userSockets } from "../socket.io/server.js";
-import { socket } from "../../index.js";
+
+import { adminSockets, io } from "../socket.io/server.js";
 
 export const getAllProduct = async () => {
   return await prismaClient.product.findMany({
@@ -95,9 +94,8 @@ export const addProduct = async (data, images, userId, userRole) => {
       author: true,
     },
   });
-
-  adminSockets.forEach((sockets) => {
-    socket.emit("productAdded", {
+  adminSockets.forEach((socketId) => {
+    io.to(socketId).emit("productAdded", {
       product: product,
       user: product.author,
     });
@@ -332,18 +330,13 @@ export const approveProduct = async (productId) => {
         statusMessage: "Your product have been approved",
       },
     });
-    if (isExist.userId !== userId) {
-      const ownerSocketId = userSockets.get(isExist.userId);
-      if (ownerSocketId) {
-        socket.emit("productApproved", {
-          ownerSocketId,
-          product: isExist,
-          user: isExist.userId,
-          message: `Your product have been approved`,
-        });
-      } else {
-        throw new OperationalException(404, "Owner socket ID not found");
-      }
+    if (isExist.userId && isExist.userId !== userId) {
+      io.to(`product-${isExist.productId}`).emit("productRejected", {
+        ownerSocketId,
+        product: isExist,
+        user: isExist.userId,
+        message: `Your product have been approved`,
+      });
     }
     return true;
   }
@@ -366,18 +359,14 @@ export const rejectProduct = async (productId, message) => {
         statusMessage: message,
       },
     });
-    if (isExist.userId !== userId) {
-      const ownerSocketId = userSockets.get(isExist.userId);
-      if (ownerSocketId) {
-        socket.emit("productRejected", {
-          ownerSocketId,
-          product: isExist,
-          user: isExist.userId,
-          message: `Your product have been rejected`,
-        });
-      } else {
-        throw new OperationalException(404, "Owner socket ID not found");
-      }
+
+    if (isExist.userId && isExist.userId !== userId) {
+      io.to(`product-${isExist.productId}`).emit("productRejected", {
+        ownerSocketId,
+        product: isExist,
+        user: isExist.userId,
+        message: `Your product have been rejected`,
+      });
     }
     return true;
   }

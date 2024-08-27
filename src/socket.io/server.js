@@ -1,6 +1,6 @@
 import http from "http";
 import { Server as SocketIO } from "socket.io";
-import cors from "cors";
+import { prismaClient } from "../routes/index.js";
 
 // Create an HTTP server for Socket.IO
 const socketServer = http.createServer();
@@ -12,55 +12,34 @@ const io = new SocketIO(socketServer, {
   },
 });
 
-export const userSockets = new Map();
-export const adminSockets = new Map();
-export const emitToAdmins = (event, data) => {
-  adminSockets.forEach((socketId) => {
-    io.to(socketId).emit(event, data);
-  });
-};
-
+export const adminSockets = new Set();
 // Socket.IO connection handling
 io.on("connection", (socket) => {
-  socket.on("login", (userId, role) => {
-    userSockets.set(userId, socket.id);
-    if (role === "ADMIN") {
-      adminSockets.set(userId, socket.id);
-    }
+  socket.on("joinRoom", (room) => {
+    socket.join(room);
+    console.log(`User ${socket.id} joined room ${room}`);
   });
 
-  socket.on("like", (data) => {
-    io.to(data.ownerSocketId).emit("like", data);
-  });
-
-  socket.on("buyRequest", (data) => {
-    io.to(data.ownerSocketId).emit("buyRequest", data);
-  });
-
-  socket.on("comment", (data) => {
-    io.to(data.ownerSocketId).emit("comment", data);
-  });
-
-  socket.on("productAdded", (data) => {
-    emitToAdmins("productAdded", data);
-  });
-
-  socket.on("productApproved", (data) => {
-    io.to(data.ownerSocketId).emit("productApproved", data);
-  });
-  socket.on("productRejected", (data) => {
-    io.to(data.ownerSocketId).emit("productRejected", data);
-  });
-
-  socket.on("approveBuyReq", (data) => {
-    io.to(data.buyer).emit("approveBuyReq", data);
-  });
-
-  socket.on("rejectBuyReq", (data) => {
-    io.to(data.buyer).emit("rejectBuyReq", data);
+  socket.on("login", (userId) => {
+    // Check if the user is an admin from the database
+    prismaClient.user
+      .findUnique({
+        where: { userId },
+      })
+      .then((user) => {
+        if (user && user.role === "ADMIN") {
+          adminSockets.add(socket.id);
+          console.log(`Admin ${userId} connected with socket ${socket.id}`);
+        }
+      });
   });
 
   socket.on("disconnect", () => {});
+});
+
+const SOCKET_PORT = process.env.SOCKET_PORT || 3000;
+socketServer.listen(SOCKET_PORT, () => {
+  console.log(`Socket.IO server is running on http://localhost:${SOCKET_PORT}`);
 });
 
 export { socketServer, io };

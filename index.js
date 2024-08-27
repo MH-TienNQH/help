@@ -8,7 +8,6 @@ import schedule from "node-schedule";
 import express from "express";
 import rootRouter from "./src/routes/index.js";
 import cookieParser from "cookie-parser";
-import { socketServer, userSockets } from "./src/socket.io/server.js";
 
 //midlleware
 import { errorHandlerMiddlewares } from "./src/middlewares/errorHandlerMiddlewares.js";
@@ -40,11 +39,6 @@ app.use(errorHandlerMiddlewares);
 
 schedule.scheduleJob("*/10 * * * *", deleteNotVerified);
 
-const SOCKET_PORT = process.env.SOCKET_PORT || 3000;
-export const socket = io(`http://localhost:${SOCKET_PORT}`);
-socketServer.listen(SOCKET_PORT, () => {
-  console.log(`Socket.IO server is running on http://localhost:${SOCKET_PORT}`);
-});
 app.listen(PORT, () =>
   console.log(`Server is running on http://localhost:${PORT}`)
 );

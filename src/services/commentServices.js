@@ -1,8 +1,6 @@
-import { socket } from "../../index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
-import { userSockets } from "../socket.io/server.js";
-import { responseFormat } from "../utils/responseFormat.js";
+import { io } from "../socket.io/server.js";
 
 export const getComments = async (productId, order = "desc", page, limit) => {
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
@@ -71,16 +69,12 @@ export const addComment = async (productId, userId, data) => {
       },
     },
   });
-  if (product.userId !== userId) {
-    const ownerSocketId = userSockets.get(product.userId);
-    if (ownerSocketId) {
-      socket.emit("comment", {
-        product,
-        user,
-        ownerSocketId,
-        message: `${user.username} has commented on your product`,
-      });
-    }
+  if (product.userId && product.userId !== userId) {
+    io.to(`product-${product.productId}`).emit("comment", {
+      product,
+      user,
+      message: `${user.username} has commented on your product`,
+    });
   }
   return comment;
 };
