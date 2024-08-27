@@ -37,7 +37,7 @@ export const login = async (data) => {
       userId: user.userId,
     },
   });
-  io.emit("login", user.userId, user.role);
+  io.emit("login", user.userId);
   return {
     user,
     accessToken,
