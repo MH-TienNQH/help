@@ -28,18 +28,25 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("login", (userId) => {
+  socket.on("login", async (userId) => {
     // Check if the user is an admin from the database
-    prismaClient.user
-      .findUnique({
+    const user = await prismaClient.user.findUnique({ where: { userId } });
+    if (user) {
+      if (user.role === "ADMIN") {
+        adminSockets.add(socket.id);
+        console.log(`Admin ${userId} connected with socket ${socket.id}`);
+      }
+
+      // Example of automatic room joining for owned products
+      const products = await prismaClient.product.findMany({
         where: { userId },
-      })
-      .then((user) => {
-        if (user && user.role === "ADMIN") {
-          adminSockets.add(socket.id);
-          console.log(`Admin ${userId} connected with socket ${socket.id}`);
-        }
       });
+
+      products.forEach((product) => {
+        socket.join(`product-${product.productId}`);
+        console.log(`User ${userId} joined room product-${product.productId}`);
+      });
+    }
   });
 
   socket.on("disconnect", () => {});
