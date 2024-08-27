@@ -18,7 +18,7 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", async (productId, userId) => {
     // Optionally check if the user is the owner of the product
     const product = await prismaClient.product.findUnique({
-      where: { id: productId },
+      where: { productId },
       select: { userId: true },
     });
 
