@@ -8,8 +8,7 @@ import {
 } from "../utils/responseFormat.js";
 
 import { getThreeTrendingProduct } from "./productServices.js";
-import { socket } from "../../index.js";
-import { userSockets } from "../socket.io/server.js";
+import { io } from "../socket.io/server.js";
 
 import { RequestStatus, Role, Status } from "@prisma/client";
 
@@ -264,27 +263,13 @@ export const likeProduct = async (userId, productId) => {
         productId,
       },
     });
-    if (product.userId !== userId) {
-      const ownerSocketId = userSockets.get(product.userId);
-      if (ownerSocketId) {
-        socket.emit("like", {
-          userId,
-          productId,
-          ownerSocketId,
-          message: `${user.name} has liked your product`,
-        });
-      } else {
-        await prismaClient.productLiked.delete({
-          where: {
-            productId_userId: {
-              productId,
-              userId,
-            },
-          },
-        });
-        throw new OperationalException(404, "Owner socket ID not found");
-      }
-      //Emit the notification only to the product owner
+    if (product.userId && product.userId !== userId) {
+      io.to(`product-${product.productId}`).emit("like", {
+        userId,
+        productId,
+        ownerSocketId,
+        message: `${user.name} has liked your product`,
+      });
     }
   }
   return true;
@@ -338,27 +323,14 @@ export const requestToBuyProduct = async (
           offer,
         },
       });
-      if (product.userId !== userId) {
-        const ownerSocketId = userSockets.get(product.userId);
-        if (ownerSocketId) {
-          socket.emit("buyRequest", {
-            ownerSocketId,
-            product,
-            user,
-            message: `${user.username} has requested to buy your product`,
-          });
-          // Emit the notification only to the product owner}
-        }
-      } else {
-        await prismaClient.requestToBuy.delete({
-          where: {
-            productId_userId: {
-              productId,
-              userId,
-            },
-          },
+      // Emit the notification only to the product owner}
+      if (product.userId && product.userId !== userId) {
+        io.to(`product-${product.productId}`).emit("buyRequest", {
+          ownerSocketId,
+          product,
+          user,
+          message: `${user.username} has requested to buy your product`,
         });
-        throw new OperationalException(404, "Owner socket ID not found");
       }
     }
     return true;
@@ -570,35 +542,15 @@ export const approveRequest = async (ownerId, productId, userId) => {
       categoryId: 2,
     },
   });
-  if (product.userId !== userId) {
-    const buyer = userSockets.get(product.userId);
-    if (buyer) {
-      socket.emit("approveBuyReq", {
-        buyer,
-        product,
-        user,
-        message: `Your buy request for ${product.product.name} have been accepted`,
-      });
-    }
-  } else {
-    await prismaClient.requestToBuy.updateMany({
-      where: {
-        productId,
-      },
-      data: {
-        requestStatus: "PENDING",
-      },
+
+  if (product.product.userId && product.product.userId !== userId) {
+    io.to(`product-${product.product.productId}`).emit("approveBuyReq", {
+      product,
+      user,
+      message: `Your buy request for ${product.product.name} have been accepted`,
     });
-    await prismaClient.product.update({
-      where: {
-        productId,
-      },
-      data: {
-        categoryId: 1,
-      },
-    });
-    throw new OperationalException(404, "Buyer socket ID not found");
   }
+
   return true;
 };
 export const rejectRequest = async (ownerId, productId, userId) => {
@@ -634,29 +586,12 @@ export const rejectRequest = async (ownerId, productId, userId) => {
       requestStatus: "REJECTED",
     },
   });
-  if (product.userId !== userId) {
-    const buyer = userSockets.get(product.userId);
-    if (buyer) {
-      socket.emit("rejectBuyReq", {
-        buyer,
-        product,
-        user,
-        message: `Your buy request for ${product.product.name} have been rejected`,
-      });
-    }
-  } else {
-    await prismaClient.requestToBuy.update({
-      where: {
-        productId_userId: {
-          productId,
-          userId,
-        },
-      },
-      data: {
-        requestStatus: "PENDING",
-      },
+  if (product.product.userId && product.product.userId !== userId) {
+    io.to(`product-${product.product.productId}`).emit("approveBuyReq", {
+      product,
+      user,
+      message: `Your buy request for ${product.product.name} have been rejected`,
     });
-    throw new OperationalException(404, "Buyer socket ID not found");
   }
   return true;
 };
