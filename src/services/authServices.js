@@ -4,6 +4,7 @@ import * as userServices from "../services/userServices.js";
 import { compareSync, hashSync } from "bcrypt";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
+import { io } from "../socket.io/server.js";
 
 export const verifyEmail = async (email) => {
   let user = await userServices.findUserByEmail(email);
@@ -36,7 +37,7 @@ export const login = async (data) => {
       userId: user.userId,
     },
   });
-  socket.emit("login", user.userId, user.role);
+  io.emit("login", user.userId, user.role);
   return {
     user,
     accessToken,
