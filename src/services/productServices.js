@@ -327,15 +327,15 @@ export const approveProduct = async (productId) => {
       },
       data: {
         status: "APPROVED",
-        statusMessage: "Your product have been approved",
+        statusMessage: "Sản phẩm bạn đăng lên đã được chấp thuận",
       },
     });
     if (isExist.userId && isExist.userId !== userId) {
-      io.to(`product-${isExist.productId}`).emit("productRejected", {
+      io.emit(`notification ${isExist.userId}`, {
         ownerSocketId,
         product: isExist,
         user: isExist.userId,
-        message: `Your product have been approved`,
+        message: `Sản phẩm bạn đăng lên đã được chấp thuận`,
       });
     }
     return true;
@@ -361,11 +361,11 @@ export const rejectProduct = async (productId, message) => {
     });
 
     if (isExist.userId && isExist.userId !== userId) {
-      io.to(`product-${isExist.productId}`).emit("productRejected", {
+      io.emit(`notification ${isExist.userId}`, {
         ownerSocketId,
         product: isExist,
         user: isExist.userId,
-        message: `Your product have been rejected`,
+        message: `Sản phẩm bạn đăng lên đã bị từ chối`,
       });
     }
     return true;

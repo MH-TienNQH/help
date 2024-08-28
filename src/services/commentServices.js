@@ -70,13 +70,12 @@ export const addComment = async (productId, userId, data) => {
     },
   });
   if (product.userId && product.userId !== userId) {
-    ios.emit("comment", {
+    ios.emit(`notification ${product.userId}`, {
       product,
       user,
-      message: `${user.username} has commented on your product`,
+      message: `${user.username} đã bình luận vào sản phẩm của bạn`,
     });
   }
-
   return comment;
 };
 

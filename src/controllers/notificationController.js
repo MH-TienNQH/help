@@ -4,8 +4,22 @@ import { responseFormat } from "../utils/responseFormat.js";
 
 export const getAllNotification = asyncErrorHandler(async (req, res) => {
   const userId = req.userId;
-  const response = await notificationServices.getAllNotification(userId);
-  res.send(new responseFormat(200, true, response));
+  const { order } = req.query;
+  const { page, limit } = req.pagination;
+  const response = await notificationServices.getAllNotification(
+    userId,
+    order,
+    page,
+    limit
+  );
+  res.send(
+    new responseFormatWithPagination(
+      200,
+      true,
+      response.notifications,
+      response.meta
+    )
+  );
 });
 
 export const getNotificationById = asyncErrorHandler(async (req, res) => {

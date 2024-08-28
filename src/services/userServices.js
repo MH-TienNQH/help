@@ -324,7 +324,7 @@ export const requestToBuyProduct = async (
       });
       // Emit the notification only to the product owner}
       if (product.userId && product.userId !== userId) {
-        io.emit("buyRequest", {
+        io.emit(`notification ${product.userId}`, {
           product,
           user,
           message: `${user.username} has requested to buy your product`,
@@ -542,10 +542,10 @@ export const approveRequest = async (ownerId, productId, userId) => {
   });
 
   if (product.product.userId && product.product.userId !== userId) {
-    io.emit("approveBuyReq", {
+    io.emit(`notification ${product.product.userId}`, {
       product,
       user,
-      message: `Your buy request for ${product.product.name} have been accepted`,
+      message: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã được chấp nhận`,
     });
   }
 
@@ -585,10 +585,10 @@ export const rejectRequest = async (ownerId, productId, userId) => {
     },
   });
   if (product.product.userId && product.product.userId !== userId) {
-    io.emit("approveBuyReq", {
+    io.emit(`notification ${product.product.userId}`, {
       product,
       user,
-      message: `Your buy request for ${product.product.name} have been rejected`,
+      message: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã bị từ chối`,
     });
   }
   return true;
