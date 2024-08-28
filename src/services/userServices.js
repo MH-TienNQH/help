@@ -612,6 +612,11 @@ export const approveRequest = async (ownerId, productId, userId) => {
   return true;
 };
 export const rejectRequest = async (ownerId, productId, userId) => {
+  const user = await prismaClient.user.findUnique({
+    where: {
+      userId,
+    },
+  });
   let product = await prismaClient.requestToBuy.findUnique({
     where: {
       productId_userId: {
