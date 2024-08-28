@@ -1,5 +1,6 @@
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
+import { formatVietnamTime } from "../utils/changeToVietnamTimezone.js";
 
 export const getAllNotification = async (
   userId,
@@ -73,7 +74,11 @@ export const getById = async (userId, notiId) => {
       status: true,
     },
   });
-  return notification;
+  const formattedCreatedAt = formatVietnamTime(notification.createdAt);
+  return {
+    ...notification,
+    createdAt: formattedCreatedAt,
+  };
 };
 
 export const deleteNoti = async (userId, notificationId) => {

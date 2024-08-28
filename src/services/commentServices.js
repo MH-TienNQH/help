@@ -3,7 +3,7 @@ import { prismaClient } from "../routes/index.js";
 import { io } from "../socket.io/server.js";
 import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
 
-const vietnamDate = new Date(); // Current local time
+const vietnamDate = new Date();
 const utcDate = convertVietnamTimeToUtc(vietnamDate);
 
 export const getComments = async (productId, order = "desc", page, limit) => {
