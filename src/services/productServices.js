@@ -5,7 +5,10 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
 
 import { adminSockets, io } from "../socket.io/server.js";
+import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
 
+const vietnamDate = new Date(); // Current local time
+const utcDate = convertVietnamTimeToUtc(vietnamDate);
 export const getAllProduct = async () => {
   return await prismaClient.product.findMany({
     include: {
@@ -114,6 +117,7 @@ export const addProduct = async (data, images, userId, userRole) => {
           product: {
             connect: { productId: product.productId },
           },
+          createdAt: utcDate,
         },
       });
     })
@@ -371,6 +375,7 @@ export const approveProduct = async (productId) => {
             productId: isExist.productId,
           },
         },
+        createdAt: utcDate,
       },
     });
     return true;
@@ -417,6 +422,7 @@ export const rejectProduct = async (productId, message) => {
               productId: isExist.productId,
             },
           },
+          createdAt: utcDate,
         },
       });
     }

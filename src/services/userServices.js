@@ -1,4 +1,4 @@
-import { compareSync, hashSync } from "bcrypt";
+import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 
 import { OperationalException } from "../exceptions/operationalExceptions.js";
@@ -9,8 +9,11 @@ import {
 
 import { getThreeTrendingProduct } from "./productServices.js";
 import { io } from "../socket.io/server.js";
+import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
 
 import { RequestStatus, Role, Status } from "@prisma/client";
+const vietnamDate = new Date();
+const utcDate = convertVietnamTimeToUtc(vietnamDate);
 
 export const getAllUser = async (name, order = "asc", role, page, limit) => {
   const skip = (page - 1) * limit;
@@ -288,6 +291,7 @@ export const likeProduct = async (userId, productId) => {
             productId: product.productId,
           },
         },
+        createdAt: utcDate,
       },
     });
   }
@@ -373,6 +377,7 @@ export const requestToBuyProduct = async (
               productId: product.productId,
             },
           },
+          createdAt: utcDate,
         },
       });
     }
@@ -610,6 +615,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
             productId: product.product.productId,
           },
         },
+        createdAt: utcDate,
       },
     });
   }
@@ -673,6 +679,7 @@ export const rejectRequest = async (ownerId, productId, userId) => {
             productId: product.product.productId,
           },
         },
+        createdAt: utcDate,
       },
     });
   }

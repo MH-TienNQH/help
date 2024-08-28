@@ -1,6 +1,10 @@
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { io } from "../socket.io/server.js";
+import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
+
+const vietnamDate = new Date(); // Current local time
+const utcDate = convertVietnamTimeToUtc(vietnamDate);
 
 export const getComments = async (productId, order = "desc", page, limit) => {
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
@@ -94,6 +98,7 @@ export const addComment = async (productId, userId, data) => {
             productId: product.productId,
           },
         },
+        createdAt: utcDate,
       },
     });
   }
