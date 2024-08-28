@@ -50,6 +50,7 @@ model User {
   otpExpireAt   DateTime?
   comments      Comment[]
   RequestToBuy  RequestToBuy[]
+  Notification  Notification[]
 }
 
 model RefreshToken {
@@ -142,4 +143,12 @@ model Comment {
   product   Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
   userId    Int
   user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model Notification {
+  notificationId Int     @id @default(autoincrement())
+  userId         Int
+  user           User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  content        String
+  status         Boolean @default(false)
 }

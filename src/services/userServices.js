@@ -264,10 +264,9 @@ export const likeProduct = async (userId, productId) => {
       },
     });
     if (product.userId && product.userId !== userId) {
-      io.to(`product-${product.productId}`).emit("like", {
+      io.emit("like", {
         userId,
         productId,
-        ownerSocketId,
         message: `${user.name} has liked your product`,
       });
     }
@@ -325,8 +324,7 @@ export const requestToBuyProduct = async (
       });
       // Emit the notification only to the product owner}
       if (product.userId && product.userId !== userId) {
-        io.to(`product-${product.productId}`).emit("buyRequest", {
-          ownerSocketId,
+        io.emit("buyRequest", {
           product,
           user,
           message: `${user.username} has requested to buy your product`,
@@ -544,7 +542,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
   });
 
   if (product.product.userId && product.product.userId !== userId) {
-    io.to(`product-${product.product.productId}`).emit("approveBuyReq", {
+    io.emit("approveBuyReq", {
       product,
       user,
       message: `Your buy request for ${product.product.name} have been accepted`,
@@ -587,7 +585,7 @@ export const rejectRequest = async (ownerId, productId, userId) => {
     },
   });
   if (product.product.userId && product.product.userId !== userId) {
-    io.to(`product-${product.product.productId}`).emit("approveBuyReq", {
+    io.emit("approveBuyReq", {
       product,
       user,
       message: `Your buy request for ${product.product.name} have been rejected`,

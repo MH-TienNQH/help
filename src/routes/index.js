@@ -7,6 +7,7 @@ import { categoryRoutes } from "./categoryRoutes.js";
 import { chatRoutes } from "./chatRoutes.js";
 import { messageRoutes } from "./messageRoutes.js";
 import { commentRoutes } from "./commentRoutes.js";
+import { notiRoutes } from "./notificationRoutes.js";
 
 const rootRouter = Router();
 
@@ -20,5 +21,6 @@ rootRouter.use("/category", categoryRoutes);
 rootRouter.use("/chats", chatRoutes);
 rootRouter.use("/messages", messageRoutes);
 rootRouter.use("/comment", commentRoutes);
+rootRouter.use("/notification", notiRoutes);
 
 export default rootRouter;
