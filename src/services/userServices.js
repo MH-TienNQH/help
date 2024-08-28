@@ -267,9 +267,16 @@ export const likeProduct = async (userId, productId) => {
       io.emit("like", {
         userId,
         productId,
-        message: `${user.name} has liked your product`,
+        message: `${user.name} đã thích sản phẩm của bạn`,
       });
     }
+    await prismaClient.notification.create({
+      data: {
+        content: `${user.name} đã thích sản phẩm của bạn`,
+        userId: userId,
+        productId: product.productId,
+      },
+    });
   }
   return true;
 };
@@ -327,9 +334,16 @@ export const requestToBuyProduct = async (
         io.emit(`notification ${product.userId}`, {
           product,
           user,
-          message: `${user.username} has requested to buy your product`,
+          message: `${user.username} đã gửi yêu cầu mua sản phẩm ${product.name} của bạn`,
         });
       }
+      await prismaClient.notification.create({
+        data: {
+          content: `${user.username} đã gửi yêu cầu mua sản phẩm ${product.name} của bạn`,
+          userId: userId,
+          productId: product.productId,
+        },
+      });
     }
     return true;
   }
@@ -547,6 +561,13 @@ export const approveRequest = async (ownerId, productId, userId) => {
       user,
       message: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã được chấp nhận`,
     });
+    await prismaClient.notification.create({
+      data: {
+        content: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã được chấp nhận`,
+        userId: userId,
+        productId: product.product.productId,
+      },
+    });
   }
 
   return true;
@@ -589,6 +610,13 @@ export const rejectRequest = async (ownerId, productId, userId) => {
       product,
       user,
       message: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã bị từ chối`,
+    });
+    await prismaClient.notification.create({
+      data: {
+        content: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã bị từ chối`,
+        userId: userId,
+        productId: product.product.productId,
+      },
     });
   }
   return true;

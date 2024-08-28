@@ -70,10 +70,17 @@ export const addComment = async (productId, userId, data) => {
     },
   });
   if (product.userId && product.userId !== userId) {
-    ios.emit(`notification ${product.userId}`, {
+    io.emit(`notification ${product.userId}`, {
       product,
       user,
       message: `${user.username} đã bình luận vào sản phẩm của bạn`,
+    });
+    await prismaClient.notification.create({
+      data: {
+        content: `${user.username} đã bình luận vào sản phẩm của bạn`,
+        userId,
+        productId: product.productId,
+      },
     });
   }
   return comment;

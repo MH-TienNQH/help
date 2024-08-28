@@ -27,7 +27,7 @@ export const getAllNotification = async (
     skip,
     take: limit,
   });
-  const totalPages = Math.ceil(numberOfComments / limit);
+  const totalPages = Math.ceil(numberOfNotis / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
   return {
