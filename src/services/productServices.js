@@ -353,7 +353,6 @@ export const approveProduct = async (productId) => {
     });
     if (isExist.userId && isExist.userId !== userId) {
       io.emit(`notification ${isExist.userId}`, {
-        ownerSocketId,
         product: isExist,
         user: isExist.author,
         message: `Sản phẩm ${isExist.name} bạn đăng lên đã được chấp thuận`,
@@ -401,7 +400,6 @@ export const rejectProduct = async (productId, message) => {
 
     if (isExist.userId && isExist.userId !== userId) {
       io.emit(`notification ${isExist.userId}`, {
-        ownerSocketId,
         product: isExist,
         user: isExist.author,
         message: `Sản phẩm ${isExist.name} bạn đăng lên đã bị từ chối`,
