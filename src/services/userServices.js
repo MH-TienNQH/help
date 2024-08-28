@@ -270,8 +270,8 @@ export const likeProduct = async (userId, productId) => {
     });
     if (product.userId && product.userId !== userId) {
       io.emit("like", {
-        userId,
-        productId,
+        user,
+        product,
         message: `${user.name} đã thích sản phẩm của bạn`,
       });
     }
@@ -533,6 +533,11 @@ export const personalProduct = async (
 };
 
 export const approveRequest = async (ownerId, productId, userId) => {
+  const user = await prismaClient.user.findUnique({
+    where: {
+      userId,
+    },
+  });
   let product = await prismaClient.requestToBuy.findUnique({
     where: {
       productId_userId: {
@@ -587,7 +592,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
   });
 
   if (product.product.userId && product.product.userId !== userId) {
-    io.emit(`notification ${product.product.userId}`, {
+    io.emit(`notification ${userId}`, {
       product,
       user,
       message: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã được chấp nhận`,
@@ -650,7 +655,7 @@ export const rejectRequest = async (ownerId, productId, userId) => {
     },
   });
   if (product.product.userId && product.product.userId !== userId) {
-    io.emit(`notification ${product.product.userId}`, {
+    io.emit(`notification ${userId}`, {
       product,
       user,
       message: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã bị từ chối`,
