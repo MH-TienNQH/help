@@ -147,11 +147,12 @@ model Comment {
 }
 
 model Notification {
-  notificationId Int     @id @default(autoincrement())
+  notificationId Int      @id @default(autoincrement())
   userId         Int
-  user           User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
   content        String
   productId      Int
-  product        Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
-  status         Boolean @default(false)
+  product        Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  status         Boolean  @default(false)
+  createdAt      DateTime @default(now())
 }
