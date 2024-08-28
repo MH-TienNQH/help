@@ -35,8 +35,12 @@ export const getAllNotification = async (
   const totalPages = Math.ceil(numberOfNotis / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
+  const formattedNotifications = notifications.map((notification) => ({
+    ...notification,
+    createdAt: formatVietnamTime(notification.createdAt),
+  }));
   return {
-    notifications,
+    notifications: formattedNotifications,
     meta: {
       previous_page: previousPage,
       current_page: page,
