@@ -69,6 +69,12 @@ export const addComment = async (productId, userId, data) => {
       },
     },
   });
+  io.emit(`comment ${productId}`, {
+    product,
+    user,
+    message: `${user.username} has commented on your product`,
+    content: comment.content,
+  });
   if (product.userId && product.userId !== userId) {
     io.emit(`notification ${product.userId}`, {
       product,
