@@ -1,17 +1,16 @@
-import { utcToZonedTime, zonedTimeToUtc, format } from "date-fns-tz";
+import moment from "moment-timezone";
 
 const VIETNAM_TIME_ZONE = "Asia/Ho_Chi_Minh";
+
 export function convertUtcToVietnamTime(utcDate) {
-  return utcToZonedTime(utcDate, VIETNAM_TIME_ZONE);
+  return moment(utcDate).tz(VIETNAM_TIME_ZONE);
 }
 
 export function formatVietnamTime(date) {
   const vietnamTime = convertUtcToVietnamTime(date);
-  return format(vietnamTime, "yyyy-MM-dd HH:mm:ssXXX", {
-    timeZone: VIETNAM_TIME_ZONE,
-  });
+  return vietnamTime.format("YYYY-MM-DD HH:mm:ss");
 }
 
 export function convertVietnamTimeToUtc(localDate) {
-  return zonedTimeToUtc(localDate, VIETNAM_TIME_ZONE);
+  return moment.tz(localDate, VIETNAM_TIME_ZONE).utc().toDate();
 }
