@@ -255,6 +255,11 @@ export const likeProduct = async (userId, productId) => {
         },
       },
     });
+    await prismaClient.notification.delete({
+      where: {
+        userId: product.userId,
+      },
+    });
     return true;
   } else {
     await prismaClient.productLiked.create({
@@ -275,7 +280,7 @@ export const likeProduct = async (userId, productId) => {
         content: `${user.name} đã thích sản phẩm của bạn`,
         user: {
           connect: {
-            userId: userId,
+            userId: product.userId,
           },
         },
         product: {
@@ -325,6 +330,11 @@ export const requestToBuyProduct = async (
             userId,
             productId,
           },
+        },
+      });
+      await prismaClient.notification.create({
+        where: {
+          userId: product.userId,
         },
       });
       return true;
