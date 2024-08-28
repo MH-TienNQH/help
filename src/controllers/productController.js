@@ -27,7 +27,6 @@ export const getProductById = asyncErrorHandler(async (req, res) => {
           ...product.product,
           isSaved: product.saved ? true : false,
           isLiked: product.liked ? true : false,
-
           isRequested: product.requested || false,
           requests: product.requests.data,
         },
@@ -40,7 +39,7 @@ export const getProductById = asyncErrorHandler(async (req, res) => {
           ...product.product,
           isSaved: product.saved ? true : false,
           isLiked: product.liked ? true : false,
-          isRequested: product.requested || false,
+          isRequested: product.requested || "false",
         },
       ])
     );
