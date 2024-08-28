@@ -1,8 +1,12 @@
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 
-export const getAllNotification = async () => {
-  return await prismaClient.notification.findMany();
+export const getAllNotification = async (userId) => {
+  return await prismaClient.notification.findMany({
+    where: {
+      userId,
+    },
+  });
 };
 
 export const getById = async (userId, notiId) => {
@@ -33,6 +37,14 @@ export const getById = async (userId, notiId) => {
 };
 
 export const addNoti = async (userId, data) => {
+  const user = await prismaClient.user.findUnique({
+    where: {
+      userId,
+    },
+  });
+  if (!user) {
+    throw new OperationalException(404, false, "No user found");
+  }
   return await prismaClient.notification.create({
     data: {
       content: data.content,

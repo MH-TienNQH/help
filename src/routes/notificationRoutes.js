@@ -10,6 +10,10 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 export const notiRoutes = Router();
 
 notiRoutes.get("/get-all-noti", verifyTokenMiddlewares, getAllNotification);
-notiRoutes.get("/get-by-id", verifyTokenMiddlewares, getNotificationById);
+notiRoutes.get(
+  "/get-by-id/:notiId",
+  verifyTokenMiddlewares,
+  getNotificationById
+);
 notiRoutes.post("/add-noti/:userId", verifyTokenMiddlewares, addNoti);
 notiRoutes.delete("/delete/:notiId", verifyTokenMiddlewares, deleteNoti);
