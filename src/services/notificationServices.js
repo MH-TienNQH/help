@@ -24,6 +24,10 @@ export const getAllNotification = async (
     orderBy: {
       notificationId: orderDirection,
     },
+    include: {
+      user: true,
+      product: true,
+    },
     skip,
     take: limit,
   });
@@ -45,6 +49,10 @@ export const getById = async (userId, notiId) => {
   const notification = await prismaClient.notification.findUnique({
     where: {
       notificationId: notiId,
+    },
+    include: {
+      user: true,
+      product: true,
     },
   });
   if (!notification) {

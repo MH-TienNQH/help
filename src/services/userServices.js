@@ -273,8 +273,16 @@ export const likeProduct = async (userId, productId) => {
     await prismaClient.notification.create({
       data: {
         content: `${user.name} đã thích sản phẩm của bạn`,
-        userId: userId,
-        productId: product.productId,
+        user: {
+          connect: {
+            userId: userId,
+          },
+        },
+        product: {
+          connect: {
+            productId: product.productId,
+          },
+        },
       },
     });
   }
@@ -340,8 +348,16 @@ export const requestToBuyProduct = async (
       await prismaClient.notification.create({
         data: {
           content: `${user.username} đã gửi yêu cầu mua sản phẩm ${product.name} của bạn`,
-          userId: userId,
-          productId: product.productId,
+          user: {
+            connect: {
+              userId: product.userId,
+            },
+          },
+          product: {
+            connect: {
+              productId: product.productId,
+            },
+          },
         },
       });
     }
@@ -564,8 +580,16 @@ export const approveRequest = async (ownerId, productId, userId) => {
     await prismaClient.notification.create({
       data: {
         content: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã được chấp nhận`,
-        userId: userId,
-        productId: product.product.productId,
+        user: {
+          connect: {
+            userId: userId,
+          },
+        },
+        product: {
+          connect: {
+            productId: product.product.productId,
+          },
+        },
       },
     });
   }
@@ -614,8 +638,16 @@ export const rejectRequest = async (ownerId, productId, userId) => {
     await prismaClient.notification.create({
       data: {
         content: `Yêu cầu mua sản phẩm ${product.product.name} của bạn đã bị từ chối`,
-        userId: userId,
-        productId: product.product.productId,
+        user: {
+          connect: {
+            userId: userId,
+          },
+        },
+        product: {
+          connect: {
+            productId: product.product.productId,
+          },
+        },
       },
     });
   }

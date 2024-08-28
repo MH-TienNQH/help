@@ -84,8 +84,16 @@ export const addComment = async (productId, userId, data) => {
     await prismaClient.notification.create({
       data: {
         content: `${user.username} đã bình luận vào sản phẩm của bạn`,
-        user: user,
-        productId: product.productId,
+        user: {
+          connect: {
+            userId: product.userId,
+          },
+        },
+        product: {
+          connect: {
+            productId: product.productId,
+          },
+        },
       },
     });
   }

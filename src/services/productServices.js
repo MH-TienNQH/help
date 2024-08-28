@@ -100,13 +100,24 @@ export const addProduct = async (data, images, userId, userRole) => {
       user: product.author,
     });
   });
-  await prismaClient.notification.create({
-    data: {
-      content: `${product.author.name} đã tạo một sản phẩm`,
-      userId,
-      productId: product.productId,
-    },
-  });
+  const resolvedAdminUserIds = (await Promise.all(adminUserIds)).filter(
+    (id) => id !== null
+  );
+  await Promise.all(
+    resolvedAdminUserIds.map((userId) => {
+      prismaClient.notification.create({
+        data: {
+          content: `${product.author.name} đã tạo một sản phẩm`,
+          user: {
+            connect: { userId: userId },
+          },
+          product: {
+            connect: { productId: product.productId },
+          },
+        },
+      });
+    })
+  );
   return product;
 };
 
@@ -351,8 +362,16 @@ export const approveProduct = async (productId) => {
     await prismaClient.notification.create({
       data: {
         content: `Sản phẩm ${isExist.name}  bạn đăng lên đã được chấp thuận`,
-        userId: isExist.userId,
-        productId: isExist.productId,
+        user: {
+          connect: {
+            userId: isExist.author.userId,
+          },
+        },
+        product: {
+          connect: {
+            productId: isExist.productId,
+          },
+        },
       },
     });
     return true;
@@ -390,8 +409,16 @@ export const rejectProduct = async (productId, message) => {
       await prismaClient.notification.create({
         data: {
           content: `Sản phẩm ${isExist.name} bạn đăng lên đã bị từ chối`,
-          userId: isExist.userId,
-          productId: isExist.productId,
+          user: {
+            connect: {
+              userId: isExist.author.userId,
+            },
+          },
+          product: {
+            connect: {
+              productId: isExist.productId,
+            },
+          },
         },
       });
     }
