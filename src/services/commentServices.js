@@ -70,12 +70,13 @@ export const addComment = async (productId, userId, data) => {
     },
   });
   if (product.userId && product.userId !== userId) {
-    io.to(`product-${product.productId}`).emit("comment", {
+    ios.emit("comment", {
       product,
       user,
       message: `${user.username} has commented on your product`,
     });
   }
+
   return comment;
 };
 
