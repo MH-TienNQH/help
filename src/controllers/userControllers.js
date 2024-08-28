@@ -1,6 +1,3 @@
-import { prismaClient } from "../routes/index.js";
-
-import { hashSync } from "bcrypt";
 import {
   responseFormat,
   responseFormatForErrors,

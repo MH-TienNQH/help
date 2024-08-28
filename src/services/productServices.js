@@ -100,6 +100,13 @@ export const addProduct = async (data, images, userId, userRole) => {
       user: product.author,
     });
   });
+  await prismaClient.notification.create({
+    data: {
+      content: `${product.author.name} đã tạo một sản phẩm`,
+      userId,
+      productId: product.productId,
+    },
+  });
   return product;
 };
 
@@ -319,6 +326,9 @@ export const approveProduct = async (productId) => {
     where: {
       productId,
     },
+    include: {
+      author: true,
+    },
   });
   if (isExist) {
     await prismaClient.product.update({
@@ -327,17 +337,24 @@ export const approveProduct = async (productId) => {
       },
       data: {
         status: "APPROVED",
-        statusMessage: "Your product have been approved",
+        statusMessage: "Sản phẩm bạn đăng lên đã được chấp thuận",
       },
     });
     if (isExist.userId && isExist.userId !== userId) {
-      io.to(`product-${isExist.productId}`).emit("productRejected", {
+      io.emit(`notification ${isExist.userId}`, {
         ownerSocketId,
         product: isExist,
-        user: isExist.userId,
-        message: `Your product have been approved`,
+        user: isExist.author,
+        message: `Sản phẩm ${isExist.name} bạn đăng lên đã được chấp thuận`,
       });
     }
+    await prismaClient.notification.create({
+      data: {
+        content: `Sản phẩm ${isExist.name}  bạn đăng lên đã được chấp thuận`,
+        userId: isExist.userId,
+        productId: isExist.productId,
+      },
+    });
     return true;
   }
   throw new OperationalException(404, false, "Product not found");
@@ -347,6 +364,9 @@ export const rejectProduct = async (productId, message) => {
   const isExist = await prismaClient.product.findUnique({
     where: {
       productId,
+    },
+    include: {
+      author: true,
     },
   });
   if (isExist) {
@@ -361,11 +381,18 @@ export const rejectProduct = async (productId, message) => {
     });
 
     if (isExist.userId && isExist.userId !== userId) {
-      io.to(`product-${isExist.productId}`).emit("productRejected", {
+      io.emit(`notification ${isExist.userId}`, {
         ownerSocketId,
         product: isExist,
-        user: isExist.userId,
-        message: `Your product have been rejected`,
+        user: isExist.author,
+        message: `Sản phẩm ${isExist.name} bạn đăng lên đã bị từ chối`,
+      });
+      await prismaClient.notification.create({
+        data: {
+          content: `Sản phẩm ${isExist.name} bạn đăng lên đã bị từ chối`,
+          userId: isExist.userId,
+          productId: isExist.productId,
+        },
       });
     }
     return true;

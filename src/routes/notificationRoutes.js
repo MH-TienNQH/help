@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  addNoti,
   deleteNoti,
   getAllNotification,
   getNotificationById,
@@ -15,5 +14,4 @@ notiRoutes.get(
   verifyTokenMiddlewares,
   getNotificationById
 );
-notiRoutes.post("/add-noti/:userId", verifyTokenMiddlewares, addNoti);
 notiRoutes.delete("/delete/:notiId", verifyTokenMiddlewares, deleteNoti);

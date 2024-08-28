@@ -1,12 +1,44 @@
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 
-export const getAllNotification = async (userId) => {
-  return await prismaClient.notification.findMany({
+export const getAllNotification = async (
+  userId,
+  order = "desc",
+  page,
+  limit
+) => {
+  const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
+    ? order.toLowerCase()
+    : "desc";
+  const skip = (page - 1) * limit;
+  const numberOfNotis = await prismaClient.notification.count({
     where: {
       userId,
     },
   });
+
+  const notifications = await prismaClient.notification.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      notificationId: orderDirection,
+    },
+    skip,
+    take: limit,
+  });
+  const totalPages = Math.ceil(numberOfNotis / limit);
+  const previousPage = page > 1 ? page - 1 : null;
+  const nextPage = page < totalPages ? page + 1 : null;
+  return {
+    notifications,
+    meta: {
+      previous_page: previousPage,
+      current_page: page,
+      next_page: nextPage,
+      total: totalPages,
+    },
+  };
 };
 
 export const getById = async (userId, notiId) => {
@@ -34,27 +66,6 @@ export const getById = async (userId, notiId) => {
     },
   });
   return notification;
-};
-
-export const addNoti = async (userId, data) => {
-  const user = await prismaClient.user.findUnique({
-    where: {
-      userId,
-    },
-  });
-  if (!user) {
-    throw new OperationalException(404, false, "No user found");
-  }
-  return await prismaClient.notification.create({
-    data: {
-      content: data.content,
-      user: {
-        connect: {
-          userId,
-        },
-      },
-    },
-  });
 };
 
 export const deleteNoti = async (userId, notificationId) => {
