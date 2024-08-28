@@ -332,9 +332,14 @@ export const requestToBuyProduct = async (
           },
         },
       });
-      await prismaClient.notification.create({
+      const notification = await prismaClient.notification.findFirst({
         where: {
           userId: product.userId,
+        },
+      });
+      await prismaClient.notification.delete({
+        where: {
+          notificationId: notification.notificationId,
         },
       });
       return true;
