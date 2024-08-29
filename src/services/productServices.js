@@ -103,21 +103,29 @@ export const addProduct = async (data, images, userId, userRole) => {
       user: product.author,
     });
   });
-  const resolvedAdminUserIds = (await Promise.all(adminUserIds)).filter(
-    (id) => id !== null
-  );
+
+  const adminUsers = await prismaClient.user.findMany({
+    where: {
+      role: "ADMIN",
+    },
+    select: {
+      userId: true,
+    },
+  });
+  const adminUserIds = adminUsers.map((user) => user.userId);
+
   await Promise.all(
-    resolvedAdminUserIds.map((userId) => {
+    adminUserIds.map((adminUserId) => {
       prismaClient.notification.create({
         data: {
           content: `${product.author.name} đã tạo một sản phẩm`,
           user: {
-            connect: { userId: userId },
+            connect: { userId: adminUserId },
           },
           product: {
             connect: { productId: product.productId },
           },
-          createdAt: utcDate,
+          createdAt: utcDate, // Use current date-time
         },
       });
     })
@@ -414,7 +422,7 @@ export const rejectProduct = async (productId, message) => {
           content: `Sản phẩm ${isExist.name} bạn đăng lên đã bị từ chối`,
           user: {
             connect: {
-              userId: isExist.author.userId,
+              userId: isExist.userId,
             },
           },
           product: {
