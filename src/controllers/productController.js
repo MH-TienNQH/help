@@ -167,15 +167,21 @@ export const listProduct = asyncErrorHandler(async (req, res) => {
 });
 
 export const approveProduct = asyncErrorHandler(async (req, res) => {
+  const userId = req.userId;
   const productId = parseInt(req.params.id);
-  const response = await productServices.approveProduct(productId);
+  const response = await productServices.approveProduct(productId, userId);
   res.send(new responseFormat(200, true, response));
 });
 
 export const rejectProduct = asyncErrorHandler(async (req, res) => {
+  const userId = req.userId;
   const productId = parseInt(req.params.id);
   const { message } = req.body;
-  const response = await productServices.rejectProduct(productId, message);
+  const response = await productServices.rejectProduct(
+    userId,
+    productId,
+    message
+  );
   res.send(new responseFormat(200, true, response));
 });
 
