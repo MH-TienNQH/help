@@ -113,9 +113,10 @@ export const addProduct = async (data, images, userId, userRole) => {
       userId: true,
     },
   });
+
   const adminUserIds = adminUsers.map((user) => user.userId);
   await Promise.all(
-    adminUserIds.map((adminUserId) => {
+    adminUserIds.map((adminUserId) =>
       prismaClient.notification.create({
         data: {
           content: `${product.author.name} đã tạo một sản phẩm`,
@@ -125,10 +126,10 @@ export const addProduct = async (data, images, userId, userRole) => {
           product: {
             connect: { productId: product.productId },
           },
-          createdAt: utcDate,
+          createdAt: utcDate, // Use current date-time
         },
-      });
-    })
+      })
+    )
   );
   return product;
 };
@@ -344,7 +345,7 @@ export const listProduct = async (
   };
 };
 
-export const approveProduct = async (productId) => {
+export const approveProduct = async (productId, userId) => {
   const isExist = await prismaClient.product.findUnique({
     where: {
       productId,
@@ -375,7 +376,7 @@ export const approveProduct = async (productId) => {
         content: `Sản phẩm ${isExist.name}  bạn đăng lên đã được chấp thuận`,
         user: {
           connect: {
-            userId: isExist.author.userId,
+            userId: isExist.userId,
           },
         },
         product: {
@@ -391,7 +392,7 @@ export const approveProduct = async (productId) => {
   throw new OperationalException(404, false, "Product not found");
 };
 
-export const rejectProduct = async (productId, message) => {
+export const rejectProduct = async (userId, productId, message) => {
   const isExist = await prismaClient.product.findUnique({
     where: {
       productId,
@@ -422,7 +423,7 @@ export const rejectProduct = async (productId, message) => {
           content: `Sản phẩm ${isExist.name} bạn đăng lên đã bị từ chối`,
           user: {
             connect: {
-              userId: isExist.author.userId,
+              userId: isExist.userId,
             },
           },
           product: {
