@@ -6,6 +6,7 @@ import * as userServices from "./userServices.js";
 
 import { adminSockets, io } from "../socket.io/server.js";
 import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
+import { roleContants, statusConstants } from "../constants/constants.js";
 
 const vietnamDate = new Date(); // Current local time
 const utcDate = convertVietnamTimeToUtc(vietnamDate);
@@ -86,7 +87,8 @@ export const addProduct = async (data, images, userId, userRole) => {
       description: data.description,
       images: JSON.stringify(images),
       price: parseInt(data.price),
-      status: userRole == "ADMIN" ? "APPROVED" : "PENDING",
+      status:
+        userRole === roleContants[1] ? statusConstants[2] : statusConstants[1],
       author: {
         connect: {
           userId: userId,
@@ -103,16 +105,22 @@ export const addProduct = async (data, images, userId, userRole) => {
       user: product.author,
     });
   });
-  const resolvedAdminUserIds = (await Promise.all(adminUserIds)).filter(
-    (id) => id !== null
-  );
+  const adminUsers = await prismaClient.user.findMany({
+    where: {
+      role: "ADMIN",
+    },
+    select: {
+      userId: true,
+    },
+  });
+  const adminUserIds = adminUsers.map((user) => user.userId);
   await Promise.all(
-    resolvedAdminUserIds.map((userId) => {
+    adminUserIds.map((adminUserId) => {
       prismaClient.notification.create({
         data: {
           content: `${product.author.name} đã tạo một sản phẩm`,
           user: {
-            connect: { userId: userId },
+            connect: { userId: adminUserId },
           },
           product: {
             connect: { productId: product.productId },
@@ -140,7 +148,7 @@ export const updateProduct = async (
   if (!isExist) {
     throw new OperationalException(404, false, "Product not found");
   }
-  if (isExist.userId !== userId && userRole !== "ADMIN") {
+  if (isExist.userId !== userId && userRole !== roleContants[1]) {
     throw new OperationalException(
       403,
       false,
@@ -208,7 +216,7 @@ export const deleteProduct = async (id, userId, userRole) => {
   if (!product) {
     throw new OperationalException(404, false, "Product not found");
   }
-  if (product.userId !== userId && userRole !== "ADMIN") {
+  if (product.userId !== userId && userRole !== roleContants[1]) {
     throw new OperationalException(
       403,
       false,
@@ -351,7 +359,7 @@ export const approveProduct = async (productId) => {
         productId,
       },
       data: {
-        status: "APPROVED",
+        status: statusConstants[2],
         statusMessage: "Sản phẩm bạn đăng lên đã được chấp thuận",
       },
     });
@@ -398,7 +406,7 @@ export const rejectProduct = async (productId, message) => {
         productId,
       },
       data: {
-        status: "REJECTED",
+        status: statusConstants[3],
         statusMessage: message,
       },
     });
