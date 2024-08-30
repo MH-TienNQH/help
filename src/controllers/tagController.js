@@ -4,7 +4,9 @@ import { responseFormat } from "../utils/responseFormat.js";
 
 export const getUsers = asyncErrorHandler(async (req, res) => {
   const { name } = req.query;
-  const response = await tagServices.getUsers(name);
+  const { page, limit } = req.pagination;
+
+  const response = await tagServices.getUsers(name, page, limit);
   res.send(new responseFormat(200, true, response));
 });
 

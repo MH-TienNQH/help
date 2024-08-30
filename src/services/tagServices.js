@@ -5,7 +5,15 @@ import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
 
 const vietnamDate = new Date();
 const utcDate = convertVietnamTimeToUtc(vietnamDate);
-export const getUsers = async (name) => {
+export const getUsers = async (name, page, limit) => {
+  const skip = (page - 1) * limit;
+  const numberOfUsers = await prismaClient.user.count({
+    where: {
+      username: {
+        contains: name || "",
+      },
+    },
+  });
   const users = await prismaClient.user.findMany({
     where: {
       username: {
@@ -16,8 +24,21 @@ export const getUsers = async (name) => {
       userId: true,
       username: true,
     },
+    skip,
+    take: limit,
   });
-  return users.length > 0 ? users : "no users";
+  const totalPages = Math.ceil(numberOfUsers / limit);
+  const previousPage = page > 1 ? page - 1 : null;
+  const nextPage = page < totalPages ? page + 1 : null;
+  return {
+    users: users.length > 0 ? users : "no users",
+    meta: {
+      previous_page: previousPage,
+      current_page: page,
+      next_page: nextPage,
+      total: totalPages,
+    },
+  };
 };
 
 export const tagUser = async (data, taggerId) => {
