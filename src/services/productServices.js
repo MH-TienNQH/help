@@ -6,7 +6,7 @@ import * as userServices from "./userServices.js";
 
 import { adminSockets, io } from "../socket.io/server.js";
 import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
-import { roleContants, statusConstants } from "../constants/constants.js";
+import { roleConstants, statusConstants } from "../constants/constants.js";
 
 const vietnamDate = new Date(); // Current local time
 const utcDate = convertVietnamTimeToUtc(vietnamDate);
@@ -80,7 +80,6 @@ export const addProduct = async (data, images, userId, userRole) => {
   if (isExist) {
     throw new OperationalException(403, false, "Product exist");
   }
-
   const product = await prismaClient.product.create({
     data: {
       name: data.name,
@@ -88,7 +87,7 @@ export const addProduct = async (data, images, userId, userRole) => {
       images: JSON.stringify(images),
       price: parseInt(data.price),
       status:
-        userRole === roleContants[1] ? statusConstants[2] : statusConstants[1],
+        userRole === roleConstants[1] ? statusConstants[2] : statusConstants[1],
       author: {
         connect: {
           userId: userId,
@@ -149,7 +148,7 @@ export const updateProduct = async (
   if (!isExist) {
     throw new OperationalException(404, false, "Product not found");
   }
-  if (isExist.userId !== userId && userRole !== roleContants[1]) {
+  if (isExist.userId !== userId && userRole !== roleConstants[1]) {
     throw new OperationalException(
       403,
       false,
@@ -217,7 +216,7 @@ export const deleteProduct = async (id, userId, userRole) => {
   if (!product) {
     throw new OperationalException(404, false, "Product not found");
   }
-  if (product.userId !== userId && userRole !== roleContants[1]) {
+  if (product.userId !== userId && userRole !== roleConstants[1]) {
     throw new OperationalException(
       403,
       false,

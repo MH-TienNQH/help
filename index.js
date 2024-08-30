@@ -15,7 +15,6 @@ import paginationMiddleware from "./src/middlewares/paginationMiddleware.js";
 import bodyParser from "body-parser";
 import { deleteNotVerified } from "./src/utils/deleteNotVerified.js";
 import uploadToCloudinary from "./src/utils/uploadToCloudinary.js";
-import { io } from "socket.io-client";
 
 const PORT = process.env.PORT;
 

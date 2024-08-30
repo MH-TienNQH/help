@@ -4,7 +4,7 @@ export const statusConstants = Object.freeze({
   3: "REJECTED",
 });
 
-export const roleContants = Object.freeze({
+export const roleConstants = Object.freeze({
   1: "ADMIN",
   2: "USER",
 });
