@@ -8,8 +8,9 @@ const paginationMiddleware = (req, res, next) => {
 
   if (page < 1 || limit < 1) {
     throw new OperationalException(
-      "Page and limit must be positive integers",
-      401
+      401,
+      false,
+      "Page and limit must be positive integers"
     );
   }
 

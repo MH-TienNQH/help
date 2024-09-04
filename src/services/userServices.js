@@ -12,6 +12,7 @@ import { io } from "../socket.io/server.js";
 import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
 
 import { RequestStatus, Role, Status } from "@prisma/client";
+import { roleConstants, statusConstants } from "../constants/constants.js";
 const vietnamDate = new Date();
 const utcDate = convertVietnamTimeToUtc(vietnamDate);
 
@@ -123,7 +124,7 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
       userId: id,
     },
   });
-  if (user.userId !== userId && userRole !== "ADMIN") {
+  if (user.userId !== userId && userRole !== roleConstants[1]) {
     return new responseFormatForErrors(
       401,
       false,
@@ -181,7 +182,7 @@ export const deleteUser = async (id, userId, userRole) => {
   if (!userExist) {
     throw new OperationalException(404, false, "User not found");
   }
-  if (userExist.userId !== userId && userRole !== "ADMIN") {
+  if (userExist.userId !== userId && userRole !== roleConstants[1]) {
     throw new OperationalException(
       401,
       false,
@@ -572,7 +573,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
       },
     },
     data: {
-      requestStatus: "APPROVED",
+      requestStatus: statusConstants[2],
     },
   });
   await prismaClient.requestToBuy.updateMany({
@@ -583,7 +584,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
       },
     },
     data: {
-      requestStatus: "REJECTED",
+      requestStatus: statusConstants[3],
     },
   });
 
@@ -657,7 +658,7 @@ export const rejectRequest = async (ownerId, productId, userId) => {
       },
     },
     data: {
-      requestStatus: "REJECTED",
+      requestStatus: statusConstants[3],
     },
   });
   if (product.product.userId && product.product.userId !== userId) {

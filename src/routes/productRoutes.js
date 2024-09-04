@@ -19,6 +19,7 @@ import {
 
 //authentication middlewares
 import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
+import checkVerifyStatusMiddleware from "../middlewares/checkVerifyStatusMiddleware.js";
 
 //validation
 import { upload } from "../utils/multer.js";
@@ -42,6 +43,7 @@ productRoutes.post(
   "/add-product",
   upload.fields([{ name: "images" }]),
   verifyTokenMiddlewares,
+  checkVerifyStatusMiddleware,
   validationMiddlware(addProductSchema),
   uploadToCloudinary,
   addProduct

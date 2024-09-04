@@ -12,7 +12,11 @@ const verifyTokenMiddlewares = async (req, res, next) => {
     }
 
     if (!accessToken) {
-      const error = new OperationalException("You are not authenticated", 401);
+      const error = new OperationalException(
+        401,
+        false,
+        "You are not authenticated"
+      );
       next(error);
     }
 
