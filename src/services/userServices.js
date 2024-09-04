@@ -9,10 +9,7 @@ import {
 
 import { getThreeTrendingProduct } from "./productServices.js";
 import { io } from "../socket.io/server.js";
-import {
-  convertVietnamTimeToUtc,
-  formatVietnamTime,
-} from "../utils/changeToVietnamTimezone.js";
+import { formatVietnamTime } from "../utils/changeToVietnamTimezone.js";
 
 import { RequestStatus, Role, Status } from "@prisma/client";
 import { roleConstants, statusConstants } from "../constants/constants.js";
@@ -91,7 +88,7 @@ export const findUserByEmail = async (email) => {
   });
 };
 
-export const addUser = async (data, avatar) => {
+export const addUser = async (data, avatar, userRole) => {
   const existingUserWithUsername = await prismaClient.user.findUnique({
     where: {
       username: data.username,
@@ -118,6 +115,7 @@ export const addUser = async (data, avatar) => {
       password: data.password,
       avatar: JSON.stringify(avatar),
       role: data.role,
+      verified: userRole === roleConstants[1] ? true : false,
       createdAt: new Date(),
     },
   });

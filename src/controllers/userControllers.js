@@ -24,6 +24,7 @@ export const getUserById = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const addUser = asyncErrorHandler(async (req, res, next) => {
+  const userRole = req.userRole;
   if (!req.files.avatar) {
     return res.json(
       new responseFormatForErrors(401, false, {
