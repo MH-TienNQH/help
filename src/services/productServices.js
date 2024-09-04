@@ -249,6 +249,7 @@ export const getThreeTrendingProduct = async (startDate, endDate) => {
             ...(startDate ? { gte: new Date(startDate) } : {}),
             ...(endDate ? { lte: new Date(endDate) } : {}),
           },
+          status: "APPROVED",
         }
       : {}),
   };
