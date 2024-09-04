@@ -1,6 +1,7 @@
 import {
   responseFormat,
   responseFormatForErrors,
+  responseFormatWithPagination,
 } from "../utils/responseFormat.js";
 import * as userServices from "../services/userServices.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
@@ -10,7 +11,9 @@ export const getAllUser = asyncErrorHandler(async (req, res) => {
   const { name, order, role } = req.query;
   const { page, limit } = req.pagination;
   let users = await userServices.getAllUser(name, order, role, page, limit);
-  res.send(new responseFormat(200, true, users));
+  res.send(
+    new responseFormatWithPagination(200, true, users.formattedUser, users.meta)
+  );
 });
 
 export const getUserById = asyncErrorHandler(async (req, res, next) => {

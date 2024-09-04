@@ -46,16 +46,15 @@ export const getAllUser = async (name, order = "asc", role, page, limit) => {
       createdAt: orderDirection,
     },
   });
-  const usersWithImageUrls = users.map((user) => ({
+  const formattedUser = users.map(({ password, ...user }) => ({
     ...user,
-    imageUrl: `${process.env.BASE_URL}/${user.avatar}`,
     createdAt: formatVietnamTime(user.createdAt),
   }));
   const totalPages = Math.ceil(numberOfUsers / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
   return {
-    usersWithImageUrls,
+    formattedUser,
     meta: {
       previous_page: previousPage,
       current_page: page,
@@ -72,12 +71,13 @@ export const findById = async (id) => {
     },
   });
   if (user) {
+    const { password, ...userWithoutPassword } = user;
     return {
-      ...user,
-      imageUrl: `${process.env.BASE_URL}/${user.avatar}`,
+      ...userWithoutPassword,
       createdAt: formatVietnamTime(user.createdAt),
     };
   }
+  throw new OperationalException(404, false, "User not found");
 };
 
 export const findUserByEmail = async (email) => {

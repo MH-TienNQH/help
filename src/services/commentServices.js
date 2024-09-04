@@ -48,7 +48,7 @@ export const getComments = async (productId, order = "desc", page, limit) => {
   const formattedComments = comments.map((comment) => ({
     ...comment,
     createdAt: formatVietnamTime(comment.createdAt),
-    content: formatCommentContent(comment.content, taggedUsers), // Replace @userId with user names
+    content: formatCommentContent(comment.content, taggedUsers),
   }));
   return {
     comments: formattedComments,

@@ -91,7 +91,7 @@ export const addProduct = async (req, res) => {
   }
 };
 
-export const updateProduct = asyncErrorHandler(async (req, res, next) => {
+export const updateProduct = asyncErrorHandler(async (req, res) => {
   const productId = req.params.id;
   const data = req.body;
   const userId = req.userId;
