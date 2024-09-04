@@ -58,6 +58,15 @@ export const addComment = async (productId, userId, data) => {
       userId,
     },
   });
+  if (!user) {
+    throw new OperationalException(404, false, "User not found");
+  }
+  const taggedUserIds = extractTaggedUserIds(data.content);
+  const taggedUsers = await prismaClient.user.findMany({
+    where: {
+      userId: { in: taggedUserIds },
+    },
+  });
   const comment = await prismaClient.comment.create({
     data: {
       content: data.content,
@@ -76,7 +85,7 @@ export const addComment = async (productId, userId, data) => {
   io.emit(`comment ${productId}`, {
     product,
     user,
-    message: `${user.username} has commented on your product`,
+    message: `${user.username} đã bình luận vào sản phẩm của bạn`,
     content: comment.content,
   });
   if (product.userId && product.userId !== userId) {
@@ -102,6 +111,22 @@ export const addComment = async (productId, userId, data) => {
       },
     });
   }
+  for (const taggedUser of taggedUsers) {
+    io.emit(`notification ${taggedUser.userId}`, {
+      product,
+      user,
+      message: `${user.username} đã nhắc đến bạn trong một bình luận: ${comment.content}`,
+    });
+    await prismaClient.notification.create({
+      data: {
+        content: `${user.username} đã nhắc đến bạn trong một bình luận: ${comment.content}`,
+        user: { connect: { userId: taggedUser.userId } },
+        product: { connect: { productId: product.productId } },
+        createdAt: utcDate,
+      },
+    });
+  }
+
   return comment;
 };
 
@@ -159,4 +184,14 @@ export const deleteComment = async (commentId, userId) => {
     },
   });
   return true;
+};
+
+const extractTaggedUserIds = (content) => {
+  const userIdPattern = /@(\w+)/g;
+  const matches = content.match(userIdPattern);
+  return matches
+    ? matches
+        .map((match) => parseInt(match.slice(1), 10))
+        .filter((id) => !isNaN(id))
+    : [];
 };

@@ -51,8 +51,6 @@ model User {
   comments      Comment[]
   RequestToBuy  RequestToBuy[]
   Notification  Notification[]
-  Tagged        Tag[]          @relation("TagsAsTagged")
-  Tagger        Tag[]          @relation("TagsAsTagger")
 }
 
 model RefreshToken {
@@ -100,7 +98,6 @@ model Product {
   comments      Comment[]
   RequestToBuy  RequestToBuy[]
   Notification  Notification[]
-  Tag           Tag[]
 }
 
 model RequestToBuy {
@@ -158,14 +155,4 @@ model Notification {
   product        Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
   status         Boolean  @default(false)
   createdAt      DateTime @default(now())
-}
-
-model Tag {
-  tagId        Int     @id @default(autoincrement())
-  taggerUserId Int
-  tagger       User    @relation("TagsAsTagger", fields: [taggerUserId], references: [userId], onDelete: Cascade)
-  taggedUserId Int
-  tagged       User    @relation("TagsAsTagged", fields: [taggedUserId], references: [userId], onDelete: Cascade)
-  productId    Int
-  product      Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
 }
