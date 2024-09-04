@@ -249,12 +249,14 @@ export const getThreeTrendingProduct = async (startDate, endDate) => {
             ...(startDate ? { gte: new Date(startDate) } : {}),
             ...(endDate ? { lte: new Date(endDate) } : {}),
           },
-          status: "APPROVED",
         }
       : {}),
   };
   return await prismaClient.product.findMany({
     where: Object.keys(whereClause).length > 0 ? whereClause : {},
+    where: {
+      status: "APPROVED",
+    },
     include: {
       RequestToBuy: {
         include: {
