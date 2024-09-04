@@ -5,6 +5,12 @@ import { formatVietnamTime } from "../utils/changeToVietnamTimezone.js";
 
 const vietnamDate = new Date();
 
+const formatCommentContent = (content, taggedUsers) => {
+  return content.replace(/@(\d+)/g, (match, userId) => {
+    const user = taggedUsers.find((u) => u.userId === parseInt(userId, 10));
+    return user ? `@${user.name}` : match;
+  });
+};
 export const getComments = async (productId, order = "desc", page, limit) => {
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
@@ -29,12 +35,20 @@ export const getComments = async (productId, order = "desc", page, limit) => {
     skip,
     take: limit,
   });
+  const taggedUserIds = comments.flatMap((comment) =>
+    extractTaggedUserIds(comment.content)
+  );
+  const taggedUsers = await prismaClient.user.findMany({
+    where: { userId: { in: taggedUserIds } },
+  });
+
   const totalPages = Math.ceil(numberOfComments / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
   const formattedComments = comments.map((comment) => ({
     ...comment,
     createdAt: formatVietnamTime(comment.createdAt),
+    content: formatCommentContent(comment.content, taggedUsers), // Replace @userId with user names
   }));
   return {
     comments: formattedComments,

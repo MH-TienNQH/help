@@ -7,7 +7,7 @@ import {
 
 export const getComments = asyncErrorHandler(async (req, res) => {
   const { order } = req.query;
-  const { productId } = parseInt(req.params);
+  const productId = req.params.id;
   const { page, limit } = req.pagination;
 
   const comments = await commentServices.getComments(
