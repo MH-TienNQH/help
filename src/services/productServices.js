@@ -5,7 +5,10 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
 
 import { adminSockets, io } from "../socket.io/server.js";
-import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
+import {
+  convertVietnamTimeToUtc,
+  formatVietnamTime,
+} from "../utils/changeToVietnamTimezone.js";
 import { roleConstants, statusConstants } from "../constants/constants.js";
 
 const vietnamDate = new Date(); // Current local time
