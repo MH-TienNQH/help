@@ -9,12 +9,14 @@ import {
 
 import { getThreeTrendingProduct } from "./productServices.js";
 import { io } from "../socket.io/server.js";
-import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
+import {
+  convertVietnamTimeToUtc,
+  formatVietnamTime,
+} from "../utils/changeToVietnamTimezone.js";
 
 import { RequestStatus, Role, Status } from "@prisma/client";
 import { roleConstants, statusConstants } from "../constants/constants.js";
 const vietnamDate = new Date();
-const utcDate = convertVietnamTimeToUtc(vietnamDate);
 
 export const getAllUser = async (name, order = "asc", role, page, limit) => {
   const skip = (page - 1) * limit;
@@ -49,7 +51,8 @@ export const getAllUser = async (name, order = "asc", role, page, limit) => {
   });
   const usersWithImageUrls = users.map((user) => ({
     ...user,
-    imageUrl: `${process.env.BASE_URL}/${user.avatar}`, // Construct the full image URL
+    imageUrl: `${process.env.BASE_URL}/${user.avatar}`,
+    createdAt: formatVietnamTime(user.createdAt),
   }));
   const totalPages = Math.ceil(numberOfUsers / limit);
   const previousPage = page > 1 ? page - 1 : null;
@@ -74,7 +77,8 @@ export const findById = async (id) => {
   if (user) {
     return {
       ...user,
-      imageUrl: `${process.env.BASE_URL}/${user.avatar}`, // Construct the full image URL
+      imageUrl: `${process.env.BASE_URL}/${user.avatar}`,
+      createdAt: formatVietnamTime(user.createdAt),
     };
   }
 };
@@ -114,6 +118,7 @@ export const addUser = async (data, avatar) => {
       password: data.password,
       avatar: JSON.stringify(avatar),
       role: data.role,
+      createdAt: new Date(),
     },
   });
 };
@@ -292,7 +297,7 @@ export const likeProduct = async (userId, productId) => {
             productId: product.productId,
           },
         },
-        createdAt: utcDate,
+        createdAt: new Date(),
       },
     });
   }
@@ -378,7 +383,7 @@ export const requestToBuyProduct = async (
               productId: product.productId,
             },
           },
-          createdAt: utcDate,
+          createdAt: new Date(),
         },
       });
     }
@@ -616,7 +621,7 @@ export const approveRequest = async (ownerId, productId, userId) => {
             productId: product.product.productId,
           },
         },
-        createdAt: utcDate,
+        createdAt: new Date(),
       },
     });
   }
@@ -680,7 +685,7 @@ export const rejectRequest = async (ownerId, productId, userId) => {
             productId: product.product.productId,
           },
         },
-        createdAt: utcDate,
+        createdAt: new Date(),
       },
     });
   }

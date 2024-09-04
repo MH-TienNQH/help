@@ -1,10 +1,9 @@
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { io } from "../socket.io/server.js";
-import { convertVietnamTimeToUtc } from "../utils/changeToVietnamTimezone.js";
+import { formatVietnamTime } from "../utils/changeToVietnamTimezone.js";
 
 const vietnamDate = new Date();
-const utcDate = convertVietnamTimeToUtc(vietnamDate);
 
 export const getComments = async (productId, order = "desc", page, limit) => {
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
@@ -33,8 +32,12 @@ export const getComments = async (productId, order = "desc", page, limit) => {
   const totalPages = Math.ceil(numberOfComments / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
+  const formattedComments = comments.map((comment) => ({
+    ...comment,
+    createdAt: formatVietnamTime(comment.createdAt),
+  }));
   return {
-    comments,
+    comments: formattedComments,
     meta: {
       privious_page: previousPage,
       current_page: page,
@@ -80,6 +83,7 @@ export const addComment = async (productId, userId, data) => {
           productId,
         },
       },
+      createdAt: new Date(),
     },
   });
   io.emit(`comment ${productId}`, {
@@ -107,7 +111,7 @@ export const addComment = async (productId, userId, data) => {
             productId: product.productId,
           },
         },
-        createdAt: utcDate,
+        createdAt: new Date(),
       },
     });
   }
@@ -122,12 +126,14 @@ export const addComment = async (productId, userId, data) => {
         content: `${user.username} đã nhắc đến bạn trong một bình luận: ${comment.content}`,
         user: { connect: { userId: taggedUser.userId } },
         product: { connect: { productId: product.productId } },
-        createdAt: utcDate,
+        createdAt: new Date(),
       },
     });
   }
-
-  return comment;
+  return {
+    ...comment,
+    createdAt: formatVietnamTime(comment.createdAt),
+  };
 };
 
 export const updateComment = async (commentId, userId, data) => {

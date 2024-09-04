@@ -11,11 +11,16 @@ import { roleConstants, statusConstants } from "../constants/constants.js";
 const vietnamDate = new Date(); // Current local time
 const utcDate = convertVietnamTimeToUtc(vietnamDate);
 export const getAllProduct = async () => {
-  return await prismaClient.product.findMany({
+  const products = await prismaClient.product.findMany({
     include: {
       author: true,
     },
   });
+  const formattedProducts = products.map((product) => ({
+    ...product,
+    createdAt: formatVietnamTime(product.createdAt),
+  }));
+  return formattedProducts;
 };
 export const findById = async (userId, productId) => {
   const product = await prismaClient.product.findUnique({
@@ -93,6 +98,7 @@ export const addProduct = async (data, images, userId, userRole) => {
           userId: userId,
         },
       },
+      createdAt: new Date(),
     },
     include: {
       author: true,
