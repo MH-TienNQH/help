@@ -63,11 +63,11 @@ export const getAllNotification = async (
     const taggedUserIds = extractTaggedUserIds(content);
 
     taggedUserIds.forEach((id) => {
-      const userName = userMap.get(id); // Get the user name from the map
-      if (userName) {
-        // Create a global regex to replace all occurrences of @userId with the userName
+      const name = userMap.get(id); // Get the user name from the map
+      if (name) {
+        // Create a global regex to replace all occurrences of @userId with name
         const regex = new RegExp(`@${id}`, "g");
-        content = content.replace(regex, `@${userName}`);
+        content = content.replace(regex, `@${name}`);
       }
     });
 
