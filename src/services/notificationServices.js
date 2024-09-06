@@ -32,13 +32,36 @@ export const getAllNotification = async (
     skip,
     take: limit,
   });
+
+  // Format notifications with user names
+  const formattedNotifications = notifications.map((notification) => {
+    const { password, ...userWithoutPassword } = notification.user;
+    let content = notification.content;
+    const mentionedUserIds = content.match(/@\d+/g); // Extract all user IDs mentioned in the content
+
+    if (mentionedUserIds) {
+      mentionedUserIds.forEach((userIdMention) => {
+        const id = parseInt(userIdMention.substring(1), 10); // Extract numeric user ID from @ID
+        const user = notification.user; // Get the user details from the included user object
+
+        if (user && user.userId === id) {
+          // Replace the user ID with the username
+          content = content.replace(userIdMention, `@${user.name}`);
+        }
+      });
+    }
+
+    return {
+      ...notification,
+      user: userWithoutPassword,
+      content, // Update the content with user names
+      createdAt: formatVietnamTime(notification.createdAt),
+    };
+  });
+
   const totalPages = Math.ceil(numberOfNotis / limit);
   const previousPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
-  const formattedNotifications = notifications.map((notification) => ({
-    ...notification,
-    createdAt: formatVietnamTime(notification.createdAt),
-  }));
   return {
     notifications: formattedNotifications,
     meta: {

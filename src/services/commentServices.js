@@ -135,7 +135,7 @@ export const addComment = async (productId, userId, data) => {
       user,
       message: `${user.username} đã nhắc đến bạn trong một bình luận: ${comment.content}`,
     });
-    await prismaClient.notification.create({
+    const notification = await prismaClient.notification.create({
       data: {
         content: `${user.username} đã nhắc đến bạn trong một bình luận: ${comment.content}`,
         user: { connect: { userId: taggedUser.userId } },
