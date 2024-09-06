@@ -1,6 +1,7 @@
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { formatVietnamTime } from "../utils/changeToVietnamTimezone.js";
+import { extractTaggedUserIds } from "../utils/extractUserId.js";
 
 export const getAllNotification = async (
   userId,
@@ -33,28 +34,47 @@ export const getAllNotification = async (
     take: limit,
   });
 
+  const mentionedUserIds = new Set();
+  notifications.forEach((notification) => {
+    extractTaggedUserIds(notification.content).forEach((id) =>
+      mentionedUserIds.add(id)
+    );
+  });
+
+  // Fetch user details for all mentioned user IDs
+  const mentionedUserDetails = await prismaClient.user.findMany({
+    where: {
+      userId: { in: Array.from(mentionedUserIds) },
+    },
+  });
+
+  // Create a map of user IDs to user names
+  const userMap = new Map();
+  mentionedUserDetails.forEach((user) => {
+    userMap.set(user.userId, user.name);
+  });
+
   // Format notifications with user names
   const formattedNotifications = notifications.map((notification) => {
     const { password, ...userWithoutPassword } = notification.user;
     let content = notification.content;
-    const mentionedUserIds = content.match(/@\d+/g); // Extract all user IDs mentioned in the content
 
-    if (mentionedUserIds) {
-      mentionedUserIds.forEach((userIdMention) => {
-        const id = parseInt(userIdMention.substring(1), 10); // Extract numeric user ID from @ID
-        const user = notification.user; // Get the user details from the included user object
+    // Replace all occurrences of @userId with the corresponding user name
+    const taggedUserIds = extractTaggedUserIds(content);
 
-        if (user && user.userId === id) {
-          // Replace the user ID with the username
-          content = content.replace(userIdMention, `@${user.name}`);
-        }
-      });
-    }
+    taggedUserIds.forEach((id) => {
+      const userName = userMap.get(id); // Get the user name from the map
+      if (userName) {
+        // Create a global regex to replace all occurrences of @userId with the userName
+        const regex = new RegExp(`@${id}`, "g");
+        content = content.replace(regex, `@${userName}`);
+      }
+    });
 
     return {
       ...notification,
       user: userWithoutPassword,
-      content, // Update the content with user names
+      content, // Updated content with user names
       createdAt: formatVietnamTime(notification.createdAt),
     };
   });

@@ -2,6 +2,7 @@ import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { io } from "../socket.io/server.js";
 import { formatVietnamTime } from "../utils/changeToVietnamTimezone.js";
+import { extractTaggedUserIds } from "../utils/extractUserId.js";
 
 const vietnamDate = new Date();
 
@@ -204,14 +205,4 @@ export const deleteComment = async (commentId, userId) => {
     },
   });
   return true;
-};
-
-const extractTaggedUserIds = (content) => {
-  const userIdPattern = /@(\w+)/g;
-  const matches = content.match(userIdPattern);
-  return matches
-    ? matches
-        .map((match) => parseInt(match.slice(1), 10))
-        .filter((id) => !isNaN(id))
-    : [];
 };
