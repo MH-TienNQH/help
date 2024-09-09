@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
     const user = await prismaClient.user.findUnique({ where: { userId } });
     if (user) {
       if (user.role === "ADMIN") {
-        adminSockets.add(socket.id);
+        adminSockets.set(userId, socket.id);
         console.log(`Admin ${userId} connected with socket ${socket.id}`);
       }
 
