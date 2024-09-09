@@ -123,20 +123,12 @@ export const addProduct = async (data, images, userId, userRole) => {
   const adminUserIds = adminUsers.map((user) => user.userId);
   adminUserIds.forEach((adminUserId) => {
     const eventName = `notification ${adminUserId}`;
-
-
     io.emit(eventName, {
-      content: `${product.author.name} đã tạo một sản phẩm`,
+      message: `${product.author.name} đã tạo một sản phẩm`,
       product: product,
       user: product.author,
     });
   });
-  // adminSockets.forEach((socketId) => {
-  //   io.to(socketId).emit("productAdded", {
-  //     product: product,
-  //     user: product.author,
-  //   });
-  // });
   await Promise.all(
     adminUserIds.map((adminUserId) =>
       prismaClient.notification.create({
