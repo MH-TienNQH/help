@@ -12,7 +12,7 @@ const io = new SocketIO(socketServer, {
   },
 });
 
-export const adminSockets = new Set();
+export const adminSockets = new Map();
 // Socket.IO connection handling
 io.on("connection", (socket) => {
   socket.on("joinRoom", async (productId, userId) => {
