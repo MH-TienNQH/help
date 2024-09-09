@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
 });
 
 export function getSocketIdFromUserId(userId) {
-  return userSocketMap.get(userId);
+  return adminSockets.get(userId);
 }
 
 const SOCKET_PORT = process.env.SOCKET_PORT || 3000;
