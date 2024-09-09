@@ -4,7 +4,11 @@ import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
 
-import { adminSockets, io } from "../socket.io/server.js";
+import {
+  adminSockets,
+  getSocketIdFromUserId,
+  io,
+} from "../socket.io/server.js";
 import {
   convertVietnamTimeToUtc,
   formatVietnamTime,
@@ -107,12 +111,25 @@ export const addProduct = async (data, images, userId, userRole) => {
       author: true,
     },
   });
-  adminSockets.forEach((socketId) => {
-    io.to(socketId).emit("productAdded", {
-      product: product,
-      user: product.author,
-    });
+  const adminUserIds = adminUsers.map((user) => user.userId);
+  adminUserIds.forEach((adminUserId) => {
+    const eventName = `notification ${adminUserId}`;
+    const socketId = getSocketIdFromUserId(adminUserId);
+
+    if (socketId) {
+      io.to(socketId).emit(eventName, {
+        content: `${product.author.name} đã tạo một sản phẩm`,
+        product: product,
+        user: product.author,
+      });
+    }
   });
+  // adminSockets.forEach((socketId) => {
+  //   io.to(socketId).emit("productAdded", {
+  //     product: product,
+  //     user: product.author,
+  //   });
+  // });
   const adminUsers = await prismaClient.user.findMany({
     where: {
       role: "ADMIN",
@@ -122,7 +139,6 @@ export const addProduct = async (data, images, userId, userRole) => {
     },
   });
 
-  const adminUserIds = adminUsers.map((user) => user.userId);
   await Promise.all(
     adminUserIds.map((adminUserId) =>
       prismaClient.notification.create({

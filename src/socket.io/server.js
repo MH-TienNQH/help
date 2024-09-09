@@ -52,6 +52,10 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {});
 });
 
+export function getSocketIdFromUserId(userId) {
+  return userSocketMap.get(userId);
+}
+
 const SOCKET_PORT = process.env.SOCKET_PORT || 3000;
 socketServer.listen(SOCKET_PORT, () => {
   console.log(`Socket.IO server is running on http://localhost:${SOCKET_PORT}`);
