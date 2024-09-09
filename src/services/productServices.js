@@ -111,6 +111,15 @@ export const addProduct = async (data, images, userId, userRole) => {
       author: true,
     },
   });
+
+  const adminUsers = await prismaClient.user.findMany({
+    where: {
+      role: "ADMIN",
+    },
+    select: {
+      userId: true,
+    },
+  });
   const adminUserIds = adminUsers.map((user) => user.userId);
   adminUserIds.forEach((adminUserId) => {
     const eventName = `notification ${adminUserId}`;
@@ -130,15 +139,6 @@ export const addProduct = async (data, images, userId, userRole) => {
   //     user: product.author,
   //   });
   // });
-  const adminUsers = await prismaClient.user.findMany({
-    where: {
-      role: "ADMIN",
-    },
-    select: {
-      userId: true,
-    },
-  });
-
   await Promise.all(
     adminUserIds.map((adminUserId) =>
       prismaClient.notification.create({
