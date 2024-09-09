@@ -123,15 +123,13 @@ export const addProduct = async (data, images, userId, userRole) => {
   const adminUserIds = adminUsers.map((user) => user.userId);
   adminUserIds.forEach((adminUserId) => {
     const eventName = `notification ${adminUserId}`;
-    const socketId = getSocketIdFromUserId(adminUserId);
 
-    if (socketId) {
-      io.to(socketId).emit(eventName, {
-        content: `${product.author.name} đã tạo một sản phẩm`,
-        product: product,
-        user: product.author,
-      });
-    }
+
+    io.emit(eventName, {
+      content: `${product.author.name} đã tạo một sản phẩm`,
+      product: product,
+      user: product.author,
+    });
   });
   // adminSockets.forEach((socketId) => {
   //   io.to(socketId).emit("productAdded", {
