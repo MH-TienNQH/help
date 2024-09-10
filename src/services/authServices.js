@@ -5,6 +5,11 @@ import { compareSync, hashSync } from "bcrypt";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { io } from "../socket.io/server.js";
+import {
+  AccountOperationalErrorsConstants,
+  AuthOperationalErrorConstants,
+  OTPOperationalErrorConstants,
+} from "../constants/constants.js";
 
 export const verifyEmail = async (email) => {
   let user = await userServices.findUserByEmail(email);
@@ -19,16 +24,28 @@ export const verifyEmail = async (email) => {
     });
     return true;
   }
-  throw new OperationalException(404, false, "Email not found");
+  throw new OperationalException(
+    404,
+    false,
+    AccountOperationalErrorsConstants.NO_ACCOUNT_ERROR
+  );
 };
 
 export const login = async (data) => {
   let user = await userServices.findUserByEmail(data.email);
   if (!user) {
-    throw new OperationalException(404, false, "Email not found");
+    throw new OperationalException(
+      404,
+      false,
+      AccountOperationalErrorsConstants.NO_ACCOUNT_ERROR
+    );
   }
   if (!compareSync(data.password, user.password)) {
-    throw new OperationalException(401, false, "Incorrect password");
+    throw new OperationalException(
+      401,
+      false,
+      AccountOperationalErrorsConstants.INCORRECT_PASSWORD_ERROR
+    );
   }
   const { accessToken, refreshToken } = await generateToken(user);
   await prismaClient.refreshToken.create({
@@ -78,7 +95,11 @@ export const refresh = async (refreshToken) => {
     },
   });
   if (!user) {
-    throw new OperationalException("User not found", 404);
+    throw new OperationalException(
+      404,
+      false,
+      AccountOperationalErrorsConstants.ACCOUNT_NOT_FOUND_ERROR
+    );
   }
   const response = generateToken(user);
   await prismaClient.refreshToken.update({
@@ -99,7 +120,11 @@ export const verifyRefreshToken = async (refreshToken) => {
     process.env.JWT_REFRESH_KEY,
     (error, decode) => {
       if (error) {
-        throw new OperationalException(error, 500);
+        throw new OperationalException(
+          401,
+          false,
+          AuthOperationalErrorConstants.TOKEN_EXPIRED_ERROR
+        );
       }
       return decode;
     }
@@ -123,13 +148,25 @@ export const setPassword = async (email, password, otp) => {
     },
   });
   if (!user) {
-    throw new OperationalException(404, false, "Email doesn't exist");
+    throw new OperationalException(
+      404,
+      false,
+      AccountOperationalErrorsConstants.NO_ACCOUNT_ERROR
+    );
   }
   if (parseInt(user.otp) !== otp) {
-    throw new OperationalException(401, false, "Invalid OTP");
+    throw new OperationalException(
+      401,
+      false,
+      OTPOperationalErrorConstants.INCORRECT_OTP_ERROR
+    );
   }
   if (now.getTime() > user.otpExpireAt) {
-    throw new OperationalException(401, false, "OTP expired");
+    throw new OperationalException(
+      401,
+      false,
+      OTPOperationalErrorConstants.OTP_EXPIRED_ERROR
+    );
   }
   await prismaClient.user.update({
     where: {
@@ -169,5 +206,9 @@ export const forgotPassword = async (email) => {
     });
     return true;
   }
-  throw new OperationalException(404, false, "Email doesn't exist");
+  throw new OperationalException(
+    404,
+    false,
+    AccountOperationalErrorsConstants.NO_ACCOUNT_ERROR
+  );
 };

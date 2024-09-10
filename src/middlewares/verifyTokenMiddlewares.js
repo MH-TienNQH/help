@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { AuthOperationalErrorConstants } from "../constants/constants.js";
 
 const verifyTokenMiddlewares = async (req, res, next) => {
   try {
@@ -15,7 +16,7 @@ const verifyTokenMiddlewares = async (req, res, next) => {
       const error = new OperationalException(
         401,
         false,
-        "You are not authenticated"
+        AuthOperationalErrorConstants.NOT_LOGGED_IN_ERROR
       );
       next(error);
     }

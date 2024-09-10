@@ -19,21 +19,23 @@ import { validationMiddlware } from "../middlewares/validationMiddlewares.js";
 
 export const categoryRoutes = Router();
 
+// Public routes
 categoryRoutes.get("/get-all", getAllCategory);
 categoryRoutes.get("/get-by-id/:id", getCategoryById);
+
+categoryRoutes.use(verifyTokenMiddlewares);
+
+categoryRoutes.use(adminMiddlewares);
 categoryRoutes.post(
   "/add-category",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
   validationMiddlware(categorySchema),
   addCategory
 );
+
 categoryRoutes.put(
   "/update/:id",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
   validationMiddlware(categorySchema),
-  verifyTokenMiddlewares,
   updateCategory
 );
-categoryRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteCategory);
+
+categoryRoutes.delete("/delete/:id", deleteCategory);

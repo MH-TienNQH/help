@@ -30,53 +30,40 @@ import { signUpSchema } from "../schema/userSchema.js";
 
 export const userRoutes = Router();
 
-userRoutes.get("/get-all", verifyTokenMiddlewares, getAllUser);
-userRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getUserById);
-userRoutes.get("/count-user", verifyTokenMiddlewares, countUsers);
-userRoutes.get("/personal-product", verifyTokenMiddlewares, personalProduct);
-userRoutes.get(
-  "/add-chart-for-trending",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
-  createChart
-);
+userRoutes.use(verifyTokenMiddlewares);
 
-userRoutes.post(
-  "/add-user",
-  upload.fields([{ name: "avatar" }]),
-  validationMiddlware(signUpSchema),
-  verifyTokenMiddlewares,
-  adminMiddlewares,
-  uploadToCloudinary,
-  addUser
-);
-userRoutes.post("/save-product/:id", verifyTokenMiddlewares, saveProduct);
+userRoutes.get("/get-all", getAllUser);
+userRoutes.get("/get-by-id/:id", getUserById);
+userRoutes.get("/count-user", countUsers);
+userRoutes.get("/personal-product", personalProduct);
+userRoutes.post("/save-product/:id", saveProduct);
 
-userRoutes.post("/like-product/:id", verifyTokenMiddlewares, likeProduct);
+userRoutes.post("/like-product/:id", likeProduct);
 userRoutes.post(
   "/request-to-buy/:id",
   validationMiddlware(requestSchema),
-  verifyTokenMiddlewares,
   requestToBuy
 );
 
 userRoutes.put(
   "/update/:id",
   upload.fields([{ name: "avatar" }]),
-  verifyTokenMiddlewares,
   validationMiddlware(signUpSchema),
   uploadToCloudinary,
   updateUser
 );
-userRoutes.put(
-  "/approve-request/:productId/:userId",
-  verifyTokenMiddlewares,
-  approveRequest
-);
-userRoutes.put(
-  "/reject-request/:productId/:userId",
-  verifyTokenMiddlewares,
-  rejectRequest
-);
+userRoutes.put("/approve-request/:productId/:userId", approveRequest);
+userRoutes.put("/reject-request/:productId/:userId", rejectRequest);
 
 userRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteUser);
+
+userRoutes.use(adminMiddlewares);
+userRoutes.get("/add-chart-for-trending", createChart);
+
+userRoutes.post(
+  "/add-user",
+  upload.fields([{ name: "avatar" }]),
+  validationMiddlware(signUpSchema),
+  uploadToCloudinary,
+  addUser
+);

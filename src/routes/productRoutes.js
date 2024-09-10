@@ -33,42 +33,43 @@ import {
 } from "../schema/productSchema.js";
 export const productRoutes = Router();
 
+// Public routes
 productRoutes.get("/get-all", getAllProduct);
-productRoutes.get("/get-by-id/:id", verifyTokenMiddlewares, getProductById);
 productRoutes.get("/newest", getNewestProduct);
 productRoutes.get("/get-trending-products", getThreeTrendingProduct);
 productRoutes.get("/list-product", listProduct);
-productRoutes.get("/count-product", verifyTokenMiddlewares, countProducts);
+
+// Routes that require token verification
+productRoutes.use(verifyTokenMiddlewares);
+
+productRoutes.get("/get-by-id/:id", getProductById);
+productRoutes.get("/count-product", countProducts);
+
 productRoutes.post(
   "/add-product",
   upload.fields([{ name: "images" }]),
-  verifyTokenMiddlewares,
   checkVerifyStatusMiddleware,
   validationMiddlware(addProductSchema),
   uploadToCloudinary,
   addProduct
 );
+
 productRoutes.put(
   "/update/:id",
   upload.fields([{ name: "images" }]),
-  verifyTokenMiddlewares,
   validationMiddlware(updateProductSchema),
   uploadToCloudinary,
   updateProduct
 );
-productRoutes.put(
-  "/approve/:id",
-  verifyTokenMiddlewares,
-  adminMiddlewares,
-  approveProduct
-);
 
+productRoutes.delete("/delete/:id", deleteProduct);
+
+// Routes that require both token verification and admin privileges
+productRoutes.use(adminMiddlewares);
+
+productRoutes.put("/approve/:id", approveProduct);
 productRoutes.put(
   "/reject/:id",
   validationMiddlware(messageSchema),
-  verifyTokenMiddlewares,
-  adminMiddlewares,
   rejectProduct
 );
-
-productRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteProduct);

@@ -12,7 +12,14 @@ import { io } from "../socket.io/server.js";
 import { formatVietnamTime } from "../utils/changeToVietnamTimezone.js";
 
 import { RequestStatus, Role, Status } from "@prisma/client";
-import { roleConstants, statusConstants } from "../constants/constants.js";
+import {
+  AccountOperationalErrorsConstants,
+  AuthOperationalErrorConstants,
+  ProductOperationalErrorConstants,
+  RequestOperationalErrorConstants,
+  roleConstants,
+  statusConstants,
+} from "../constants/constants.js";
 const vietnamDate = new Date();
 
 export const getAllUser = async (name, order = "asc", role, page, limit) => {
@@ -77,7 +84,11 @@ export const findById = async (id) => {
       createdAt: formatVietnamTime(user.createdAt),
     };
   }
-  throw new OperationalException(404, false, "User not found");
+  throw new OperationalException(
+    404,
+    false,
+    AccountOperationalErrorsConstants.ACCOUNT_NOT_FOUND_ERROR
+  );
 };
 
 export const findUserByEmail = async (email) => {
@@ -101,10 +112,18 @@ export const addUser = async (data, avatar, userRole) => {
     },
   });
   if (existingUserWithUsername) {
-    throw new OperationalException(400, false, "Username already exists");
+    throw new OperationalException(
+      403,
+      false,
+      AccountOperationalErrorsConstants.USERNAME_EXIST_ERROR
+    );
   }
   if (existingUserWithEmail) {
-    throw new OperationalException(400, false, "Email already exists");
+    throw new OperationalException(
+      403,
+      false,
+      AccountOperationalErrorsConstants.EMAIL_EXIST_ERROR
+    );
   }
   data.password = hashSync(data.password, 10);
   return await prismaClient.user.create({
@@ -131,7 +150,7 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
     return new responseFormatForErrors(
       401,
       false,
-      "You are not authorized to update this account"
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
     );
   }
 
@@ -147,10 +166,18 @@ export const updateUser = async (id, userId, userRole, data, avatar) => {
     },
   });
   if (existingUserWithUsername && existingUserWithUsername.userId !== id) {
-    throw new OperationalException(400, false, "Username already exists");
+    throw new OperationalException(
+      400,
+      false,
+      AccountOperationalErrorsConstants.USERNAME_EXIST_ERROR
+    );
   }
   if (existingUserWithEmail && existingUserWithEmail.userId !== id) {
-    throw new OperationalException(400, false, "Email already exists");
+    throw new OperationalException(
+      400,
+      false,
+      AccountOperationalErrorsConstants.EMAIL_EXIST_ERROR
+    );
   }
 
   let hashedPassword;
@@ -183,13 +210,17 @@ export const deleteUser = async (id, userId, userRole) => {
     },
   });
   if (!userExist) {
-    throw new OperationalException(404, false, "User not found");
+    throw new OperationalException(
+      404,
+      false,
+      AccountOperationalErrorsConstants.ACCOUNT_NOT_FOUND_ERROR
+    );
   }
   if (userExist.userId !== userId && userRole !== roleConstants[1]) {
     throw new OperationalException(
       401,
       false,
-      "You are not authorized to delete this account"
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
     );
   }
   await prismaClient.user.delete({
@@ -242,7 +273,11 @@ export const likeProduct = async (userId, productId) => {
     },
   });
   if (!product) {
-    throw new OperationalException(404, false, "Product not found");
+    throw new OperationalException(
+      404,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+    );
   }
   const likedProduct = await prismaClient.productLiked.findUnique({
     where: {
@@ -387,7 +422,11 @@ export const requestToBuyProduct = async (
     }
     return true;
   }
-  throw new OperationalException(404, false, "Product not found");
+  throw new OperationalException(
+    404,
+    false,
+    ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+  );
 };
 
 export const getListOfRequesterForOneProduct = async (productId) => {
@@ -397,7 +436,9 @@ export const getListOfRequesterForOneProduct = async (productId) => {
     },
   });
   if (!product) {
-    return new responseFormat(404, false, { mmessage: "product not found" });
+    return new responseFormat(404, false, {
+      mmessage: ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR,
+    });
   }
   const requests = await prismaClient.requestToBuy.findMany({
     where: {
@@ -560,12 +601,12 @@ export const approveRequest = async (ownerId, productId, userId) => {
   });
   if (!product) {
     return new responseFormat(404, false, {
-      message: "request not found",
+      message: RequestOperationalErrorConstants.REQUEST_NOT_FOUND,
     });
   }
   if (product.product.userId !== ownerId) {
     return new responseFormat(401, false, {
-      message: "you are not the owner",
+      message: AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR,
     });
   }
   await prismaClient.requestToBuy.update({
@@ -645,12 +686,12 @@ export const rejectRequest = async (ownerId, productId, userId) => {
   });
   if (!product) {
     return new responseFormatForErrors(404, false, {
-      message: "request not found",
+      message: RequestOperationalErrorConstants.REQUEST_NOT_FOUND,
     });
   }
   if (product.product.userId !== ownerId) {
     return new responseFormatForErrors(401, false, {
-      message: "you are not the owner",
+      message: AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR,
     });
   }
   await prismaClient.requestToBuy.update({

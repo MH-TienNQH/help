@@ -1,3 +1,4 @@
+import { CategoryOperationalErrorConstant } from "../constants/constants.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 
@@ -22,7 +23,11 @@ export const findById = async (id) => {
       },
     });
   }
-  throw new OperationalException(404, false, "Category not found");
+  throw new OperationalException(
+    404,
+    false,
+    CategoryOperationalErrorConstant.CATEGORY_NOT_FOUND_ERROR
+  );
 };
 export const addCategory = async (data) => {
   const isExist = await prismaClient.category.findUnique({
@@ -31,7 +36,11 @@ export const addCategory = async (data) => {
     },
   });
   if (isExist) {
-    throw new OperationalException(400, false, "Category already exist");
+    throw new OperationalException(
+      400,
+      false,
+      CategoryOperationalErrorConstant.CATEGORY_EXIST_ERROR
+    );
   }
   return await prismaClient.category.create({
     data: {
@@ -57,7 +66,11 @@ export const updateCategory = async (id, data) => {
     });
     return true;
   }
-  throw new OperationalException(404, false, "Category not found");
+  throw new OperationalException(
+    404,
+    false,
+    CategoryOperationalErrorConstant.CATEGORY_NOT_FOUND_ERROR
+  );
 };
 
 export const deleteCategory = async (id) => {
@@ -74,5 +87,9 @@ export const deleteCategory = async (id) => {
     });
     return true;
   }
-  throw new OperationalException(404, false, "Category not found");
+  throw new OperationalException(
+    404,
+    false,
+    CategoryOperationalErrorConstant.CATEGORY_NOT_FOUND_ERROR
+  );
 };

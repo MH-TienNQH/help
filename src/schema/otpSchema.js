@@ -1,18 +1,19 @@
 import { z } from "zod";
+import { OTPOperationalErrorConstants } from "../constants/constants.js";
 
 export const otpSchema = z.object({
   otp: z
     .number()
     .int() // Ensure the number is an integer
-    .min(1000, "OTP must be at least 4 digits long") // Minimum value to ensure 4 digits
-    .max(9999, "OTP must be at most 4 digits long") // Maximum value to ensure 4 digits
+    .min(1000, OTPOperationalErrorConstants.OTP_PROMPT_4_DIGIT) // Minimum value to ensure 4 digits
+    .max(9999, OTPOperationalErrorConstants.OTP_PROMPT_4_DIGIT) // Maximum value to ensure 4 digits
     .refine(
       (val) => {
         const strVal = val.toString();
         return strVal.length === 4; // Ensure length is exactly 4 digits
       },
       {
-        message: "OTP must be exactly 4 digits long",
+        message: OTPOperationalErrorConstants.OTP_PROMPT_4_DIGIT,
       }
     ),
 });
