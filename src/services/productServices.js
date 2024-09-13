@@ -4,16 +4,17 @@ import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
 
-import {
-  adminSockets,
-  getSocketIdFromUserId,
-  io,
-} from "../socket.io/server.js";
+import { io } from "../socket.io/server.js";
 import {
   convertVietnamTimeToUtc,
   formatVietnamTime,
 } from "../utils/changeToVietnamTimezone.js";
-import { roleConstants, statusConstants } from "../constants/constants.js";
+import {
+  AuthOperationalErrorConstants,
+  ProductOperationalErrorConstants,
+  roleConstants,
+  statusConstants,
+} from "../constants/constants.js";
 
 const vietnamDate = new Date(); // Current local time
 const utcDate = convertVietnamTimeToUtc(vietnamDate);
@@ -81,7 +82,11 @@ export const findById = async (userId, productId) => {
     }
     return { product, saved, liked, requested };
   }
-  throw new OperationalException(404, false, "No product found");
+  throw new OperationalException(
+    404,
+    false,
+    ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+  );
 };
 export const addProduct = async (data, images, userId, userRole) => {
   const isExist = await prismaClient.product.findUnique({
@@ -90,7 +95,11 @@ export const addProduct = async (data, images, userId, userRole) => {
     },
   });
   if (isExist) {
-    throw new OperationalException(403, false, "Product exist");
+    throw new OperationalException(
+      403,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_EXIST_ERROR
+    );
   }
   const product = await prismaClient.product.create({
     data: {
@@ -114,7 +123,7 @@ export const addProduct = async (data, images, userId, userRole) => {
 
   const adminUsers = await prismaClient.user.findMany({
     where: {
-      role: "ADMIN",
+      role: roleConstants[1],
     },
     select: {
       userId: true,
@@ -161,27 +170,32 @@ export const updateProduct = async (
     },
   });
   if (!isExist) {
-    throw new OperationalException(404, false, "Product not found");
+    throw new OperationalException(
+      404,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+    );
   }
   if (isExist.userId !== userId && userRole !== roleConstants[1]) {
     throw new OperationalException(
       403,
       false,
-      "You are not authorized to update this product"
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
     );
   }
 
-  const existingUserWithProductname = await prismaClient.product.findUnique({
+  const existingProductname = await prismaClient.product.findUnique({
     where: {
       name: data.name,
     },
   });
 
-  if (
-    existingUserWithProductname &&
-    existingUserWithProductname.userId !== userId
-  ) {
-    throw new OperationalException(400, false, "Username already exists");
+  if (existingProductname && existingProductname.userId !== userId) {
+    throw new OperationalException(
+      403,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_EXIST_ERROR
+    );
   }
 
   if (!images.length || images == "") {
@@ -229,13 +243,17 @@ export const deleteProduct = async (id, userId, userRole) => {
     },
   });
   if (!product) {
-    throw new OperationalException(404, false, "Product not found");
+    throw new OperationalException(
+      404,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+    );
   }
   if (product.userId !== userId && userRole !== roleConstants[1]) {
     throw new OperationalException(
       403,
       false,
-      "You are not authorized to delete this product"
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
     );
   }
 
@@ -306,8 +324,8 @@ export const listProduct = async (
   const validStatus = status
     ? Object.values(Status).includes(status.toUpperCase())
       ? status.toUpperCase()
-      : "APPROVED"
-    : "APPROVED";
+      : statusConstants[2]
+    : statusConstants[2];
 
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
@@ -404,7 +422,11 @@ export const approveProduct = async (productId, userId) => {
     });
     return true;
   }
-  throw new OperationalException(404, false, "Product not found");
+  throw new OperationalException(
+    404,
+    false,
+    ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+  );
 };
 
 export const rejectProduct = async (userId, productId, message) => {
@@ -452,7 +474,11 @@ export const rejectProduct = async (userId, productId, message) => {
     }
     return true;
   }
-  throw new OperationalException(404, false, "Product not found");
+  throw new OperationalException(
+    404,
+    false,
+    ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+  );
 };
 
 export const getProductsForChart = async (

@@ -8,6 +8,10 @@ import {
 } from "../utils/responseFormat.js";
 import * as authServices from "../services/authServices.js";
 import * as userServices from "../services/userServices.js";
+import {
+  AccountOperationalErrorsConstants,
+  AuthOperationalErrorConstants,
+} from "../constants/constants.js";
 
 dotenv.config();
 
@@ -15,7 +19,7 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
   if (!req.files.avatar) {
     return res.json(
       new responseFormatForErrors(401, false, {
-        message: "Avatar cannot be empty",
+        message: AccountOperationalErrorsConstants.AVATAR_NULL_ERROR,
       })
     );
   }
@@ -23,7 +27,7 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
   if (req.files.avatar && req.files.avatar.length > 1) {
     return res.json(
       new responseFormatForErrors(401, false, {
-        message: "You can only add one avatar",
+        message: AccountOperationalErrorsConstants.MULTIPLE_AVATAR_ERROR,
       })
     );
   }
@@ -69,7 +73,11 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
   }
 
   if (!refreshToken) {
-    const error = new OperationalException("You are not authenticated", 401);
+    const error = new OperationalException(
+      401,
+      false,
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
+    );
     next(error);
   }
   const response = await authServices.refresh(refreshToken);

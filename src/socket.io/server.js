@@ -1,6 +1,7 @@
 import http from "http";
 import { Server as SocketIO } from "socket.io";
 import { prismaClient } from "../routes/index.js";
+import { roleConstants } from "../constants/constants.js";
 
 // Create an HTTP server for Socket.IO
 const socketServer = http.createServer();
@@ -32,7 +33,7 @@ io.on("connection", (socket) => {
     // Check if the user is an admin from the database
     const user = await prismaClient.user.findUnique({ where: { userId } });
     if (user) {
-      if (user.role === "ADMIN") {
+      if (user.role === roleConstants[1]) {
         adminSockets.set(userId, socket.id);
         console.log(`Admin ${userId} connected with socket ${socket.id}`);
       }

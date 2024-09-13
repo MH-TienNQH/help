@@ -8,6 +8,7 @@ import {
 import * as productServices from "../services/productServices.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+import { ProductOperationalErrorConstants } from "../constants/constants.js";
 
 dotenv.config();
 
@@ -50,7 +51,7 @@ export const addProduct = async (req, res) => {
   if (!req.files.images || req.files.images.length === 0) {
     return res.json(
       new responseFormatForErrors(401, false, {
-        message: "Images cannot be empty",
+        message: ProductOperationalErrorConstants.OUT_OF_BOUND_IMAGES_ERROR,
       })
     );
   }
@@ -59,7 +60,7 @@ export const addProduct = async (req, res) => {
   if (numberOfFiles < 1 || numberOfFiles > 6) {
     return res.json(
       new responseFormatForErrors(401, false, {
-        message: "You can only add one to six images",
+        message: ProductOperationalErrorConstants.OUT_OF_BOUND_IMAGES_ERROR,
       })
     );
   }
@@ -103,7 +104,7 @@ export const updateProduct = asyncErrorHandler(async (req, res) => {
   if (req.files?.images && numberOfFiles > 6) {
     return res.json(
       new responseFormatForErrors(401, false, {
-        message: "You can only add one to six images",
+        message: ProductOperationalErrorConstants.OUT_OF_BOUND_IMAGES_ERROR,
       })
     );
   }

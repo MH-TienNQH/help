@@ -1,3 +1,9 @@
+import {
+  AccountOperationalErrorsConstants,
+  AuthOperationalErrorConstants,
+  CommentOperationalErrorConstant,
+  ProductOperationalErrorConstants,
+} from "../constants/constants.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { io } from "../socket.io/server.js";
@@ -69,7 +75,11 @@ export const addComment = async (productId, userId, data) => {
     },
   });
   if (!product) {
-    throw new OperationalException(404, false, "Product not found");
+    throw new OperationalException(
+      404,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+    );
   }
   const user = await prismaClient.user.findUnique({
     where: {
@@ -77,7 +87,11 @@ export const addComment = async (productId, userId, data) => {
     },
   });
   if (!user) {
-    throw new OperationalException(404, false, "User not found");
+    throw new OperationalException(
+      404,
+      false,
+      AccountOperationalErrorsConstants.ACCOUNT_NOT_FOUND_ERROR
+    );
   }
   const taggedUserIds = extractTaggedUserIds(data.content);
   const taggedUsers = await prismaClient.user.findMany({
@@ -158,13 +172,17 @@ export const updateComment = async (commentId, userId, data) => {
     },
   });
   if (!comment) {
-    throw new OperationalException(404, false, "Comment not found");
+    throw new OperationalException(
+      404,
+      false,
+      CommentOperationalErrorConstant.COMMENT_NOT_FOUND
+    );
   }
   if (comment.userId !== userId) {
     throw new OperationalException(
       403,
       false,
-      "You are not authorized to update this comment"
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
     );
   }
   await prismaClient.comment.update({
@@ -190,13 +208,17 @@ export const deleteComment = async (commentId, userId) => {
     },
   });
   if (!comment) {
-    throw new OperationalException(404, false, "Comment not found");
+    throw new OperationalException(
+      404,
+      false,
+      CommentOperationalErrorConstant.COMMENT_NOT_FOUND
+    );
   }
   if (comment.userId !== userId) {
     throw new OperationalException(
       403,
       false,
-      "You are not authorized to delete this comment"
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
     );
   }
   await prismaClient.comment.delete({

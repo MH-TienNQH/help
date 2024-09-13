@@ -8,10 +8,8 @@ import verifyTokenMiddlewares from "../middlewares/verifyTokenMiddlewares.js";
 
 export const notiRoutes = Router();
 
-notiRoutes.get("/get-all-noti", verifyTokenMiddlewares, getAllNotification);
-notiRoutes.get(
-  "/get-by-id/:notiId",
-  verifyTokenMiddlewares,
-  getNotificationById
-);
-notiRoutes.delete("/delete/:notiId", verifyTokenMiddlewares, deleteNoti);
+notiRoutes.use(verifyTokenMiddlewares);
+
+notiRoutes.get("/get-all-noti", getAllNotification);
+notiRoutes.get("/get-by-id/:notiId", getNotificationById);
+notiRoutes.delete("/delete/:notiId", deleteNoti);

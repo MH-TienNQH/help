@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  FieldOperationalErrorConstants,
+  ProductOperationalErrorConstants,
+} from "../constants/constants.js";
 const parsePrice = (value) => {
   if (typeof value === "string") {
     const parsedValue = parseFloat(value);
@@ -11,8 +15,10 @@ const parsePrice = (value) => {
 };
 
 export const addProductSchema = z.object({
-  name: z.string().min(1, "Product name can not be empty"),
-  description: z.string().min(1, "Product description can not be empty"),
+  name: z.string().min(1, FieldOperationalErrorConstants.EMPTY_FIELD_ERROR),
+  description: z
+    .string()
+    .min(1, FieldOperationalErrorConstants.EMPTY_FIELD_ERROR),
   price: z.union([z.string(), z.number()]).refine(
     (value) => {
       if (typeof value === "string") {
@@ -26,15 +32,18 @@ export const addProductSchema = z.object({
       return typeof value === "number" && value > 0 && Number.isInteger(value);
     },
     {
-      message: "Price must be a positive whole number",
+      message:
+        ProductOperationalErrorConstants.PRICE_PRICE_POSITIVE_INTEGER_REQUIRE_ERROR,
     }
   ),
   images: z.string().optional(),
 });
 
 export const updateProductSchema = z.object({
-  name: z.string().min(1, "Product name can not be empty"),
-  description: z.string().min(1, "Product description can not be empty"),
+  name: z.string().min(1, FieldOperationalErrorConstants.EMPTY_FIELD_ERROR),
+  description: z
+    .string()
+    .min(1, FieldOperationalErrorConstants.EMPTY_FIELD_ERROR),
   price: z.union([z.string(), z.number()]).refine(
     (value) => {
       if (typeof value === "string") {
@@ -48,7 +57,8 @@ export const updateProductSchema = z.object({
       return typeof value === "number" && value > 0 && Number.isInteger(value);
     },
     {
-      message: "Price must be a positive whole number",
+      message:
+        ProductOperationalErrorConstants.PRICE_PRICE_POSITIVE_INTEGER_REQUIRE_ERROR,
     }
   ),
   images: z.string().optional(),

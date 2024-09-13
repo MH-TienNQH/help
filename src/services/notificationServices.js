@@ -1,3 +1,7 @@
+import {
+  AuthOperationalErrorConstants,
+  NotificationOperationalErrorConstants,
+} from "../constants/constants.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 import { formatVietnamTime } from "../utils/changeToVietnamTimezone.js";
@@ -104,13 +108,17 @@ export const getById = async (userId, notiId) => {
     },
   });
   if (!notification) {
-    throw new OperationalException(404, false, "notification not found");
+    throw new OperationalException(
+      404,
+      false,
+      NotificationOperationalErrorConstants.NOTIFICATION_NOT_FOUND_ERROR
+    );
   }
   if (notification.userId !== userId) {
     throw new OperationalException(
-      403,
+      401,
       false,
-      "You are not authorized to view this"
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
     );
   }
   await prismaClient.notification.update({
@@ -135,13 +143,17 @@ export const deleteNoti = async (userId, notificationId) => {
     },
   });
   if (!notification) {
-    throw new OperationalException(404, false, "Notification not found");
+    throw new OperationalException(
+      404,
+      false,
+      NotificationOperationalErrorConstants.NOTIFICATION_NOT_FOUND_ERROR
+    );
   }
   if (notification.userId !== userId) {
     throw new OperationalException(
       403,
       false,
-      "You do not have permission to delete this notification"
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
     );
   }
   await prismaClient.notification.delete({

@@ -1,4 +1,7 @@
-import { roleConstants } from "../constants/constants.js";
+import {
+  AuthOperationalErrorConstants,
+  roleConstants,
+} from "../constants/constants.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 
 const adminMiddlewares = (req, res, next) => {
@@ -6,7 +9,11 @@ const adminMiddlewares = (req, res, next) => {
   if (userRole === roleConstants[1]) {
     next();
   } else {
-    const error = new OperationalException(403, false, "Unauthorized");
+    const error = new OperationalException(
+      403,
+      false,
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
+    );
     next(error);
   }
 };
