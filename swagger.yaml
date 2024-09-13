@@ -217,6 +217,56 @@ paths:
           content:
             application/json: 
               example: requested product
+
+  /user/approve-request/{productId}/{userId}:
+    put: 
+      tags:
+      - User
+      summary: approve a request
+      description: approve a request
+      operationId: approveRequest
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: request approved
+  /user/reject-request/{productId}/{userId}:
+    put: 
+      tags:
+      - User
+      summary: reject a request
+      description: reject a request
+      operationId: rejectRequest
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: request rejected
+
   /category/get-all:
     get:
       tags:

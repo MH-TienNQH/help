@@ -2,26 +2,39 @@ import dotenv from "dotenv";
 import { validationResult } from "express-validator";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { asyncErrorHandler } from "../utils/asyncErrorHandler.js";
-import { responseFormat } from "../utils/responseFormat.js";
+import {
+  responseFormat,
+  responseFormatForErrors,
+} from "../utils/responseFormat.js";
 import * as authServices from "../services/authServices.js";
 import * as userServices from "../services/userServices.js";
+import {
+  AccountOperationalErrorsConstants,
+  AuthOperationalErrorConstants,
+} from "../constants/constants.js";
 
 dotenv.config();
 
 export const signUp = asyncErrorHandler(async (req, res, next) => {
-  let result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
+  if (!req.files.avatar) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: AccountOperationalErrorsConstants.AVATAR_NULL_ERROR,
+      })
+    );
+  }
+
+  if (req.files.avatar && req.files.avatar.length > 1) {
+    return res.json(
+      new responseFormatForErrors(401, false, {
+        message: AccountOperationalErrorsConstants.MULTIPLE_AVATAR_ERROR,
+      })
+    );
   }
   const data = req.body;
   const avatar = req.cloudinaryUrls;
 
-  let user = await userServices.findUserByEmail(data.email);
-  if (user) {
-    const error = new OperationalException("User already exist", 400);
-    next(error);
-  }
-  user = await userServices.addUser(data, avatar);
+  const user = await userServices.addUser(data, avatar);
   try {
     authServices.sendVerificationEmail(data.email);
   } catch (error) {
@@ -31,10 +44,6 @@ export const signUp = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const login = asyncErrorHandler(async (req, res) => {
-  let result = validationResult(req);
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
-  }
   const data = req.body;
 
   const response = await authServices.login(data);
@@ -51,9 +60,7 @@ export const logout = asyncErrorHandler(async (req, res, next) => {
   const userId = req.userId;
 
   const response = await authServices.logout(userId);
-  res
-    .clearCookie("refreshToken")
-    .send(new responseFormat(200, true, "logged out"));
+  res.clearCookie("refreshToken").send(new responseFormat(200, true, response));
 });
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
@@ -66,7 +73,11 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
   }
 
   if (!refreshToken) {
-    const error = new OperationalException("You are not authenticated", 401);
+    const error = new OperationalException(
+      401,
+      false,
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
+    );
     next(error);
   }
   const response = await authServices.refresh(refreshToken);
@@ -80,8 +91,8 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
 
 export const verifyEmail = asyncErrorHandler(async (req, res) => {
   let email = req.params.email;
-  await authServices.verifyEmail(email);
-  res.send("verified");
+  const response = await authServices.verifyEmail(email);
+  res.send(new responseFormat(200, true, response));
 });
 
 export const setPassword = asyncErrorHandler(async (req, res) => {
@@ -96,11 +107,6 @@ export const setPassword = asyncErrorHandler(async (req, res) => {
 });
 
 export const forgotPassword = asyncErrorHandler(async (req, res) => {
-  let result = validationResult(req);
-
-  if (!result.isEmpty()) {
-    return res.status(400).send(result.array({ onlyFirstError: true }));
-  }
   const { email } = req.body;
   let response = await authServices.forgotPassword(email);
   res.send(new responseFormat(200, true, response));
