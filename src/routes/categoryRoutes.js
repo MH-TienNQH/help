@@ -25,6 +25,7 @@ categoryRoutes.get("/get-by-id/:id", getCategoryById);
 
 categoryRoutes.use(verifyTokenMiddlewares);
 
+// Admin routes
 categoryRoutes.use(adminMiddlewares);
 categoryRoutes.post(
   "/add-category",

@@ -4,11 +4,7 @@ import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
 import * as userServices from "./userServices.js";
 
-import {
-  adminSockets,
-  getSocketIdFromUserId,
-  io,
-} from "../socket.io/server.js";
+import { io } from "../socket.io/server.js";
 import {
   convertVietnamTimeToUtc,
   formatVietnamTime,

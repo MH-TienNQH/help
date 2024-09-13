@@ -56,8 +56,7 @@ export const FieldOperationalErrorConstants = Object.freeze({
 });
 
 export const AuthOperationalErrorConstants = Object.freeze({
-  TOKEN_EXPIRED_ERROR:
-    "Token has expired. Please log in again to obtain a new token.",
+  TOKEN_EXPIRED_ERROR: "Token has expired.",
   NOT_AUTHORIZED_ERROR: "You are not authorized to complete this action",
   NOT_VERIFIED_ERROR: "Verify your account first",
   NOT_LOGGED_IN_ERROR: "Log in first",

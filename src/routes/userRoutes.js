@@ -30,6 +30,7 @@ import { signUpSchema } from "../schema/userSchema.js";
 
 export const userRoutes = Router();
 
+//Need user auth
 userRoutes.use(verifyTokenMiddlewares);
 
 userRoutes.get("/get-all", getAllUser);
@@ -55,8 +56,9 @@ userRoutes.put(
 userRoutes.put("/approve-request/:productId/:userId", approveRequest);
 userRoutes.put("/reject-request/:productId/:userId", rejectRequest);
 
-userRoutes.delete("/delete/:id", verifyTokenMiddlewares, deleteUser);
+userRoutes.delete("/delete/:id", deleteUser);
 
+//Need admin auth
 userRoutes.use(adminMiddlewares);
 userRoutes.get("/add-chart-for-trending", createChart);
 

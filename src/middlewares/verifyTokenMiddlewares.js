@@ -24,7 +24,11 @@ const verifyTokenMiddlewares = async (req, res, next) => {
     jwt.verify(accessToken, process.env.JWT_KEY, async (error, payload) => {
       try {
         if (error) {
-          next(error);
+          throw new OperationalException(
+            401,
+            false,
+            AuthOperationalErrorConstants.TOKEN_EXPIRED_ERROR
+          );
         }
         req.userId = payload.userId;
         req.userRole = payload.userRole;
