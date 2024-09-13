@@ -6,6 +6,7 @@
     "cloudinary": "^2.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "date-fns-tz": "^3.1.3",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
@@ -14,6 +15,7 @@
     "fs": "^0.0.1-security",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "moment-timezone": "^0.5.45",
     "multer": "^1.4.5-lts.1",
     "multiparty": "^4.2.3",
     "node-schedule": "^2.1.1",
@@ -23,14 +25,16 @@
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "url": "^0.11.4",
-    "util": "^0.12.5"
+    "util": "^0.12.5",
+    "zod": "^3.23.8"
   },
   "name": "api",
   "version": "1.0.0",
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "socket": "node ./src/socket.io/server.js"
   },
   "keywords": [],
   "author": "",

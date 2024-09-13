@@ -1,16 +1,40 @@
+import { Status } from "@prisma/client";
+import { responseFormat } from "../utils/responseFormat.js";
+
 import { prismaClient } from "../routes/index.js";
 import { OperationalException } from "../exceptions/operationalExceptions.js";
-import { Status } from "@prisma/client";
+import * as userServices from "./userServices.js";
 
+import { io } from "../socket.io/server.js";
+import {
+  convertVietnamTimeToUtc,
+  formatVietnamTime,
+} from "../utils/changeToVietnamTimezone.js";
+import {
+  AuthOperationalErrorConstants,
+  ProductOperationalErrorConstants,
+  roleConstants,
+  statusConstants,
+} from "../constants/constants.js";
+
+const vietnamDate = new Date(); // Current local time
+const utcDate = convertVietnamTimeToUtc(vietnamDate);
 export const getAllProduct = async () => {
-  let products = await prismaClient.product.findMany();
-
-  return products;
+  const products = await prismaClient.product.findMany({
+    include: {
+      author: true,
+    },
+  });
+  const formattedProducts = products.map((product) => ({
+    ...product,
+    createdAt: formatVietnamTime(product.createdAt),
+  }));
+  return formattedProducts;
 };
-export const findById = async (id) => {
+export const findById = async (userId, productId) => {
   const product = await prismaClient.product.findUnique({
     where: {
-      productId: id,
+      productId,
     },
     include: {
       _count: {
@@ -19,48 +43,182 @@ export const findById = async (id) => {
         },
       },
       author: true,
+      comments: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
   if (product) {
-    return product;
+    const saved = await prismaClient.productSaved.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    const liked = await prismaClient.productLiked.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    const requested = await prismaClient.requestToBuy.findUnique({
+      where: {
+        productId_userId: {
+          productId,
+          userId,
+        },
+      },
+    });
+    if (product.userId == userId) {
+      const requests = await userServices.getListOfRequesterForOneProduct(
+        productId
+      );
+      return { product, saved, liked, requested, requests };
+    }
+    return { product, saved, liked, requested };
   }
-  throw new OperationalException("No product found", 404);
+  throw new OperationalException(
+    404,
+    false,
+    ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+  );
 };
-export const addProduct = async (data, images, userId) => {
+export const addProduct = async (data, images, userId, userRole) => {
+  const isExist = await prismaClient.product.findUnique({
+    where: {
+      name: data.name,
+    },
+  });
+  if (isExist) {
+    throw new OperationalException(
+      403,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_EXIST_ERROR
+    );
+  }
   const product = await prismaClient.product.create({
     data: {
       name: data.name,
       description: data.description,
       images: JSON.stringify(images),
       price: parseInt(data.price),
+      status:
+        userRole === roleConstants[1] ? statusConstants[2] : statusConstants[1],
       author: {
         connect: {
           userId: userId,
         },
       },
+      createdAt: new Date(),
+    },
+    include: {
+      author: true,
     },
   });
+
+  const adminUsers = await prismaClient.user.findMany({
+    where: {
+      role: roleConstants[1],
+    },
+    select: {
+      userId: true,
+    },
+  });
+  const adminUserIds = adminUsers.map((user) => user.userId);
+  adminUserIds.forEach((adminUserId) => {
+    const eventName = `notification ${adminUserId}`;
+    io.emit(eventName, {
+      message: `${product.author.name} đã tạo một sản phẩm`,
+      product: product,
+      user: product.author,
+    });
+  });
+  await Promise.all(
+    adminUserIds.map((adminUserId) =>
+      prismaClient.notification.create({
+        data: {
+          content: `${product.author.name} đã tạo một sản phẩm`,
+          user: {
+            connect: { userId: adminUserId },
+          },
+          product: {
+            connect: { productId: product.productId },
+          },
+          createdAt: utcDate, // Use current date-time
+        },
+      })
+    )
+  );
   return product;
 };
 
-export const updateProduct = async (productId, data, userId, images) => {
-  let product = await prismaClient.product.findUnique({
+export const updateProduct = async (
+  productId,
+  data,
+  userId,
+  userRole,
+  images
+) => {
+  const isExist = await prismaClient.product.findUnique({
     where: {
       productId: parseInt(productId),
     },
   });
-  if (!product) {
-    throw new OperationalException("Product not found", 404);
+  if (!isExist) {
+    throw new OperationalException(
+      404,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+    );
   }
-  product = await prismaClient.product.findUnique({
+  if (isExist.userId !== userId && userRole !== roleConstants[1]) {
+    throw new OperationalException(
+      403,
+      false,
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
+    );
+  }
+
+  const existingProductname = await prismaClient.product.findUnique({
     where: {
       name: data.name,
     },
   });
-  if (product) {
-    throw new OperationalException("Product exist", 403);
+
+  if (existingProductname && existingProductname.userId !== userId) {
+    throw new OperationalException(
+      403,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_EXIST_ERROR
+    );
   }
-  product = await prismaClient.product.update({
+
+  if (!images.length || images == "") {
+    images = JSON.parse(isExist.images); // Convert from JSON string to object
+    await prismaClient.product.update({
+      where: {
+        productId: parseInt(productId),
+      },
+      data: {
+        name: data.name,
+        description: data.description,
+        images: JSON.stringify(images),
+        price: parseInt(data.price),
+        author: {
+          connect: {
+            userId,
+          },
+        },
+      },
+    });
+  }
+  await prismaClient.product.update({
     where: {
       productId: parseInt(productId),
     },
@@ -76,61 +234,83 @@ export const updateProduct = async (productId, data, userId, images) => {
       },
     },
   });
-  return product;
+  return true;
 };
 
-export const deleteProduct = async (id) => {
+export const deleteProduct = async (id, userId, userRole) => {
+  let product = await prismaClient.product.findUnique({
+    where: {
+      productId: parseInt(id),
+    },
+  });
+  if (!product) {
+    throw new OperationalException(
+      404,
+      false,
+      ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+    );
+  }
+  if (product.userId !== userId && userRole !== roleConstants[1]) {
+    throw new OperationalException(
+      403,
+      false,
+      AuthOperationalErrorConstants.NOT_AUTHORIZED_ERROR
+    );
+  }
+
   await prismaClient.product.delete({
     where: {
       productId: parseInt(id),
     },
   });
+  return true;
 };
 
-export const getThreeTrendingProduct = async () => {
-  const products = await prismaClient.product.findMany({
+export const getThreeTrendingProduct = async (startDate, endDate) => {
+  const whereClause = {
+    ...(startDate || endDate
+      ? {
+          createdAt: {
+            ...(startDate ? { gte: new Date(startDate) } : {}),
+            ...(endDate ? { lte: new Date(endDate) } : {}),
+          },
+        }
+      : {}),
+    status: statusConstants[2],
+  };
+  return await prismaClient.product.findMany({
+    where: Object.keys(whereClause).length > 0 ? whereClause : {},
     include: {
+      RequestToBuy: {
+        include: {
+          user: true,
+        },
+      },
+      author: true,
       _count: {
         select: {
-          likeNumber: true,
+          RequestToBuy: true,
         },
       },
     },
     orderBy: {
-      likeNumber: {
+      RequestToBuy: {
         _count: "desc",
       },
     },
     take: 3,
   });
-  return products;
-};
-
-export const getSellingProduct = async () => {
-  const products = await prismaClient.product.findMany({
-    where: {
-      status: "Selling",
-    },
-  });
-  return products;
 };
 
 export const getNewestProduct = async () => {
-  const products = await prismaClient.product.findMany({
+  return await prismaClient.product.findMany({
     orderBy: {
       createdAt: "desc",
     },
-  });
-  return products;
-};
-
-export const getSoldProduct = async () => {
-  const products = await await prismaClient.product.findMany({
-    where: {
-      status: "Sold",
+    include: {
+      author: true,
     },
   });
-  return products;
 };
 export const listProduct = async (
   productName,
@@ -145,18 +325,21 @@ export const listProduct = async (
   const validStatus = status
     ? Object.values(Status).includes(status.toUpperCase())
       ? status.toUpperCase()
-      : null
-    : null;
+      : statusConstants[2]
+    : statusConstants[2];
 
   const orderDirection = ["asc", "desc"].includes(order.toLowerCase())
     ? order.toLowerCase()
     : "desc";
+  const validCategoryId = [1, 2].includes(parseInt(categoryId))
+    ? parseInt(categoryId)
+    : null;
   let numberOfProducts = await prismaClient.product.count({
     where: {
       name: {
         contains: productName || "", // Search for products where the name contains the specified value
       },
-      ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
+      ...(validCategoryId ? { categoryId: validCategoryId } : {}),
       ...(validStatus ? { status: validStatus } : {}),
     },
   });
@@ -166,11 +349,8 @@ export const listProduct = async (
       name: {
         contains: productName || "", // Search for products where the name contains the specified value
       },
-      ...(categoryId ? { categoryId: parseInt(categoryId) } : {}),
+      ...(validCategoryId ? { categoryId: validCategoryId } : {}),
       ...(validStatus ? { status: validStatus } : {}),
-    },
-    orderBy: {
-      productId: orderDirection,
     },
     orderBy: {
       productId: orderDirection,
@@ -191,7 +371,7 @@ export const listProduct = async (
   return {
     productsWithImageUrls,
     meta: {
-      privious_page: previousPage,
+      previous_page: previousPage,
       current_page: page,
       next_page: nextPage,
       total: totalPages,
@@ -199,38 +379,137 @@ export const listProduct = async (
   };
 };
 
-export const approveProduct = async (productId) => {
-  await prismaClient.product.update({
-    where: {
-      productId: parseInt(productId),
-    },
-    data: {
-      status: "APPROVED",
-      statusMessage: "Your product have been approved",
-    },
-  });
-  return new responseFormat(200, true, "product approved");
-};
-
-export const rejectProduct = async (productId, message) => {
-  if (message == "") {
-    return new responseFormat(404, false, "Please enter reason for rejection");
-  }
-  await prismaClient.product.update({
+export const approveProduct = async (productId, userId) => {
+  const isExist = await prismaClient.product.findUnique({
     where: {
       productId,
     },
-    data: {
-      status: "REJECTED",
-      statusMessage: message,
+    include: {
+      author: true,
     },
   });
-  return new responseFormat(200, true, "product rejected");
+  if (isExist) {
+    await prismaClient.product.update({
+      where: {
+        productId,
+      },
+      data: {
+        status: statusConstants[2],
+        statusMessage: "Sản phẩm bạn đăng lên đã được chấp thuận",
+      },
+    });
+    if (isExist.userId && isExist.userId !== userId) {
+      io.emit(`notification ${isExist.userId}`, {
+        product: isExist,
+        user: isExist.author,
+        message: `Sản phẩm ${isExist.name} bạn đăng lên đã được chấp thuận`,
+      });
+    }
+    await prismaClient.notification.create({
+      data: {
+        content: `Sản phẩm ${isExist.name}  bạn đăng lên đã được chấp thuận`,
+        user: {
+          connect: {
+            userId: isExist.userId,
+          },
+        },
+        product: {
+          connect: {
+            productId: isExist.productId,
+          },
+        },
+        createdAt: utcDate,
+      },
+    });
+    return true;
+  }
+  throw new OperationalException(
+    404,
+    false,
+    ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+  );
 };
 
-export const getImageUrl = async (filename) => {
-  const __dirname = "./public";
-  const filePath = path.resolve(__dirname, "images", filename);
+export const rejectProduct = async (userId, productId, message) => {
+  const isExist = await prismaClient.product.findUnique({
+    where: {
+      productId,
+    },
+    include: {
+      author: true,
+    },
+  });
+  if (isExist) {
+    await prismaClient.product.update({
+      where: {
+        productId,
+      },
+      data: {
+        status: statusConstants[3],
+        statusMessage: message,
+      },
+    });
 
-  return filePath;
+    if (isExist.userId && isExist.userId !== userId) {
+      io.emit(`notification ${isExist.userId}`, {
+        product: isExist,
+        user: isExist.author,
+        message: `Sản phẩm ${isExist.name} bạn đăng lên đã bị từ chối`,
+      });
+      await prismaClient.notification.create({
+        data: {
+          content: `Sản phẩm ${isExist.name} bạn đăng lên đã bị từ chối`,
+          user: {
+            connect: {
+              userId: isExist.userId,
+            },
+          },
+          product: {
+            connect: {
+              productId: isExist.productId,
+            },
+          },
+          createdAt: utcDate,
+        },
+      });
+    }
+    return true;
+  }
+  throw new OperationalException(
+    404,
+    false,
+    ProductOperationalErrorConstants.PRODUCT_NOT_FOUND_ERROR
+  );
+};
+
+export const getProductsForChart = async (
+  categoryId,
+  status,
+  startDate,
+  endDate
+) => {
+  const validStatus = status
+    ? Object.values(Status).includes(status.toUpperCase())
+      ? status.toUpperCase()
+      : null
+    : null;
+  const validCategoryId = [1, 2].includes(parseInt(categoryId))
+    ? parseInt(categoryId)
+    : {};
+
+  const whereClause = {
+    ...(validStatus ? { status: validStatus } : {}),
+    ...(validCategoryId ? { categoryId: validCategoryId } : {}),
+    ...(startDate || endDate
+      ? {
+          createdAt: {
+            ...(startDate ? { gte: new Date(startDate) } : {}),
+            ...(endDate ? { lte: new Date(endDate) } : {}),
+          },
+        }
+      : {}),
+  };
+  return await prismaClient.product.findMany({
+    where: Object.keys(whereClause).length > 0 ? whereClause : {},
+  });
 };

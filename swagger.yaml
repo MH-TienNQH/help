@@ -1,0 +1,714 @@
+openapi: 3.0.3
+info:
+  title: API Document for Mor Marketplace
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: http://localhost:3001/api
+tags:
+  - name: User
+    description: user operations
+  - name: Category
+    description: category operations
+  - name: Product
+    description: product operations
+  - name: Chat
+    description: chat operations
+  - name: Auth 
+    description: auth operations
+  - name: Comment
+    description: description operations 
+paths:
+  /user/get-all:
+    get:
+      tags:
+        - User
+      summary: Get all user in the db 
+      description: Get all user in the db 
+      operationId: getAll
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'     
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+  /user/get-by-id/{id}:
+    get:
+        tags:
+          - User
+        summary: get user by id
+        description: id is userId
+        operationId: getUserById
+        parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        responses:
+          '200':
+            description: Successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'          
+              application/xml:
+                schema:
+                  $ref: '#/components/schemas/User'
+          '404':
+            description: User not found
+  /user/add-user:
+    post:
+      tags:
+        - User
+      summary: Add a new user
+      description: avatar is image
+      operationId: addUser
+      requestBody:
+        description: Create a new user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: User already exist
+        '403':
+          description: Username already exist
+  /user/update/{id}:
+    put:
+      tags:
+        - User
+      summary: Update user
+      description: avatar is image
+      operationId: updateUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Update user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: User already exist
+  /user/delete/{id}:
+    delete:
+      tags:
+        - User
+      summary: Delete user
+      description: delete user
+      operationId: deleteUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: user deleted
+  /user/save-product/{id}:
+    post:
+      tags:
+      - User
+      summary: save a product
+      description: id is productId
+      operationId: saveProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: saved product
+  /user/like-product/{id}:
+    post:
+      tags:
+      - User
+      summary: like a product
+      description: id is productId
+      operationId: likeProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: liked product
+  /user/request-to-buy/{id}:
+    post:
+      tags:
+      - User
+      summary: request to buy a product
+      description: id is productId
+      operationId: requestProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: requested product
+
+  /user/approve-request/{productId}/{userId}:
+    put: 
+      tags:
+      - User
+      summary: approve a request
+      description: approve a request
+      operationId: approveRequest
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: request approved
+  /user/reject-request/{productId}/{userId}:
+    put: 
+      tags:
+      - User
+      summary: reject a request
+      description: reject a request
+      operationId: rejectRequest
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json: 
+              example: request rejected
+
+  /category/get-all:
+    get:
+      tags:
+        - Category
+      summary: Get all the category
+      description: Get all category
+      operationId: getAll
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'     
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Category'
+  /category/get-by-id/{id}:
+    get:
+      tags:
+        - Category
+      summary: get category by id
+      description: id is categoryId
+      operationId: getCategoryById
+      parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '404':
+          description: Category not found
+  /category/add-category:
+    post:
+      tags:
+        - Category
+      summary: Add a new category
+      description: Add a new category
+      operationId: addCategory
+      
+      requestBody:
+        description: Create a new Category
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Category'   
+        '400':
+          description: Category already exist
+  /category/update/{id}:
+    put:
+      tags:
+        - Category
+      summary: Add a new category
+      description: Add a new category
+      operationId: updateCategory
+      parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Create a new Category
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/CategoryCreate"
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Category'   
+        '404':
+          description: Category not found
+  /category/delete/{id}:
+    delete:
+      tags:
+        - Category
+      summary: Delete category
+      description: Delete category
+      operationId: deleteCategory
+      parameters:
+      - name: categoryId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+          '200':
+            description: Successful operation
+            content:
+              application/json:
+                example: "category deleted"
+          '400':
+            description: Category already exist
+  /product/add-product:
+    post:
+      tags:
+        - Product
+      summary: Add a new Product
+      description: Add a new Product
+      operationId: addProduct
+      requestBody:
+        description: Create a new Product
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'          
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Product'  
+        '403':
+          description: Product exist
+  /product/get-all:
+    get:
+      tags:
+        - Product
+      summary: Get all product in the db 
+      description: Get all product in the db 
+      operationId: getAllProduct
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'     
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /product/get-by-id/{id}:
+    get:
+      tags:
+        - Product
+      summary: Get product by Id
+      description: Get product by Id
+      operationId: getById
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'     
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /product/update/{id}:
+    put:
+      tags:
+          - Product
+      summary: Update product
+      description: Update product
+      operationId: updateProduct
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Create a new Product
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'     
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /product/delete/{id}:
+    delete:
+      tags:
+        - Product
+      summary: Delete product
+      description: delete product
+      operationId: deleteProduct
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              example: product deleted
+  /product/approve/{id}:
+    put:  
+      tags:
+        - Product
+      summary: Approve product
+      description: approve product
+      operationId: approveProduct
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer      
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              example: approved 
+  /product/reject/{id}:
+    put:
+      tags:
+        - Product
+      summary: Reject product
+      description: reject product
+      operationId: rejectProduct
+      parameters:
+      - name: productId
+        in: path
+        required: true
+        schema:
+          type: integer    
+      requestBody:
+        description: Reject a product
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectProduct'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              example: rejected
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        avatar:
+          type: string
+        verified:
+          type: boolean
+        role:
+          type: string
+          enum:
+            - USER
+            - ADMIN
+        createdAt:
+          type: string
+          format: date-time
+    UserCreate:
+        type: object
+        properties:
+          username:
+            type: string
+          email:
+            type: string
+          password:
+            type: string
+          name:
+            type: string
+          avatar:
+            type: string
+    SuccessMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User deleted"
+    RejectProduct:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "product rejected"
+    Category:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+        categoryName:
+          type: string
+    CategoryCreate:
+      type: object
+      properties:
+        categoryName: 
+          type: string
+    Product:
+      type: object
+      properties:
+        productId:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sample Product"
+        description:
+          type: string
+          example: "This is a sample product description."
+        price:
+          type: integer
+          example: 1999
+        images:
+          type: object
+          example: ["image1.jpg", "image2.jpg"]
+        status:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - REJECTED
+          example: PENDING
+        statusMessage:
+          type: string
+          example: "Your product is pending for approval"
+        categoryId:
+          type: integer
+          example: 1
+        userId:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-08-13T12:34:56Z"
+        soldAt:
+          type: string
+          format: date-time
+          example: "2024-08-15T12:34:56Z"
+      required:
+        - name
+        - description
+        - price
+        - images
+    ProductCreate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "New Product"
+        description:
+          type: string
+          example: "Description of the new product."
+        price:
+          type: integer
+          example: 2999
+        images:
+          type: array
+          items:
+            type: string
+          example: ["new_image1.jpg", "new_image2.jpg"]
+      required:
+        - name
+        - description
+        - price
+        - images
+      
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  

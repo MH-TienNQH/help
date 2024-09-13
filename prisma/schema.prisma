@@ -24,6 +24,12 @@ enum Status {
   REJECTED
 }
 
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   userId        Int            @id @unique @default(autoincrement())
   username      String         @unique
@@ -42,6 +48,9 @@ model User {
   otp           String?
   otpCreatedAt  DateTime?
   otpExpireAt   DateTime?
+  comments      Comment[]
+  RequestToBuy  RequestToBuy[]
+  Notification  Notification[]
 }
 
 model RefreshToken {
@@ -76,15 +85,31 @@ model Product {
   price         Int
   images        Json
   status        Status         @default(PENDING)
-  statusMessage String         @default("Your product is pending for approval")
+  statusMessage String         @default("Your product is waiting for approval")
   categoryId    Int            @default(1)
   category      Category       @relation(fields: [categoryId], references: [categoryId])
   userId        Int?
-  author        User?          @relation(fields: [userId], references: [userId])
+  author        User?          @relation(fields: [userId], references: [userId], onDelete: Cascade)
   createdAt     DateTime       @default(now())
   soldAt        DateTime?
+  pending       Boolean        @default(true)
   ProductSaved  ProductSaved[]
   likeNumber    ProductLiked[]
+  comments      Comment[]
+  RequestToBuy  RequestToBuy[]
+  Notification  Notification[]
+}
+
+model RequestToBuy {
+  productId     Int
+  product       Product       @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  userId        Int
+  user          User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  message       String
+  offer         Int
+  requestStatus RequestStatus @default(PENDING)
+
+  @@unique([productId, userId])
 }
 
 model Category {
@@ -95,7 +120,7 @@ model Category {
 
 model ProductSaved {
   productId Int
-  product   Product @relation(fields: [productId], references: [productId])
+  product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
   userId    Int
   user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
@@ -104,9 +129,30 @@ model ProductSaved {
 
 model ProductLiked {
   productId Int
-  product   Product @relation(fields: [productId], references: [productId])
+  product   Product @relation(fields: [productId], references: [productId], onDelete: Cascade)
   userId    Int
   user      User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@unique([productId, userId])
+}
+
+model Comment {
+  commentId Int      @id @unique @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+}
+
+model Notification {
+  notificationId Int      @id @default(autoincrement())
+  userId         Int
+  user           User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  content        String
+  productId      Int
+  product        Product  @relation(fields: [productId], references: [productId], onDelete: Cascade)
+  status         Boolean  @default(false)
+  createdAt      DateTime @default(now())
 }

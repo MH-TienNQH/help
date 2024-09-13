@@ -16,3 +16,12 @@ export class responseFormatWithPagination extends Response {
     this.meta = meta;
   }
 }
+
+export class responseFormatForErrors extends Response {
+  constructor(statusCode, success, errors) {
+    super(errors);
+    this.statusCode = statusCode;
+    this.success = success;
+    this.errors = errors;
+  }
+}

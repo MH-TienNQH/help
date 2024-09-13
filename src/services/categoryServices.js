@@ -1,3 +1,5 @@
+import { CategoryOperationalErrorConstant } from "../constants/constants.js";
+import { OperationalException } from "../exceptions/operationalExceptions.js";
 import { prismaClient } from "../routes/index.js";
 
 export const getAllCategories = async () => {
@@ -9,37 +11,85 @@ export const getAllCategories = async () => {
   return category;
 };
 export const findById = async (id) => {
-  return await prismaClient.category.findFirst({
+  const isExist = await prismaClient.category.findUnique({
     where: {
       categoryId: parseInt(id),
     },
   });
+  if (isExist) {
+    return await prismaClient.category.findFirst({
+      where: {
+        categoryId: parseInt(id),
+      },
+    });
+  }
+  throw new OperationalException(
+    404,
+    false,
+    CategoryOperationalErrorConstant.CATEGORY_NOT_FOUND_ERROR
+  );
 };
 export const addCategory = async (data) => {
-  const category = await prismaClient.category.create({
+  const isExist = await prismaClient.category.findUnique({
+    where: {
+      categoryName: data.categoryName,
+    },
+  });
+  if (isExist) {
+    throw new OperationalException(
+      400,
+      false,
+      CategoryOperationalErrorConstant.CATEGORY_EXIST_ERROR
+    );
+  }
+  return await prismaClient.category.create({
     data: {
       categoryName: data.categoryName,
     },
   });
-  return category;
 };
 
 export const updateCategory = async (id, data) => {
-  const category = await prismaClient.category.update({
+  const isExist = await prismaClient.category.findUnique({
     where: {
       categoryId: parseInt(id),
     },
-    data: {
-      categoryName: data.categoryName,
-    },
   });
-  return category;
+  if (isExist) {
+    await prismaClient.category.update({
+      where: {
+        categoryId: parseInt(id),
+      },
+      data: {
+        categoryName: data.categoryName,
+      },
+    });
+    return true;
+  }
+  throw new OperationalException(
+    404,
+    false,
+    CategoryOperationalErrorConstant.CATEGORY_NOT_FOUND_ERROR
+  );
 };
 
 export const deleteCategory = async (id) => {
-  await prismaClient.category.delete({
+  const isExist = await prismaClient.category.findUnique({
     where: {
       categoryId: parseInt(id),
     },
   });
+  if (isExist) {
+    await prismaClient.category.delete({
+      where: {
+        categoryId: parseInt(id),
+      },
+    });
+    return true;
+  }
+  throw new OperationalException(
+    404,
+    false,
+    CategoryOperationalErrorConstant.CATEGORY_NOT_FOUND_ERROR
+  );
 };
