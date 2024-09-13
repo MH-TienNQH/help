@@ -2,6 +2,7 @@ import { hashSync } from "bcrypt";
 import { prismaClient } from "../routes/index.js";
 
 import { OperationalException } from "../exceptions/operationalExceptions.js";
+
 import {
   responseFormat,
   responseFormatForErrors,
@@ -54,6 +55,11 @@ export const getAllUser = async (name, order = "asc", role, page, limit) => {
     },
   });
   const formattedUser = users.map(({ password, ...user }) => ({
+
+export const getAllUser = async () => {
+  const users = await prismaClient.user.findMany();
+  const usersWithImageUrls = users.map((user) => ({
+
     ...user,
     createdAt: formatVietnamTime(user.createdAt),
   }));

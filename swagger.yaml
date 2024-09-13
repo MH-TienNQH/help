@@ -217,6 +217,7 @@ paths:
           content:
             application/json: 
               example: requested product
+
   /user/approve-request/{productId}/{userId}:
     put: 
       tags:
@@ -265,6 +266,7 @@ paths:
           content:
             application/json: 
               example: request rejected
+
   /category/get-all:
     get:
       tags:
